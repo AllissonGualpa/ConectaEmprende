@@ -2,3 +2,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font.face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'TTNorms';
+  src: url('/assets/font/TTNorms-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
