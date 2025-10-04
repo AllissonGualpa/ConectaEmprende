@@ -6,6 +6,7 @@ module.exports = {
     extend: {
       fontFamily: {
         tt: ['TTNorms', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
       },
     },
   },

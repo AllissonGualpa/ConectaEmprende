@@ -1,0 +1,72 @@
+<app-navbar></app-navbar>
+
+<main class="min-h-screen bg-white">
+  <!--seccion bienvenida -->
+  <section
+  class="relative bg-center bg-cover"
+  style="background-image: url('/assets/img/fotoInicio.png');"
+  aria-label="Sección de bienvenida">
+  <!-- Overlay oscuro para legibilidad -->
+  <div class="absolute inset-0 bg-black/40"></div>
+
+  <!-- Contenido centrado -->
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[420px] md:min-h-[560px] flex items-center">
+    <div class="w-full text-center text-white font-poppins">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight font-poppins !font-poppins">
+        Descubre a Emprendedores del Ecuador
+      </h1>
+      <p class="text-center mt-4 text-sm sm:text-base md:text-lg text-white/90 font-medium max-w-2xl mx-auto">
+        ¿Tienes una idea que quieres compartir con el mundo? Regístrate como emprendedor y haz crecer tu proyecto con nosotros.
+      </p>
+      <a
+        routerLink="/register"
+        class="inline-block mt-6 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md text-sm shadow font-medium">
+        Únete
+      </a>
+    </div>
+  </div>
+</section>
+
+  <!-- Separador -->
+  <div class="border-t border-gray-300 my-8 mx-auto max-w-4xl"></div>
+
+  <!-- Features Section -->
+  <section class="py-16 px-4 max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <!-- Card 1 -->
+      <div class="text-center">
+        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <mat-icon class="text-blue-600 text-4xl">search</mat-icon>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-4">Descubre emprendimientos</h3>
+        <p class="text-gray-700 text-lg leading-relaxed">
+          Descubre negocios que te pueden interesar de todos los sectores
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="text-center">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <mat-icon class="text-green-600 text-4xl">star</mat-icon>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-4">Califica negocios</h3>
+        <p class="text-gray-700 text-lg leading-relaxed">
+          Califica la atención recibida por nuestros emprendimientos
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="text-center">
+        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <mat-icon class="text-purple-600 text-4xl">group</mat-icon>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 mb-4">Ayuda a la comunidad</h3>
+        <p class="text-gray-700 text-lg leading-relaxed">
+          Contribuye a la mejora continua de todos nuestros negocios
+        </p>
+      </div>
+    </div>
+  </section>
+
+  
+</main>
