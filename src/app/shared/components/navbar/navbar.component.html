@@ -1,0 +1,23 @@
+<nav class="bg-white border-b shadow-sm sticky top-0 z-50 font-poppins">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="h-16 flex items-center">
+      <!--logo -->
+      <div class="flex items-center">
+<a routerLink="/" class="font-poppins font-normal text-orange-500 text-lg tracking-tight">ConectaEmprende</a> 
+    </div>
+
+      <!--titulos -->
+      <div class="flex-1 flex justify-center hidden md:flex space-x-8">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Inicio</a>
+        <a routerLink="/emprendimientos" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Emprendimientos</a>
+        <a routerLink="/eventos" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Eventos</a>
+        <a routerLink="/blog" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Blog</a>
+      </div>
+
+      <!-- Right: CTA + mobile button -->
+      <div class="ml-auto flex items-center space-x-4">
+        <a routerLink="/login" class="hidden md:inline-block bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm">Inicia Sesión</a>
+      </div>
+    </div>
+  </div>
+</nav>
