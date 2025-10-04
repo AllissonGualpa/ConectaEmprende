@@ -1,0 +1,89 @@
+<div class="flex justify-center items-center min-h-screen p-8 gap-16 max-w-screen-lg mx-auto">
+  <!-- Imagen -->
+  <div class="flex-0 w-full max-w-lg flex justify-center">
+    <img src="./assets/img/fotoLogin.jpg" alt="Equipo de trabajo" class="w-4/5 h-auto rounded-xl shadow-lg">
+  </div>
+
+  <!-- Formulario -->
+  <div class="flex-0 w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-2 text-black text-center font-tt">Registro</h1>
+    <p class="text-sm text-gray-600 mb-6 text-center font-light font-tt">
+      Tu próximo gran emprendimiento comienza aquí.  
+      Regístrate y únete al ecosistema
+    </p>
+
+    <form [formGroup]="registerForm" class="space-y-4">
+      <!-- Nombre y Apellido -->
+      <div class="flex gap-4">
+        <div class="flex-1">
+          <app-input-field
+            label="Nombre"
+            id="nombre"
+            placeholder="Introduce tu nombre"
+            formControlName="nombre"
+            [errorMessage]="'El nombre es obligatorio'"
+            [showError]="nombre.invalid && nombre.touched">
+          </app-input-field>
+        </div>
+
+        <div class="flex-1">
+          <app-input-field
+            label="Apellido"
+            id="apellido"
+            placeholder="Introduce tu apellido"
+            formControlName="apellido"
+            [errorMessage]="'El apellido es obligatorio'"
+            [showError]="apellido.invalid && apellido.touched">
+          </app-input-field>
+        </div>
+      </div>
+
+      <!-- Fecha -->
+      <app-input-field
+        label="Fecha de nacimiento"
+        id="fecha"
+        type="date"
+        formControlName="fecha"
+        [errorMessage]="'La fecha es obligatoria'"
+        [showError]="fecha.invalid && fecha.touched">
+      </app-input-field>
+
+      <!-- Género -->
+      <app-gender-selector
+        formControlName="genero"
+        [errorMessage]="'Selecciona un género'"
+        [showError]="genero.invalid && genero.touched">
+      </app-gender-selector>
+
+      <!-- Contraseña -->
+      <app-password-input
+        label="Contraseña"
+        id="password"
+        placeholder="Introduce tu contraseña"
+        formControlName="password"
+        [errorMessage]="'La contraseña es obligatoria y debe tener al menos 6 caracteres'"
+        [showError]="password.invalid && password.touched">
+      </app-password-input>
+
+      <!-- Confirmar contraseña -->
+      <app-password-input
+        label="Confirmar contraseña"
+        id="confirmPassword"
+        placeholder="Confirma tu contraseña"
+        formControlName="confirmPassword">
+      </app-password-input>
+
+      <!-- Error de contraseñas -->
+      <div *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword.touched"
+           class="text-red-500 text-sm">
+        Las contraseñas no coinciden.
+      </div>
+
+      <!-- Botón -->
+      <button type="button" (click)="onRegister()"
+        class="w-full py-3 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600">
+        Registrarse
+      </button>
+    </form>
+  </div>
+</div>
