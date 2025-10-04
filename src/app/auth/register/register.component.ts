@@ -1,79 +1,131 @@
 import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { InputFieldComponent } from '../../shared/components/input-field/input-field.component';
-import { PasswordInputComponent } from '../../shared/components/password-input/password-input.component';
-import { GenderSelectorComponent } from '../../shared/components/gender-selector/gender-selector.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatButtonModule } from '@angular/material/button';
+import { MatError, MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIcon } from "@angular/material/icon";
+import { provideNativeDateAdapter } from '@angular/material/core';
+
+// Validador a nivel de formulario para comparar contraseñas
+export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
+  const password = group.get('contrasena')?.value;
+  const confirmPassword = group.get('confirmarContrasena')?.value;
+
+  // Solo validar si ambos campos tienen valores
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password === confirmPassword ? null : { passwordMismatch: true };
+}
 
 @Component({
   selector: 'app-register',
   standalone: true,
+  providers: [provideNativeDateAdapter()],
   imports: [
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     CommonModule,
-    InputFieldComponent,
-    PasswordInputComponent,
-    GenderSelectorComponent
+    MatStepperModule,
+    MatButtonModule,
+    FormsModule,
+    MatSelectModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIcon,
+    MatError,
+    MatIcon,
+    MatDatepickerModule,
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  registerForm: FormGroup;
+  hide = true;
+  hideConfirm = true;
 
-  constructor(private fb: FormBuilder) {
-    this.registerForm = this.fb.group(
-      {
-        nombre: ['', Validators.required],
-        apellido: ['', Validators.required],
-        fecha: ['', Validators.required],
-        genero: ['', Validators.required],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', Validators.required],
-      },
-      { validators: this.passwordMatchValidator }
-    );
+  firstFormGroup!: FormGroup;
+  secondFormGroup!: FormGroup;
+  thirdFormGroup!: FormGroup;
+
+  constructor(private _formBuilder: FormBuilder) { }
+
+  ngOnInit(): void {
+    this.firstFormGroup = this._formBuilder.group({
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      correoUees: ['', [Validators.required, Validators.email]],
+      fechaNacimiento: ['', Validators.required],
+      genero: ['', Validators.required],
+      contrasena: ['', [Validators.required, Validators.minLength(6)]],
+      confirmarContrasena: ['', [Validators.required]]
+    }, { validators: passwordMatchValidator });
+
+    this.secondFormGroup = this._formBuilder.group({
+      correo: ['', [Validators.required, Validators.email]],
+      identificacion: ['', Validators.required],
+      parienteDirecto: ['', Validators.required],
+    });
+
+    this.thirdFormGroup = this._formBuilder.group({
+      nombreComercialEmprendimiento: ['', Validators.required],
+      fechaCreacion: ['', Validators.required],
+      provincia: ['', Validators.required],
+      ciudad: ['', Validators.required],
+      estadoEmprendimiento: ['', Validators.required],
+      tipoEmprendimiento: ['', Validators.required]
+    });
+
+    // Escuchar cambios en los campos de contraseña para actualizar la validación
+    this.firstFormGroup.get('contrasena')?.valueChanges.subscribe(() => {
+      this.firstFormGroup.updateValueAndValidity();
+    });
+
+    this.firstFormGroup.get('confirmarContrasena')?.valueChanges.subscribe(() => {
+      this.firstFormGroup.updateValueAndValidity();
+    });
+
+    this.firstFormGroup.valueChanges.subscribe(() => {
+      const pass = this.firstFormGroup.get('contrasena')?.value;
+      const confirmControl = this.firstFormGroup.get('confirmarContrasena');
+      const confirm = confirmControl?.value;
+
+      if (!confirmControl) return;
+
+      // Si ambos campos tienen valor y no coinciden, agregar el error passwordMismatch al control de confirmación
+      if (pass && confirm && pass !== confirm) {
+        const existing = confirmControl.errors || {};
+        if (!existing['passwordMismatch']) {
+          confirmControl.setErrors({ ...existing, passwordMismatch: true });
+        }
+      } else {
+        // Si coinciden o alguno está vacío, remover passwordMismatch sin borrar otros errores (como required)
+        const errors = { ...(confirmControl.errors || {}) } as { [key: string]: any };
+        if (errors['passwordMismatch']) {
+          delete errors['passwordMismatch'];
+          const keys = Object.keys(errors);
+          confirmControl.setErrors(keys.length ? errors : null);
+        }
+      }
+    });
   }
 
-  //Getters para simplificar el HTML
-  get nombre() {
-    return this.registerForm.get('nombre')!;
-  }
-
-  get apellido() {
-    return this.registerForm.get('apellido')!;
-  }
-
-  get fecha() {
-    return this.registerForm.get('fecha')!;
-  }
-
-  get genero() {
-    return this.registerForm.get('genero')!;
-  }
-
-  get password() {
-    return this.registerForm.get('password')!;
-  }
-
-  get confirmPassword() {
-    return this.registerForm.get('confirmPassword')!;
-  }
-
-  //Validación comparar contraseñas
-  passwordMatchValidator(control: AbstractControl) {
-    const password = control.get('password')?.value;
-    const confirm = control.get('confirmPassword')?.value;
-    return password === confirm ? null : { passwordMismatch: true };
-  }
-
-  onRegister() {
-    if (this.registerForm.valid) {
-      console.log('Registro exitoso:', this.registerForm.value);
-      //lógica para crear usuario
+  guardar() {
+    if (this.firstFormGroup.valid && this.secondFormGroup.valid && this.thirdFormGroup.valid) {
+      const data = {
+        ...this.firstFormGroup.value,
+        ...this.secondFormGroup.value,
+        ...this.thirdFormGroup.value
+      };
+      console.log('Formulario completo:', data);
     } else {
       console.log('Formulario inválido');
-      this.registerForm.markAllAsTouched();
     }
   }
+
 }

@@ -1,89 +1,305 @@
-<div class="flex justify-center items-center min-h-screen p-8 gap-16 max-w-screen-lg mx-auto">
+<div class="grid grid-cols-12 min-h-screen">
   <!-- Imagen -->
-  <div class="flex-0 w-full max-w-lg flex justify-center">
-    <img src="./assets/img/fotoLogin.jpg" alt="Equipo de trabajo" class="w-4/5 h-auto rounded-xl shadow-lg">
+  <div class="hidden md:flex col-span-12 md:col-span-6 justify-center items-center">
+    <img src="./assets/img/fotoInicial.png" alt="Equipo de trabajo"
+      style="width:358.4px; height:537px;"
+      class="rounded-xl shadow-lg object-cover mx-auto" />
   </div>
 
   <!-- Formulario -->
-  <div class="flex-0 w-full max-w-md">
-    <h1 class="text-2xl font-bold mb-2 text-black text-center font-tt">Registro</h1>
-    <p class="text-sm text-gray-600 mb-6 text-center font-light font-tt">
-      Tu próximo gran emprendimiento comienza aquí.  
-      Regístrate y únete al ecosistema
-    </p>
+  <div class="col-span-12 md:col-span-6 flex flex-col justify-center px-8 py-12 bg-white">
+    <div class="w-full max-w-lg mx-auto">
+      <!-- Título -->
+      <h1 class="text-2xl font-bold mb-2 text-center">
+        <strong>Registro</strong>
+      </h1>
+      <p class="text-gray-600 mb-6 text-center">
+        Tu próximo gran emprendimiento comienza aquí. Regístrate y únete al
+        ecosistema.
+      </p>
+      <div class="w-full max-w-lg mx-auto">
+        <mat-stepper linear #stepper>
+          <!-- Paso 1 -->
+          <mat-step [stepControl]="firstFormGroup">
+            <form [formGroup]="firstFormGroup">
+              <ng-template matStepLabel>Usuario</ng-template>
 
-    <form [formGroup]="registerForm" class="space-y-4">
-      <!-- Nombre y Apellido -->
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <app-input-field
-            label="Nombre"
-            id="nombre"
-            placeholder="Introduce tu nombre"
-            formControlName="nombre"
-            [errorMessage]="'El nombre es obligatorio'"
-            [showError]="nombre.invalid && nombre.touched">
-          </app-input-field>
-        </div>
+              <div class="flex gap-4 w-full">
+                <mat-form-field class="w-1/2 custom-small-input">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput formControlName="nombre" type="text" required />
+                  <mat-error *ngIf="
+                      firstFormGroup.get('nombre')?.touched &&
+                      firstFormGroup.get('nombre')?.hasError('required')
+                    ">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
 
-        <div class="flex-1">
-          <app-input-field
-            label="Apellido"
-            id="apellido"
-            placeholder="Introduce tu apellido"
-            formControlName="apellido"
-            [errorMessage]="'El apellido es obligatorio'"
-            [showError]="apellido.invalid && apellido.touched">
-          </app-input-field>
-        </div>
+                <mat-form-field class="w-1/2 custom-small-input">
+                  <mat-label>Apellido</mat-label>
+                  <input matInput formControlName="apellido" type="text" required />
+                  <mat-error *ngIf="
+                      firstFormGroup.get('apellido')?.touched &&
+                      firstFormGroup.get('apellido')?.hasError('required')
+                    ">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Correo electrónico UEES/personal</mat-label>
+                <input matInput formControlName="correoUees" type="email" required />
+                <mat-error *ngIf="
+                    firstFormGroup.get('correoUees')?.touched &&
+                    firstFormGroup.get('correoUees')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Fecha de Nacimiento</mat-label>
+                <input matInput [matDatepicker]="pickerNacimiento" formControlName="fechaNacimiento" required />
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerNacimiento"></mat-datepicker-toggle>
+                <mat-datepicker #pickerNacimiento></mat-datepicker>
+                <mat-error *ngIf="
+                    firstFormGroup.get('fechaNacimiento')?.touched &&
+                    firstFormGroup.get('fechaNacimiento')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Género</mat-label>
+                <mat-select formControlName="genero" required>
+                  <mat-option value="Masculino">Masculino</mat-option>
+                  <mat-option value="Femenino">Femenino</mat-option>
+                </mat-select>
+                <mat-error *ngIf="
+                    firstFormGroup.get('genero')?.touched &&
+                    firstFormGroup.get('genero')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Contraseña</mat-label>
+                <input matInput [type]="hide ? 'password' : 'text'" formControlName="contrasena" required />
+                <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Ocultar contraseña'"
+                  [attr.aria-pressed]="hide" type="button">
+                  <mat-icon>{{
+                    hide ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                </button>
+                <mat-error *ngIf="
+                    firstFormGroup.get('contrasena')?.touched &&
+                    firstFormGroup.get('contrasena')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Confirmar contraseña</mat-label>
+                <input matInput [type]="hideConfirm ? 'password' : 'text'" formControlName="confirmarContrasena"
+                  required />
+                <button mat-icon-button matSuffix (click)="hideConfirm = !hideConfirm"
+                  [attr.aria-label]="'Ocultar contraseña'" [attr.aria-pressed]="hideConfirm" type="button">
+                  <mat-icon>{{
+                    hideConfirm ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                </button>
+                <mat-error *ngIf="
+                    firstFormGroup.get('confirmarContrasena')?.touched &&
+                    firstFormGroup
+                      .get('confirmarContrasena')
+                      ?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+                <mat-error *ngIf="
+                    firstFormGroup.get('confirmarContrasena')?.touched &&
+                    firstFormGroup.get('confirmarContrasena')?.hasError('passwordMismatch')
+                  ">
+                  Las contraseñas no coinciden
+                </mat-error>
+              </mat-form-field>
+
+              <div class="mt-4">
+                <button mat-raised-button color="accent" matStepperNext>
+                  Siguiente
+                </button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Paso 2 -->
+          <mat-step [stepControl]="secondFormGroup">
+            <form [formGroup]="secondFormGroup">
+              <ng-template matStepLabel>Contacto</ng-template>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>Correo electrónico corporativo</mat-label>
+                <input matInput formControlName="correo" type="email" required />
+                <mat-error *ngIf="
+                    secondFormGroup.get('correo')?.touched &&
+                    secondFormGroup.get('correo')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input">
+                <mat-label>¿Cómo te identificas?</mat-label>
+                <mat-select formControlName="identificacion" required>
+                  <mat-option value="Estudiante">Estudiante</mat-option>
+                  <mat-option value="Alumni">Alumni</mat-option>
+                  <mat-option value="Externo">Externo</mat-option>
+                </mat-select>
+                <mat-error *ngIf="
+                    secondFormGroup.get('identificacion')?.touched &&
+                    secondFormGroup.get('identificacion')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-small-input" [subscriptSizing]="'dynamic'">
+                <mat-label>¿Tiene algun pariente directo que trabaje en la UEES?</mat-label>
+                <mat-select formControlName="parienteDirecto" required>
+                  <mat-option value="si">Sí</mat-option>
+                  <mat-option value="no">No</mat-option>
+                </mat-select>
+                <mat-error *ngIf="
+                    secondFormGroup.get('parienteDirecto')?.touched &&
+                    secondFormGroup.get('parienteDirecto')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <div class="mt-4 flex gap-2">
+                <button mat-button color="accent" matStepperPrevious>Atrás</button>
+                <button mat-raised-button color="accent" matStepperNext>
+                  Siguiente
+                </button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Paso 3 -->
+          <mat-step [stepControl]="thirdFormGroup">
+            <form [formGroup]="thirdFormGroup">
+              <ng-template matStepLabel>Emprendimiento</ng-template>
+
+              <mat-form-field class="w-full">
+                <mat-label>Nombre comercial del emprendimiento</mat-label>
+                <input matInput formControlName="nombreComercialEmprendimiento" type="text" required />
+                <mat-error *ngIf="
+                    thirdFormGroup.get('nombreComercialEmprendimiento')
+                      ?.touched &&
+                    thirdFormGroup
+                      .get('nombreComercialEmprendimiento')
+                      ?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Año de creación</mat-label>
+                <mat-hint>MM/DD/YYYY</mat-hint>
+                <input matInput [matDatepicker]="pickerCreacion" formControlName="fechaCreacion" required />
+                <mat-datepicker-toggle matIconSuffix [for]="pickerCreacion"></mat-datepicker-toggle>
+                <mat-datepicker #pickerCreacion></mat-datepicker>
+                <mat-error *ngIf="
+                    thirdFormGroup.get('fechaCreacion')?.touched &&
+                    thirdFormGroup.get('fechaCreacion')?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <div class="flex gap-4 w-full">
+                <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'">
+                  <mat-label>Provincia</mat-label>
+                  <mat-select formControlName="provincia" required>
+                    <mat-option value="pichincha">Pichincha</mat-option>
+                    <mat-option value="guayas">Guayas</mat-option>
+                    <mat-option value="azuay">Azuay</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="
+                      thirdFormGroup.get('provincia')?.touched &&
+                      thirdFormGroup.get('provincia')?.hasError('required')
+                    ">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-1/2" [subscriptSizing]="'dynamic'">
+                  <mat-label>Ciudad</mat-label>
+                  <mat-select formControlName="ciudad" required>
+                    <mat-option value="quito">Quito</mat-option>
+                    <mat-option value="guayaquil">Guayaquil</mat-option>
+                    <mat-option value="cuenca">Cuenca</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="
+                      thirdFormGroup.get('ciudad')?.touched &&
+                      thirdFormGroup.get('ciudad')?.hasError('required')
+                    ">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field class="w-full mt-4" [subscriptSizing]="'dynamic'">
+                <mat-label>¿El emprendimiento esta actualmente activo?</mat-label>
+                <mat-select formControlName="estadoEmprendimiento" required>
+                  <mat-option [value]="true">Si</mat-option>
+                  <mat-option [value]="false">No</mat-option>
+                </mat-select>
+                <mat-error *ngIf="
+                    thirdFormGroup.get('estadoEmprendimiento')?.touched &&
+                    thirdFormGroup
+                      .get('estadoEmprendimiento')
+                      ?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full mt-4" [subscriptSizing]="'dynamic'">
+                <mat-label>Tipo de emprendimiento</mat-label>
+                <mat-select formControlName="tipoEmprendimiento" required>
+                  <mat-option value="Servicio">Servicio</mat-option>
+                  <mat-option value="Producto">Producto</mat-option>
+                  <mat-option value="Startup">Startup</mat-option>
+                </mat-select>
+                <mat-error *ngIf="
+                    thirdFormGroup.get('tipoEmprendimiento')?.touched &&
+                    thirdFormGroup
+                      .get('tipoEmprendimiento')
+                      ?.hasError('required')
+                  ">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <div class="mt-4 flex gap-2">
+                <button mat-button color="accent" matStepperPrevious>Atrás</button>
+                <button mat-raised-button color="accent" (click)="guardar()">
+                  Finalizar
+                </button>
+              </div>
+            </form>
+          </mat-step>
+        </mat-stepper>
       </div>
-
-      <!-- Fecha -->
-      <app-input-field
-        label="Fecha de nacimiento"
-        id="fecha"
-        type="date"
-        formControlName="fecha"
-        [errorMessage]="'La fecha es obligatoria'"
-        [showError]="fecha.invalid && fecha.touched">
-      </app-input-field>
-
-      <!-- Género -->
-      <app-gender-selector
-        formControlName="genero"
-        [errorMessage]="'Selecciona un género'"
-        [showError]="genero.invalid && genero.touched">
-      </app-gender-selector>
-
-      <!-- Contraseña -->
-      <app-password-input
-        label="Contraseña"
-        id="password"
-        placeholder="Introduce tu contraseña"
-        formControlName="password"
-        [errorMessage]="'La contraseña es obligatoria y debe tener al menos 6 caracteres'"
-        [showError]="password.invalid && password.touched">
-      </app-password-input>
-
-      <!-- Confirmar contraseña -->
-      <app-password-input
-        label="Confirmar contraseña"
-        id="confirmPassword"
-        placeholder="Confirma tu contraseña"
-        formControlName="confirmPassword">
-      </app-password-input>
-
-      <!-- Error de contraseñas -->
-      <div *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword.touched"
-           class="text-red-500 text-sm">
-        Las contraseñas no coinciden.
-      </div>
-
-      <!-- Botón -->
-      <button type="button" (click)="onRegister()"
-        class="w-full py-3 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600">
-        Registrarse
-      </button>
-    </form>
+    </div>
   </div>
 </div>

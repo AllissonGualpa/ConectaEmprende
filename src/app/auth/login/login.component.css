@@ -1,0 +1,129 @@
+::ng-deep .custom-mat-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+::ng-deep .custom-mat-field .mat-mdc-text-field-wrapper {
+  padding: 0 !important;
+}
+
+::ng-deep .custom-mat-field .mat-mdc-form-field-infix {
+  padding: 12px 16px !important;
+  min-height: auto !important;
+}
+
+::ng-deep .custom-mat-field .mat-mdc-form-field-flex {
+  align-items: center !important;
+}
+
+::ng-deep .custom-mat-field .mdc-notched-outline__leading,
+::ng-deep .custom-mat-field .mdc-notched-outline__notch,
+::ng-deep .custom-mat-field .mdc-notched-outline__trailing {
+  border-color: #d1d5db !important;
+}
+
+::ng-deep .custom-mat-field:hover .mdc-notched-outline__leading,
+::ng-deep .custom-mat-field:hover .mdc-notched-outline__notch,
+::ng-deep .custom-mat-field:hover .mdc-notched-outline__trailing {
+  border-color: #9ca3af !important;
+}
+
+::ng-deep .custom-mat-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .custom-mat-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .custom-mat-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #fb923c !important;
+  border-width: 2px !important;
+}
+
+::ng-deep .custom-mat-field .mat-mdc-input-element {
+  font-size: 14px !important;
+}
+
+::ng-deep .custom-mat-field .mat-mdc-input-element::placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+}
+
+::ng-deep .custom-mat-field .mdc-notched-outline__notch {
+  border: none !important;
+}
+
+/* Ocultar el label flotante de Material */
+::ng-deep .custom-mat-field .mat-mdc-form-field-label {
+  display: none !important;
+}
+
+/* Botón de inicio de sesión */
+.custom-login-button {
+  background-color: #f97316 !important;
+  color: white !important;
+  padding: 12px 0 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
+}
+
+.custom-login-button:hover {
+  background-color: #ea580c !important;
+}
+
+/* Botón de Google */
+.custom-google-button {
+  padding: 12px 0 !important;
+  font-size: 14px !important;
+  height: 48px !important;
+  border-radius: 8px !important;
+  border-color: #d1d5db !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+}
+
+.custom-google-button:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Contenedor del contenido del botón Google */
+.google-button-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  width: 100%;
+}
+
+/* Imagen de Google */
+.google-icon {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+}
+
+/* Texto del botón Google */
+.google-text {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+/* Ajuste del icono de visibilidad */
+::ng-deep .custom-mat-field .mat-mdc-icon-button {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 8px !important;
+}
+
+::ng-deep .custom-mat-field .mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Mensajes de error */
+::ng-deep .custom-mat-field .mat-mdc-form-field-error {
+  color: #ef4444 !important;
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}

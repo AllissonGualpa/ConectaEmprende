@@ -13,28 +13,38 @@
     <form [formGroup]="loginForm" class="space-y-4">
       <!-- Correo -->
       <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
           Correo electrónico
         </label>
-        <input type="email" id="email" formControlName="email"
-          placeholder="Introduce tu correo electrónico"
-          class="block w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
-        <div *ngIf="email.invalid && email.touched" class="text-red-500 text-sm mt-1">
-          Ingresa un correo válido
-        </div>
+        <mat-form-field appearance="outline" class="w-full custom-mat-field">
+          <input matInput type="email" formControlName="email" 
+                 placeholder="Introduce tu correo electrónico">
+          <mat-error *ngIf="email.invalid">
+            {{getEmailErrorMessage()}}
+          </mat-error>
+        </mat-form-field>
       </div>
 
       <!-- Contraseña -->
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">
           Contraseña
         </label>
-        <input type="password" id="password" formControlName="password"
-          placeholder="Introduce tu contraseña"
-          class="block w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
-        <div *ngIf="password.invalid && password.touched" class="text-red-500 text-sm mt-1">
-          La contraseña es obligatoria
-        </div>
+        <mat-form-field appearance="outline" class="w-full custom-mat-field">
+          <input matInput [type]="hidePassword ? 'password' : 'text'" 
+                 formControlName="password" 
+                 placeholder="Introduce tu contraseña">
+          <button mat-icon-button matSuffix 
+                  (click)="hidePassword = !hidePassword" 
+                  type="button"
+                  [attr.aria-label]="'Ocultar contraseña'" 
+                  [attr.aria-pressed]="hidePassword">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="password.invalid">
+            {{getPasswordErrorMessage()}}
+          </mat-error>
+        </mat-form-field>
       </div>
 
       <!-- Olvidaste tu contraseña -->
@@ -43,8 +53,9 @@
       </div>
 
       <!-- Botón login -->
-      <button type="button" (click)="onLogin()"
-        class="w-full py-3 bg-orange-500 text-white rounded-lg font-medium text-sm hover:bg-orange-600 transition-colors">
+      <button mat-flat-button type="button" 
+              (click)="onLogin()" 
+              class="w-full custom-login-button">
         Iniciar Sesión
       </button>
     </form>
@@ -55,10 +66,13 @@
     </div>
 
     <!-- Login con Google -->
-    <button type="button" (click)="onGoogleLogin()"
-      class="w-full py-3 border border-gray-300 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
-      <img src="./assets/img/google.png" alt="Google" class="w-5 h-5">
-      Iniciar sesión con Google
+    <button mat-stroked-button type="button" 
+            (click)="onGoogleLogin()"
+            class="w-full custom-google-button">
+      <div class="google-button-content">
+        <img src="./assets/img/google.png" alt="Google" class="google-icon">
+        <span class="google-text">Iniciar sesión con Google</span>
+      </div>
     </button>
 
     <p class="text-center text-sm text-gray-600 mt-6">
@@ -69,7 +83,7 @@
 
   <!-- Imagen -->
   <div class="flex-0 w-full max-w-lg flex justify-center">
-    <img src="./assets/img/fotoLogin.jpg" alt="Equipo de trabajo"
+    <img src="./assets/img/fotoInicial.png" alt="Equipo de trabajo"
       class="w-4/5 h-auto rounded-xl shadow-lg">
   </div>
 </div>
