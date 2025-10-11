@@ -1,0 +1,28 @@
+<app-navbar></app-navbar>
+<main>
+    <section
+    class="relative bg-center bg-cover"
+    style="background-image: url('/assets/img/emprendimiento/foto1.png');"
+    aria-label="Sección de bienvenida">
+    <div class="absolute inset-0 bg-black/50"></div>
+
+    <!--contenido-->
+    <div
+      class="relative max-w-6xl mx-auto px-4 sm:px-8 min-h-[480px] md:min-h-[580px] flex items-center justify-center text-center">
+      <div class="text-white">
+        <h1 class="text-3xl sm:text-5xl font-bold leading-tight mb-4 font-poppins !font-poppins">
+          Emprendimientos
+        </h1>
+        <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-2xl mx-auto">
+          Explora proyectos creativos y negocios locales que inspiran. <br>
+          Descubre cómo los emprendedores están transformando ideas en realidades cercanas a ti.
+        </p> <br>
+        <!--search bar-->
+        <div class="mt-6  max-w-3xl mx-auto">
+            <app-search-bar (search)="onSearch($event)"></app-search-bar>
+        </div>
+      </div>
+    </div>
+  </section>
+</main> <br>
+<app-footer></app-footer>
