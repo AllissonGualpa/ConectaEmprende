@@ -1,72 +1,58 @@
-<div class="w-full flex justify-center">
-  <form (ngSubmit)="submit()" [formGroup]="form" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center gap-4 bg-white rounded-full shadow-lg px-4 py-3">
-      <!--input-->
-      <div class="flex-1 min-w-0">
-        <input
-          formControlName="query"
-          type="search"
-          placeholder="Buscar por nombre o tipo"
-          aria-label="Buscar por nombre o tipo"
-          class="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base"
-        />
-      </div>
+<div class="w-full flex justify-center px-4">
+  <form
+    (ngSubmit)="submit()"
+    [formGroup]="form"
+    class="w-full max-w-6xl bg-white rounded-full shadow-lg px-6 py-4 flex flex-col md:flex-row md:items-center md:gap-6 relative z-50">
 
-      <!-- Separador pequeño (solo visual) -->
-      <div class="hidden md:block h-8 w-px bg-gray-200"></div>
-
-      <!-- Filtros: cada uno con etiqueta pequeña sobre el select -->
-      <div class="hidden md:flex items-center gap-4">
-        <div class="flex flex-col text-left">
-          <span class="text-xs text-gray-400 leading-tight">Categoria</span>
-          <select formControlName="category" class="text-sm text-gray-700 bg-transparent outline-none">
-            <option value="">Seleccionar</option>
-            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-          </select>
-        </div>
-
-        <div class="flex flex-col text-left">
-          <span class="text-xs text-gray-400 leading-tight">Ubicación</span>
-          <select formControlName="location" class="text-sm text-gray-700 bg-transparent outline-none">
-            <option value="">Seleccionar</option>
-            <option *ngFor="let l of locations" [value]="l">{{ l }}</option>
-          </select>
-        </div>
-
-        <div class="flex flex-col text-left">
-          <span class="text-xs text-gray-400 leading-tight">Tipo</span>
-          <select formControlName="type" class="text-sm text-gray-700 bg-transparent outline-none">
-            <option value="">Seleccionar</option>
-            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-      </div>
-
-      <button
-        type="submit"
+    <!--input-->
+    <div class="flex-1 min-w-[200px]">
+      <input
+        formControlName="query"
+        type="search"
+        [placeholder]="labelQuery"
         aria-label="Buscar"
-        class="ml-2 inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white rounded-full w-10 h-10 shadow transition-colors">
-        <!--icono lupa-->
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
-        </svg>
-      </button>
+        class="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-base md:text-lg"
+      />
     </div>
 
-    <!-- En mobile puedes mostrar filtros colapsados, ejemplo: -->
-    <div class="mt-3 md:hidden flex items-center gap-3">
-      <select formControlName="category" class="flex-1 text-sm p-2 border rounded-md">
-        <option value="">Categoria</option>
-        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-      </select>
-      <select formControlName="location" class="flex-1 text-sm p-2 border rounded-md">
-        <option value="">Ubicación</option>
-        <option *ngFor="let l of locations" [value]="l">{{ l }}</option>
-      </select>
-      <select formControlName="type" class="flex-1 text-sm p-2 border rounded-md">
-        <option value="">Tipo</option>
-        <option *ngFor="let t of types" [value]="t">{{ t }}</option>
-      </select>
+    <!-- separador -->
+    <div class="hidden md:block h-8 w-px bg-gray-200"></div>
+
+    <!--filtros-->
+    <div class="hidden md:flex items-center gap-6">
+      <ng-container *ngFor="let f of filters">
+        <div class="flex flex-col text-left">
+          <span class="text-xs text-gray-400 leading-tight">{{ f.label }}</span>
+          <select
+            [formControlName]="f.key"
+            class="text-sm md:text-base text-gray-700 bg-transparent outline-none">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+      </ng-container>
+    </div>
+
+    <!--boton buscar-->
+    <button
+      type="submit"
+      aria-label="Buscar"
+      class="mt-3 md:mt-0 md:ml-3 inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white rounded-full w-11 h-11 shadow transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
+      </svg>
+    </button>
+
+    <!-- filtros en cel si es q-->
+    <div class="mt-3 md:hidden flex items-center gap-3 w-full">
+      <ng-container *ngFor="let f of filters">
+        <select
+          [formControlName]="f.key"
+          class="flex-1 text-sm p-2 border rounded-md">
+          <option value="">{{ f.label }}</option>
+          <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+        </select>
+      </ng-container>
     </div>
   </form>
 </div>

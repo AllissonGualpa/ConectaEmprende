@@ -1,12 +1,11 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 
+
 export interface SearchPayload {
   query: string;
-  category?: string;
-  location?: string;
-  type?: string;
+  [key: string]: any;
 }
 
 @Component({
@@ -16,33 +15,40 @@ export interface SearchPayload {
   templateUrl: './search-bar.component.html',
   styleUrls: ['./search-bar.component.css']
 })
-export class SearchBarComponent {
+export class SearchBarComponent implements OnInit {
   @Output() search = new EventEmitter<SearchPayload>();
 
-  form: FormGroup;
+  // dynamic filters: array of { key,label,options } no agregar nada aqui si no en el html por ejemplo el key date (plantilla)
+  @Input() filters: Array<{ key: string; label: string; options?: string[] }> = [
+    { key: 'category', label: 'Categoria', options: ['Arte y cultura', 'Salud y Bienestar', 'Tecnología'] },
+    { key: 'location', label: 'Ubicación', options: ['Quito', 'Guayaquil', 'Cuenca'] },
+    { key: 'type', label: 'Tipo', options: ['Producto', 'Servicio', 'Evento'] }
+  ];
 
-  //plantilla!! se puede reemplazar estos arrays por datos reales o inputs
-  categories = ['Arte y cultura', 'Salud y Bienestar', 'Tecnología', 'Moda', 'Alimentos'];
-  locations = ['Quito', 'Guayaquil', 'Cuenca', 'Loja'];
-  types = ['Producto', 'Servicio', 'Evento'];
+  @Input() labelQuery = 'Buscar por nombre o tipo';
+  @Input() containerClass = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
-  constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({
-      query: [''],
-      category: [''],
-      location: [''],
-      type: ['']
+  form: FormGroup = this.fb.group({ query: [''] });
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    // add controls for dynamic filters
+    this.filters.forEach((f) => {
+      if (!this.form.contains(f.key)) {
+        this.form.addControl(f.key, this.fb.control(''));
+      }
     });
   }
 
   submit() {
     if (!this.form) return;
-    const payload: SearchPayload = {
-      query: this.form.value.query?.trim() ?? '',
-      category: this.form.value.category || '',
-      location: this.form.value.location || '',
-      type: this.form.value.type || ''
-    };
+    const values = this.form.value;
+    const payload: SearchPayload = { query: values.query?.trim() ?? '' };
+    // include dynamic filter values by key
+    this.filters.forEach((f) => {
+      payload[f.key] = values[f.key] || '';
+    });
     this.search.emit(payload);
   }
 

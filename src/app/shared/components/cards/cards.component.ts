@@ -1,0 +1,57 @@
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+export interface CardItem {
+  id: number;
+  title: string;
+  description?: string;
+  image: string;
+  category?: string;
+  location?: string;
+  views?: number;
+  favorites?: number;
+}
+
+@Component({
+  selector: 'app-cards',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './cards.component.html',
+  styleUrls: ['./cards.component.css']
+})
+export class CardsComponent {
+  @Input() items: CardItem[] = [];
+  @Input() pageSize = 6;
+
+  @Output() discover = new EventEmitter<CardItem>();
+  @Output() toggleFavorite = new EventEmitter<CardItem>();
+
+  currentPage = 1;
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil((this.items?.length || 0) / this.pageSize));
+  }
+
+  get pagedItems(): CardItem[] {
+    if (!this.items) return [];
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.items.slice(start, start + this.pageSize);
+  }
+
+  goTo(page: number) {
+    if (page < 1) page = 1;
+    if (page > this.totalPages) page = this.totalPages;
+    this.currentPage = page;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onDiscover(item: CardItem) {
+    this.discover.emit(item);
+  }
+
+  onToggleFavorite(item: CardItem, event?: Event) {
+    if (event) event.stopPropagation();
+    this.toggleFavorite.emit(item);
+  }
+}
