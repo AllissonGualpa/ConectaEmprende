@@ -1,11 +1,9 @@
 .font-poppins {
   font-family: 'Poppins', sans-serif;
 }
-
-h1,h3 {
+h1 {
   font-weight: bold;
 }
-h2 {
-  font-weight: semi-bold;
-  color: #ED6C1C;
+p {
+    font-family: 'Poppins', sans-serif;
 }

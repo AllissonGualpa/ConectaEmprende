@@ -1,0 +1,7 @@
+/* small helper: truncate to 3 lines (tailwind has line-clamp plugin, but add fallback) */
+.line-clamp-3 {
+  display: -webkit-box;
+  -line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

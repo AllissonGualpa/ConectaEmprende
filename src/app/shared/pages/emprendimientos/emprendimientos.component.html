@@ -1,0 +1,55 @@
+<app-navbar></app-navbar>
+
+<main>
+  <section
+    class="relative bg-center bg-cover bg-no-repeat"
+    style="background-image: url('/assets/img/emprendimiento/foto1.png');"
+    aria-label="Sección de bienvenida">
+
+    <!--capa oscura-->
+    <div class="absolute inset-0 bg-black/50"></div>
+
+    <!--contenido-->
+    <div
+      class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[520px] md:min-h-[580px] flex flex-col items-center justify-center text-center text-white">
+
+      <!--titulo-->
+      <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
+        Emprendimientos
+      </h1> <br>
+
+      <!--parrafo-->
+      <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-2xl mx-auto leading-relaxed">
+        Explora proyectos creativos y negocios locales que inspiran. <br>
+        Descubre cómo los emprendedores están transformando ideas en realidades cercanas a ti.
+      </p>
+
+      <!-- search bar -->
+      <div class="w-full flex justify-center mt-10 px-4 ">
+        <div class="w-full max-w-5xl">
+          <app-search-bar
+            (search)="onSearch($event)"
+            [labelQuery]="'Buscar por nombre o tipo'"
+            [filters]="[
+              { key: 'category', label: 'Categoría', options: ['Arte y cultura', 'Salud y Bienestar', 'Tecnología','Moda','Alimentos y Bebidas','Medio Ambiente', 'Educación','Servicios Profesionales'] },
+              { key: 'location', label: 'Ubicación', options: ['Quito','Guayaquil','Cuenca'] },
+              { key: 'type', label: 'Tipo', options: ['Producto','Servicio'] }
+            ]">
+          </app-search-bar>
+        </div>
+      </div>
+
+    </div>
+  </section>
+    <!-- tarjetas -->
+  <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <app-cards
+    [items]="cardsArray"
+    [pageSize]="6"
+    (discover)="onDiscover($event)"
+    (toggleFavorite)="onToggleFavorite($event)"></app-cards>
+</section>
+</main>
+
+<br>
+<app-footer></app-footer>
