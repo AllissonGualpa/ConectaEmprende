@@ -1,71 +1,79 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
-
-// Angular Material imports
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FooterComponent } from '../../components/footer/footer.component';
+import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
+import { CardsComponent, CardItem } from '../../components/cards/cards.component';
 
 @Component({
   selector: 'app-startups',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     NavbarComponent,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
+    FooterComponent,
+    SearchBarComponent,
+    CardsComponent,
   ],
   templateUrl: './startups.component.html',
-  styleUrl: './startups.component.css'
+  styleUrl: './startups.component.css',
 })
 export class StartupsComponent {
-  searchTerm: string = '';
-  selectedCategory: string = '';
-  selectedSubCategory: string = '';
-  selectedRating: string = '';
+  // búsqueda
+  onSearch(payload: { query: string; [key: string]: any }) {
+    console.log('Búsqueda en Startups:', payload);
+  }
 
-  // Datos de ejemplo para los filtros
-  categories: string[] = [
-    'Alimentos y bebidas',
-    'Tecnología',
-    'Moda y Accesorios',
-    'Salud y Bienestar',
-    'Educación',
-    'Servicios'
+  // tarjetas de ejemplo
+  cardsArray: CardItem[] = [
+    {
+      id: 1,
+      title: 'Abuela Churros',
+      description:
+        'En Abuela Churros ofrecemos churros artesanales elaborados al momento con ingredientes frescos y de la mejor calidad.',
+      image: '/assets/img/inicio/foto5.png',
+      category: 'Alimentos y Bebidas',
+      location: 'Guayaquil',
+      views: 20000,
+    },
+    {
+      id: 2,
+      title: 'GreenTech',
+      description:
+        'Soluciones tecnológicas sostenibles para empresas que buscan reducir su huella ambiental.',
+      image: '/assets/img/inicio/foto5.png',
+      category: 'Tecnología',
+      location: 'Quito',
+      views: 18500,
+    },
+    {
+      id: 3,
+      title: 'FitLife App',
+      description:
+        'Aplicación móvil para crear rutinas personalizadas de ejercicio y alimentación saludable.',
+      image: '/assets/img/inicio/foto5.png',
+      category: 'Salud y Bienestar',
+      location: 'Cuenca',
+      views: 21000,
+    },
+    {
+      id: 4,
+      title: 'EduConnect',
+      description:
+        'Plataforma que conecta mentores con estudiantes interesados en tecnología y emprendimiento.',
+      image: '/assets/img/inicio/foto5.png',
+      category: 'Educación',
+      location: 'Guayaquil',
+      views: 17000,
+    },
   ];
 
-  subCategories: string[] = [
-    'Productos orgánicos',
-    'Software',
-    'Ropa',
-    'Belleza',
-    'Cursos online',
-    'Consultoría'
-  ];
+  // acciones emitidas
+  onDiscover(item: CardItem) {
+    console.log('Descubrir startup:', item);
+  }
 
-  ratings: string[] = [
-    '5 estrellas',
-    '4 estrellas o más',
-    '3 estrellas o más'
-  ];
-
-  onSearch() {
-    console.log('Searching with:', {
-      searchTerm: this.searchTerm,
-      category: this.selectedCategory,
-      subCategory: this.selectedSubCategory,
-      rating: this.selectedRating
-    });
-    // Aquí integrarás la llamada a tu API cuando esté lista
+  onToggleFavorite(item: CardItem) {
+    console.log('Favorito cambiado:', item);
   }
 }
