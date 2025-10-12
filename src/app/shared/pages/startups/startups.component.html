@@ -1,0 +1,63 @@
+<app-navbar></app-navbar>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header Section -->
+  <div class="container mx-auto px-4 py-12">
+    <h1 class="text-4xl md:text-5xl font-black text-center mb-4 title-font" style="color: #276BC7;">
+      Explora los emprendimientos más innovadores
+    </h1>
+    <p class="text-center text-gray-600 text-lg mb-12">
+      ¡Startups que están marcando la diferencia!
+    </p>
+    <!-- Search and Filters Section -->
+    <div class="max-w-5xl mx-auto mb-12">
+      <div class="flex flex-col md:flex-row gap-4 items-center">
+        <!-- Search Input -->
+        <mat-form-field appearance="outline" class="flex-grow w-full md:w-auto custom-search-field">
+          <mat-icon matPrefix class="search-icon">search</mat-icon>
+          <input matInput placeholder="Buscar..." [(ngModel)]="searchTerm">
+        </mat-form-field>
+        <!-- Category Select -->
+        <mat-form-field appearance="outline" class="w-full md:w-48 custom-select-field">
+          <mat-label>Categoría</mat-label>
+          <mat-select [(ngModel)]="selectedCategory">
+            <mat-option [value]="''">Todas</mat-option>
+            <mat-option *ngFor="let cat of categories" [value]="cat">
+              {{cat}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- SubCategory Select -->
+        <mat-form-field appearance="outline" class="w-full md:w-48 custom-select-field">
+          <mat-label>SubCategoría</mat-label>
+          <mat-select [(ngModel)]="selectedSubCategory">
+            <mat-option [value]="''">Todas</mat-option>
+            <mat-option *ngFor="let subCat of subCategories" [value]="subCat">
+              {{subCat}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- Location Select -->
+        <mat-form-field appearance="outline" class="w-full md:w-48 custom-select-field">
+          <mat-label>Valoración</mat-label>
+          <mat-select [(ngModel)]="selectedRating">
+            <mat-option [value]="''">Todas</mat-option>
+            <mat-option *ngFor="let rating of ratings" [value]="rating">
+              {{rating}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <!-- Search Button -->
+        <button mat-raised-button class="h-14 px-8 text-white font-medium" style="background-color: #ED6C1C;" (click)="onSearch()">
+          <mat-icon>search</mat-icon>
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>
+<!-- Footer -->
+<footer class="text-white py-6 mt-auto" style="background-color: #276BC7;">
+  <div class="container mx-auto px-4 text-center">
+    <p class="text-sm">© 2025 Conecta Emprende - Todos los derechos reservados</p>
+  </div>
+</footer>

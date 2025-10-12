@@ -67,10 +67,4 @@ export class LoginComponent {
       this.loginForm.markAllAsTouched();
     }
   }
-
-  // Login con Google
-  onGoogleLogin() {
-    console.log('Login con Google');
-    // lógica de OAuth con Google
-  }
 }

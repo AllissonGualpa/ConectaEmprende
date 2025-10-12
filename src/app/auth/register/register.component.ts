@@ -9,24 +9,41 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIcon } from "@angular/material/icon";
 import { provideNativeDateAdapter } from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { MAT_DATE_LOCALE as MAT_DATE_LOCALE_TOKEN } from '@angular/material/core';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'DD/MM/YYYY',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
+
 
 // Validador a nivel de formulario para comparar contraseñas
-export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
-  const password = group.get('contrasena')?.value;
-  const confirmPassword = group.get('confirmarContrasena')?.value;
-
-  // Solo validar si ambos campos tienen valores
-  if (!password || !confirmPassword) {
-    return null;
-  }
-
-  return password === confirmPassword ? null : { passwordMismatch: true };
-}
+// export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
+//   const password = group.get('contrasena')?.value;
+//   const confirmPassword = group.get('confirmarContrasena')?.value;
+// 
+//   if (!password || !confirmPassword) {
+//     return null;
+//   }
+// 
+//   return password === confirmPassword ? null : { passwordMismatch: true };
+// }
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  providers: [provideNativeDateAdapter()],
+  providers: [provideNativeDateAdapter(),
+        { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }, 
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+  ],
   imports: [
     ReactiveFormsModule,
     CommonModule,
@@ -48,6 +65,10 @@ export function passwordMatchValidator(group: AbstractControl): ValidationErrors
 export class RegisterComponent {
   hide = true;
   hideConfirm = true;
+  
+  // Variables para controlar la visibilidad de campos condicionales
+  mostrarCamposEstudiante = false;
+  mostrarCampoPariente = false;
 
   firstFormGroup!: FormGroup;
   secondFormGroup!: FormGroup;
@@ -63,13 +84,16 @@ export class RegisterComponent {
       fechaNacimiento: ['', Validators.required],
       genero: ['', Validators.required],
       contrasena: ['', [Validators.required, Validators.minLength(6)]],
-      confirmarContrasena: ['', [Validators.required]]
-    }, { validators: passwordMatchValidator });
+      // confirmarContrasena: ['', [Validators.required]]
+    }); //, { validators: passwordMatchValidator });
 
     this.secondFormGroup = this._formBuilder.group({
       correo: ['', [Validators.required, Validators.email]],
       identificacion: ['', Validators.required],
+      carrera: [''],
+      anioEstudio: [''],
       parienteDirecto: ['', Validators.required],
+      nombrePariente: ['']
     });
 
     this.thirdFormGroup = this._formBuilder.group({
@@ -81,37 +105,70 @@ export class RegisterComponent {
       tipoEmprendimiento: ['', Validators.required]
     });
 
-    // Escuchar cambios en los campos de contraseña para actualizar la validación
-    this.firstFormGroup.get('contrasena')?.valueChanges.subscribe(() => {
-      this.firstFormGroup.updateValueAndValidity();
-    });
+    // Escuchar cambios en los campos de contraseña
+    // this.firstFormGroup.get('contrasena')?.valueChanges.subscribe(() => {
+    //   this.firstFormGroup.updateValueAndValidity();
+    // });
+    // 
+    // this.firstFormGroup.get('confirmarContrasena')?.valueChanges.subscribe(() => {
+    //   this.firstFormGroup.updateValueAndValidity();
+    // });
+    // 
+    // this.firstFormGroup.valueChanges.subscribe(() => {
+    //   const pass = this.firstFormGroup.get('contrasena')?.value;
+    //   const confirmControl = this.firstFormGroup.get('confirmarContrasena');
+    //   const confirm = confirmControl?.value;
+    // 
+    //   if (!confirmControl) return;
+    // 
+    //   if (pass && confirm && pass !== confirm) {
+    //     const existing = confirmControl.errors || {};
+    //     if (!existing['passwordMismatch']) {
+    //       confirmControl.setErrors({ ...existing, passwordMismatch: true });
+    //     }
+    //   } else {
+    //     const errors = { ...(confirmControl.errors || {}) } as { [key: string]: any };
+    //     if (errors['passwordMismatch']) {
+    //       delete errors['passwordMismatch'];
+    //       const keys = Object.keys(errors);
+    //       confirmControl.setErrors(keys.length ? errors : null);
+    //     }
+    //   }
+    // });
 
-    this.firstFormGroup.get('confirmarContrasena')?.valueChanges.subscribe(() => {
-      this.firstFormGroup.updateValueAndValidity();
-    });
+    // Escuchar cambios en el campo de identificación
+    this.secondFormGroup.get('identificacion')?.valueChanges.subscribe((value) => {
+      const carreraControl = this.secondFormGroup.get('carrera');
+      const anioControl = this.secondFormGroup.get('anioEstudio');
 
-    this.firstFormGroup.valueChanges.subscribe(() => {
-      const pass = this.firstFormGroup.get('contrasena')?.value;
-      const confirmControl = this.firstFormGroup.get('confirmarContrasena');
-      const confirm = confirmControl?.value;
-
-      if (!confirmControl) return;
-
-      // Si ambos campos tienen valor y no coinciden, agregar el error passwordMismatch al control de confirmación
-      if (pass && confirm && pass !== confirm) {
-        const existing = confirmControl.errors || {};
-        if (!existing['passwordMismatch']) {
-          confirmControl.setErrors({ ...existing, passwordMismatch: true });
-        }
+      if (value === 'Estudiante') {
+        this.mostrarCamposEstudiante = true;
+        carreraControl?.setValidators([Validators.required]);
+        anioControl?.setValidators([Validators.required]);
       } else {
-        // Si coinciden o alguno está vacío, remover passwordMismatch sin borrar otros errores (como required)
-        const errors = { ...(confirmControl.errors || {}) } as { [key: string]: any };
-        if (errors['passwordMismatch']) {
-          delete errors['passwordMismatch'];
-          const keys = Object.keys(errors);
-          confirmControl.setErrors(keys.length ? errors : null);
-        }
+        this.mostrarCamposEstudiante = false;
+        carreraControl?.clearValidators();
+        anioControl?.clearValidators();
+        carreraControl?.setValue('');
+        anioControl?.setValue('');
       }
+      carreraControl?.updateValueAndValidity();
+      anioControl?.updateValueAndValidity();
+    });
+
+    // Escuchar cambios en el campo de pariente directo
+    this.secondFormGroup.get('parienteDirecto')?.valueChanges.subscribe((value) => {
+      const nombreParienteControl = this.secondFormGroup.get('nombrePariente');
+
+      if (value === 'si') {
+        this.mostrarCampoPariente = true;
+        nombreParienteControl?.setValidators([Validators.required]);
+      } else {
+        this.mostrarCampoPariente = false;
+        nombreParienteControl?.clearValidators();
+        nombreParienteControl?.setValue('');
+      }
+      nombreParienteControl?.updateValueAndValidity();
     });
   }
 
@@ -127,5 +184,4 @@ export class RegisterComponent {
       console.log('Formulario inválido');
     }
   }
-
 }
