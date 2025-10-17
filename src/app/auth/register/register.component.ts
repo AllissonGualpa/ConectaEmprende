@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,9 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIcon } from "@angular/material/icon";
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
-import { MAT_DATE_LOCALE as MAT_DATE_LOCALE_TOKEN } from '@angular/material/core';
+import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
+import { CustomDateAdapter } from '../../shared/adapters/CustomDateAdapter';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -24,24 +23,12 @@ export const MY_DATE_FORMATS = {
   },
 };
 
-
-// Validador a nivel de formulario para comparar contraseñas
-// export function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
-//   const password = group.get('contrasena')?.value;
-//   const confirmPassword = group.get('confirmarContrasena')?.value;
-// 
-//   if (!password || !confirmPassword) {
-//     return null;
-//   }
-// 
-//   return password === confirmPassword ? null : { passwordMismatch: true };
-// }
-
 @Component({
   selector: 'app-register',
   standalone: true,
-  providers: [provideNativeDateAdapter(),
-        { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }, 
+  providers: [
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],
   imports: [
@@ -56,7 +43,6 @@ export const MY_DATE_FORMATS = {
     MatInputModule,
     MatIcon,
     MatError,
-    MatIcon,
     MatDatepickerModule,
   ],
   templateUrl: './register.component.html',
@@ -65,8 +51,7 @@ export const MY_DATE_FORMATS = {
 export class RegisterComponent {
   hide = true;
   hideConfirm = true;
-  
-  // Variables para controlar la visibilidad de campos condicionales
+
   mostrarCamposEstudiante = false;
   mostrarCampoPariente = false;
 
@@ -74,7 +59,42 @@ export class RegisterComponent {
   secondFormGroup!: FormGroup;
   thirdFormGroup!: FormGroup;
 
-  constructor(private _formBuilder: FormBuilder) { }
+  // ✅ Provincias y ciudades de Ecuador
+  provincias = [
+    { nombre: 'Azuay', ciudades: ['Cuenca', 'Gualaceo', 'Paute', 'Sígsig'] },
+    { nombre: 'Bolívar', ciudades: ['Guaranda', 'San Miguel', 'Echeandía'] },
+    { nombre: 'Cañar', ciudades: ['Azogues', 'Biblián', 'La Troncal'] },
+    { nombre: 'Carchi', ciudades: ['Tulcán', 'Mira', 'Montúfar'] },
+    { nombre: 'Chimborazo', ciudades: ['Riobamba', 'Guano', 'Alausí'] },
+    { nombre: 'Cotopaxi', ciudades: ['Latacunga', 'La Maná', 'Salcedo'] },
+    { nombre: 'El Oro', ciudades: ['Machala', 'Pasaje', 'Santa Rosa'] },
+    { nombre: 'Esmeraldas', ciudades: ['Esmeraldas', 'Atacames', 'Quinindé'] },
+    { nombre: 'Galápagos', ciudades: ['Puerto Ayora', 'Puerto Baquerizo Moreno'] },
+    { nombre: 'Guayas', ciudades: ['Guayaquil', 'Daule', 'Samborondón', 'Milagro'] },
+    { nombre: 'Imbabura', ciudades: ['Ibarra', 'Otavalo', 'Cotacachi'] },
+    { nombre: 'Loja', ciudades: ['Loja', 'Catamayo', 'Macará'] },
+    { nombre: 'Los Ríos', ciudades: ['Babahoyo', 'Quevedo', 'Vinces'] },
+    { nombre: 'Manabí', ciudades: ['Portoviejo', 'Manta', 'Chone'] },
+    { nombre: 'Morona Santiago', ciudades: ['Macas', 'Sucúa', 'Gualaquiza'] },
+    { nombre: 'Napo', ciudades: ['Tena', 'Archidona'] },
+    { nombre: 'Orellana', ciudades: ['Francisco de Orellana', 'Dayuma'] },
+    { nombre: 'Pastaza', ciudades: ['Puyo', 'Mera'] },
+    { nombre: 'Pichincha', ciudades: ['Quito', 'Cayambe', 'Sangolquí'] },
+    { nombre: 'Santa Elena', ciudades: ['Santa Elena', 'La Libertad', 'Salinas'] },
+    { nombre: 'Santo Domingo de los Tsáchilas', ciudades: ['Santo Domingo'] },
+    { nombre: 'Sucumbíos', ciudades: ['Nueva Loja', 'Shushufindi'] },
+    { nombre: 'Tungurahua', ciudades: ['Ambato', 'Baños', 'Pelileo'] },
+    { nombre: 'Zamora Chinchipe', ciudades: ['Zamora', 'Yantzaza'] },
+  ];
+
+  ciudadesFiltradas: string[] = [];
+
+  constructor(
+    private _formBuilder: FormBuilder,
+    private dateAdapter: DateAdapter<Date>
+  ) {
+    this.dateAdapter.setLocale('es-ES');
+  }
 
   ngOnInit(): void {
     this.firstFormGroup = this._formBuilder.group({
@@ -84,8 +104,7 @@ export class RegisterComponent {
       fechaNacimiento: ['', Validators.required],
       genero: ['', Validators.required],
       contrasena: ['', [Validators.required, Validators.minLength(6)]],
-      // confirmarContrasena: ['', [Validators.required]]
-    }); //, { validators: passwordMatchValidator });
+    });
 
     this.secondFormGroup = this._formBuilder.group({
       correo: ['', [Validators.required, Validators.email]],
@@ -105,38 +124,7 @@ export class RegisterComponent {
       tipoEmprendimiento: ['', Validators.required]
     });
 
-    // Escuchar cambios en los campos de contraseña
-    // this.firstFormGroup.get('contrasena')?.valueChanges.subscribe(() => {
-    //   this.firstFormGroup.updateValueAndValidity();
-    // });
-    // 
-    // this.firstFormGroup.get('confirmarContrasena')?.valueChanges.subscribe(() => {
-    //   this.firstFormGroup.updateValueAndValidity();
-    // });
-    // 
-    // this.firstFormGroup.valueChanges.subscribe(() => {
-    //   const pass = this.firstFormGroup.get('contrasena')?.value;
-    //   const confirmControl = this.firstFormGroup.get('confirmarContrasena');
-    //   const confirm = confirmControl?.value;
-    // 
-    //   if (!confirmControl) return;
-    // 
-    //   if (pass && confirm && pass !== confirm) {
-    //     const existing = confirmControl.errors || {};
-    //     if (!existing['passwordMismatch']) {
-    //       confirmControl.setErrors({ ...existing, passwordMismatch: true });
-    //     }
-    //   } else {
-    //     const errors = { ...(confirmControl.errors || {}) } as { [key: string]: any };
-    //     if (errors['passwordMismatch']) {
-    //       delete errors['passwordMismatch'];
-    //       const keys = Object.keys(errors);
-    //       confirmControl.setErrors(keys.length ? errors : null);
-    //     }
-    //   }
-    // });
-
-    // Escuchar cambios en el campo de identificación
+    // 🔹 Mostrar campos de estudiante según selección
     this.secondFormGroup.get('identificacion')?.valueChanges.subscribe((value) => {
       const carreraControl = this.secondFormGroup.get('carrera');
       const anioControl = this.secondFormGroup.get('anioEstudio');
@@ -156,10 +144,9 @@ export class RegisterComponent {
       anioControl?.updateValueAndValidity();
     });
 
-    // Escuchar cambios en el campo de pariente directo
+    // 🔹 Mostrar campo pariente según selección
     this.secondFormGroup.get('parienteDirecto')?.valueChanges.subscribe((value) => {
       const nombreParienteControl = this.secondFormGroup.get('nombrePariente');
-
       if (value === 'si') {
         this.mostrarCampoPariente = true;
         nombreParienteControl?.setValidators([Validators.required]);
@@ -169,6 +156,24 @@ export class RegisterComponent {
         nombreParienteControl?.setValue('');
       }
       nombreParienteControl?.updateValueAndValidity();
+    });
+
+    // 🔹 Filtrar ciudades según la provincia seleccionada
+    this.thirdFormGroup.get('provincia')?.valueChanges.subscribe((provinciaSeleccionada) => {
+      const provincia = this.provincias.find(p => p.nombre === provinciaSeleccionada);
+      this.ciudadesFiltradas = provincia ? provincia.ciudades : [];
+      this.thirdFormGroup.get('ciudad')?.setValue('');
+    });
+  }
+
+  shouldShowError(formGroup: FormGroup, controlName: string): boolean {
+    const control = formGroup.get(controlName);
+    return !!(control && control.invalid && (control.touched || formGroup.valid));
+  }
+
+  markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
     });
   }
 
