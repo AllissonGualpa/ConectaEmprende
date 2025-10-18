@@ -59,7 +59,7 @@ export class RegisterComponent {
   secondFormGroup!: FormGroup;
   thirdFormGroup!: FormGroup;
 
-  // ✅ Provincias y ciudades de Ecuador
+  // Provincias y ciudades de Ecuador
   provincias = [
     { nombre: 'Azuay', ciudades: ['Cuenca', 'Gualaceo', 'Paute', 'Sígsig'] },
     { nombre: 'Bolívar', ciudades: ['Guaranda', 'San Miguel', 'Echeandía'] },
@@ -124,7 +124,7 @@ export class RegisterComponent {
       tipoEmprendimiento: ['', Validators.required]
     });
 
-    // 🔹 Mostrar campos de estudiante según selección
+    // Mostrar campos de estudiante según selección
     this.secondFormGroup.get('identificacion')?.valueChanges.subscribe((value) => {
       const carreraControl = this.secondFormGroup.get('carrera');
       const anioControl = this.secondFormGroup.get('anioEstudio');
@@ -144,7 +144,7 @@ export class RegisterComponent {
       anioControl?.updateValueAndValidity();
     });
 
-    // 🔹 Mostrar campo pariente según selección
+    // Mostrar campo pariente según selección
     this.secondFormGroup.get('parienteDirecto')?.valueChanges.subscribe((value) => {
       const nombreParienteControl = this.secondFormGroup.get('nombrePariente');
       if (value === 'si') {
@@ -158,7 +158,7 @@ export class RegisterComponent {
       nombreParienteControl?.updateValueAndValidity();
     });
 
-    // 🔹 Filtrar ciudades según la provincia seleccionada
+    // Filtrar ciudades según la provincia seleccionada
     this.thirdFormGroup.get('provincia')?.valueChanges.subscribe((provinciaSeleccionada) => {
       const provincia = this.provincias.find(p => p.nombre === provinciaSeleccionada);
       this.ciudadesFiltradas = provincia ? provincia.ciudades : [];

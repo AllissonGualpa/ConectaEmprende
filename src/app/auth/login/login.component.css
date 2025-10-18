@@ -127,3 +127,51 @@
   font-size: 12px !important;
   margin-top: 4px !important;
 }
+
+
+/* Estilos generales para la imagen y estructura responsiva */
+@media (max-width: 1024px) {
+  img {
+    max-width: 90%;
+  }
+}
+
+/* En tablets o pantallas medianas */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .custom-mat-field {
+    width: 100%;
+  }
+
+  .custom-login-button {
+    font-size: 13px !important;
+  }
+
+  /* Ocultar imagen en pantallas pequeñas */
+  div.hidden {
+    display: none !important;
+  }
+}
+
+/* En pantallas muy pequeñas (celulares) */
+@media (max-width: 480px) {
+  .custom-login-button {
+    padding: 10px 0 !important;
+    height: 44px !important;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+  }
+}
