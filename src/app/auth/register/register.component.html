@@ -12,7 +12,7 @@
       </p>
 
       <mat-stepper linear #stepper class="compact-stepper">
-        <!-- Paso 1 -->
+        <!-- Paso 1: Usuario -->
         <mat-step [stepControl]="firstFormGroup">
           <form [formGroup]="firstFormGroup">
             <ng-template matStepLabel>Usuario</ng-template>
@@ -90,7 +90,7 @@
           </form>
         </mat-step>
 
-        <!-- Paso 2 -->
+        <!-- Paso 2: Contacto -->
         <mat-step [stepControl]="secondFormGroup">
           <form [formGroup]="secondFormGroup">
             <ng-template matStepLabel>Contacto</ng-template>
@@ -104,19 +104,28 @@
             </mat-form-field>
 
             <mat-form-field class="w-full custom-field compact-field">
+              <mat-label>Cédula de identidad (10 dígitos)</mat-label>
+              <input matInput formControlName="identificacion" type="text" maxlength="10" required />
+              <mat-error *ngIf="shouldShowError(secondFormGroup, 'identificacion')">
+                Debe ingresar 10 dígitos
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full custom-field compact-field">
               <mat-label>¿Cómo te identificas?</mat-label>
-              <mat-select formControlName="identificacion" required>
+              <mat-select formControlName="tipoUsuario" required>
                 <mat-option value="Estudiante">Estudiante</mat-option>
                 <mat-option value="Alumni">Alumni</mat-option>
                 <mat-option value="Externo">Externo</mat-option>
               </mat-select>
-              <mat-error *ngIf="shouldShowError(secondFormGroup, 'identificacion')">
+              <mat-error *ngIf="shouldShowError(secondFormGroup, 'tipoUsuario')">
                 Este campo es obligatorio
               </mat-error>
             </mat-form-field>
 
-            <div *ngIf="mostrarCamposEstudiante" class="flex gap-4">
-              <mat-form-field class="flex-1 custom-field compact-field">
+            <!-- Campos para Estudiante -->
+            <div *ngIf="mostrarCamposEstudiante && secondFormGroup.get('tipoUsuario')?.value === 'Estudiante'">
+              <mat-form-field class="w-full custom-field compact-field">
                 <mat-label>Carrera</mat-label>
                 <input matInput formControlName="carrera" type="text" required />
                 <mat-error *ngIf="shouldShowError(secondFormGroup, 'carrera')">
@@ -124,16 +133,63 @@
                 </mat-error>
               </mat-form-field>
 
-              <mat-form-field class="flex-1 custom-field compact-field">
-                <mat-label>Año de estudio</mat-label>
-                <mat-select formControlName="anioEstudio" required>
-                  <mat-option value="1">Primer año</mat-option>
-                  <mat-option value="2">Segundo año</mat-option>
-                  <mat-option value="3">Tercer año</mat-option>
-                  <mat-option value="4">Cuarto año</mat-option>
-                  <mat-option value="5">Quinto año</mat-option>
-                </mat-select>
-                <mat-error *ngIf="shouldShowError(secondFormGroup, 'anioEstudio')">
+              <div class="flex gap-4">
+                <mat-form-field class="flex-1 custom-field compact-field">
+                  <mat-label>Año de estudio</mat-label>
+                  <mat-select formControlName="anioEstudio" required>
+                    <mat-option value="2021">2021</mat-option>
+                    <mat-option value="2022">2022</mat-option>
+                    <mat-option value="2023">2023</mat-option>
+                    <mat-option value="2024">2024</mat-option>
+                    <mat-option value="2025">2025</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="shouldShowError(secondFormGroup, 'anioEstudio')">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="flex-1 custom-field compact-field">
+                  <mat-label>Semestre</mat-label>
+                  <mat-select formControlName="semestre" required>
+                    <mat-option value="1">1</mat-option>
+                    <mat-option value="2">2</mat-option>
+                    <mat-option value="3">3</mat-option>
+                    <mat-option value="4">4</mat-option>
+                    <mat-option value="5">5</mat-option>
+                    <mat-option value="6">6</mat-option>
+                    <mat-option value="7">7</mat-option>
+                    <mat-option value="8">8</mat-option>
+                    <mat-option value="9">9</mat-option>
+                    <mat-option value="10">10</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="shouldShowError(secondFormGroup, 'semestre')">
+                    Este campo es obligatorio
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Campos para Alumni -->
+            <div *ngIf="mostrarCamposEstudiante && secondFormGroup.get('tipoUsuario')?.value === 'Alumni'">
+              <mat-form-field class="w-full custom-field compact-field">
+                <mat-label>Carrera</mat-label>
+                <input matInput formControlName="carrera" type="text" required />
+                <mat-error *ngIf="shouldShowError(secondFormGroup, 'carrera')">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-field compact-field">
+                <mat-label>Fecha de Graduación</mat-label>
+                <input matInput placeholder="DD/MM/AAAA" [matDatepicker]="pickerGraduacion"
+                  formControlName="fechaGraduacion" required />
+                <mat-datepicker-toggle matIconSuffix [for]="pickerGraduacion"
+                  class="!w-8 !h-8 flex items-center justify-center">
+                  <mat-icon matDatepickerToggleIcon
+                    class="!text-base !w-4 !h-4 flex items-center justify-center">calendar_today</mat-icon>
+                </mat-datepicker-toggle>
+                <mat-datepicker #pickerGraduacion></mat-datepicker>
+                <mat-error *ngIf="shouldShowError(secondFormGroup, 'fechaGraduacion')">
                   Este campo es obligatorio
                 </mat-error>
               </mat-form-field>
@@ -150,13 +206,24 @@
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field class="w-full custom-field compact-field" *ngIf="mostrarCampoPariente">
-              <mat-label>Nombre del pariente</mat-label>
-              <input matInput formControlName="nombrePariente" type="text" required />
-              <mat-error *ngIf="shouldShowError(secondFormGroup, 'nombrePariente')">
-                Este campo es obligatorio
-              </mat-error>
-            </mat-form-field>
+            <div *ngIf="mostrarCampoPariente">
+              <mat-form-field class="w-full custom-field compact-field">
+                <mat-label>Nombre del pariente</mat-label>
+                <input matInput formControlName="nombrePariente" type="text" required />
+                <mat-error *ngIf="shouldShowError(secondFormGroup, 'nombrePariente')">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full custom-field compact-field">
+                <mat-label>Área del pariente</mat-label>
+                <input matInput formControlName="areaPariente" type="text" required 
+                  placeholder="Ej: Administración, Docencia, etc." />
+                <mat-error *ngIf="shouldShowError(secondFormGroup, 'areaPariente')">
+                  Este campo es obligatorio
+                </mat-error>
+              </mat-form-field>
+            </div>
 
             <div class="mt-4 flex gap-2">
               <button mat-button color="primary" matStepperPrevious>Atrás</button>
@@ -167,7 +234,7 @@
           </form>
         </mat-step>
 
-        <!-- Paso 3 -->
+        <!-- Paso 3: Emprendimiento -->
         <mat-step [stepControl]="thirdFormGroup">
           <form [formGroup]="thirdFormGroup">
             <ng-template matStepLabel>Emprendimiento</ng-template>
@@ -195,12 +262,12 @@
               </mat-error>
             </mat-form-field>
 
-            <!-- 🔹 Provincias y ciudades dependientes -->
+            <!-- Provincias y ciudades dependientes -->
             <div class="flex gap-3">
               <mat-form-field class="w-1/2 custom-field compact-field">
                 <mat-label>Provincia</mat-label>
                 <mat-select formControlName="provincia" required>
-                  <mat-option *ngFor="let provincia of provincias" [value]="provincia.nombre">
+                  <mat-option *ngFor="let provincia of provincias" [value]="provincia.id">
                     {{ provincia.nombre }}
                   </mat-option>
                 </mat-select>
@@ -212,8 +279,8 @@
               <mat-form-field class="w-1/2 custom-field compact-field">
                 <mat-label>Ciudad</mat-label>
                 <mat-select formControlName="ciudad" required [disabled]="!ciudadesFiltradas.length">
-                  <mat-option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad">
-                    {{ ciudad }}
+                  <mat-option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad.id">
+                    {{ ciudad.nombre }}
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="shouldShowError(thirdFormGroup, 'ciudad')">
@@ -236,20 +303,28 @@
             <mat-form-field class="w-full mt-3 custom-field compact-field">
               <mat-label>Tipo de emprendimiento</mat-label>
               <mat-select formControlName="tipoEmprendimiento" required>
-                <mat-option value="Servicio">Servicio</mat-option>
-                <mat-option value="Producto">Producto</mat-option>
-                <mat-option value="Startup">Startup</mat-option>
+                <mat-option *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id">
+                  {{ tipo.nombre }}
+                </mat-option>
               </mat-select>
               <mat-error *ngIf="shouldShowError(thirdFormGroup, 'tipoEmprendimiento')">
                 Este campo es obligatorio
               </mat-error>
             </mat-form-field>
 
+            <mat-form-field class="w-full mt-3 custom-field compact-field">
+              <mat-label>¿Desea que sus datos sean públicos?</mat-label>
+              <mat-select formControlName="datosPublicos" required>
+                <mat-option [value]="true">Sí</mat-option>
+                <mat-option [value]="false">No</mat-option>
+              </mat-select>
+            </mat-form-field>
+
             <div class="mt-4 flex gap-2">
               <button mat-button color="primary" matStepperPrevious>Atrás</button>
               <button mat-raised-button color="primary" (click)="guardar()"
-                (click)="markFormGroupTouched(thirdFormGroup)">
-                Finalizar
+                [disabled]="isLoading">
+                {{ isLoading ? 'Registrando...' : 'Finalizar' }}
               </button>
             </div>
           </form>

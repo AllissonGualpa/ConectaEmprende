@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIcon } from "@angular/material/icon";
 import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { CustomDateAdapter } from '../../shared/adapters/CustomDateAdapter';
+import { AuthService, RegisterData } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 export const MY_DATE_FORMATS = {
   parse: {
@@ -59,39 +61,50 @@ export class RegisterComponent {
   secondFormGroup!: FormGroup;
   thirdFormGroup!: FormGroup;
 
-  // Provincias y ciudades de Ecuador
+  isLoading = false;
+
+  // Provincias y ciudades de Ecuador con IDs
   provincias = [
-    { nombre: 'Azuay', ciudades: ['Cuenca', 'Gualaceo', 'Paute', 'Sígsig'] },
-    { nombre: 'Bolívar', ciudades: ['Guaranda', 'San Miguel', 'Echeandía'] },
-    { nombre: 'Cañar', ciudades: ['Azogues', 'Biblián', 'La Troncal'] },
-    { nombre: 'Carchi', ciudades: ['Tulcán', 'Mira', 'Montúfar'] },
-    { nombre: 'Chimborazo', ciudades: ['Riobamba', 'Guano', 'Alausí'] },
-    { nombre: 'Cotopaxi', ciudades: ['Latacunga', 'La Maná', 'Salcedo'] },
-    { nombre: 'El Oro', ciudades: ['Machala', 'Pasaje', 'Santa Rosa'] },
-    { nombre: 'Esmeraldas', ciudades: ['Esmeraldas', 'Atacames', 'Quinindé'] },
-    { nombre: 'Galápagos', ciudades: ['Puerto Ayora', 'Puerto Baquerizo Moreno'] },
-    { nombre: 'Guayas', ciudades: ['Guayaquil', 'Daule', 'Samborondón', 'Milagro'] },
-    { nombre: 'Imbabura', ciudades: ['Ibarra', 'Otavalo', 'Cotacachi'] },
-    { nombre: 'Loja', ciudades: ['Loja', 'Catamayo', 'Macará'] },
-    { nombre: 'Los Ríos', ciudades: ['Babahoyo', 'Quevedo', 'Vinces'] },
-    { nombre: 'Manabí', ciudades: ['Portoviejo', 'Manta', 'Chone'] },
-    { nombre: 'Morona Santiago', ciudades: ['Macas', 'Sucúa', 'Gualaquiza'] },
-    { nombre: 'Napo', ciudades: ['Tena', 'Archidona'] },
-    { nombre: 'Orellana', ciudades: ['Francisco de Orellana', 'Dayuma'] },
-    { nombre: 'Pastaza', ciudades: ['Puyo', 'Mera'] },
-    { nombre: 'Pichincha', ciudades: ['Quito', 'Cayambe', 'Sangolquí'] },
-    { nombre: 'Santa Elena', ciudades: ['Santa Elena', 'La Libertad', 'Salinas'] },
-    { nombre: 'Santo Domingo de los Tsáchilas', ciudades: ['Santo Domingo'] },
-    { nombre: 'Sucumbíos', ciudades: ['Nueva Loja', 'Shushufindi'] },
-    { nombre: 'Tungurahua', ciudades: ['Ambato', 'Baños', 'Pelileo'] },
-    { nombre: 'Zamora Chinchipe', ciudades: ['Zamora', 'Yantzaza'] },
+    { id: 1, nombre: 'Azuay', ciudades: [{ id: 1, nombre: 'Cuenca' }, { id: 2, nombre: 'Gualaceo' }, { id: 3, nombre: 'Paute' }, { id: 4, nombre: 'Sígsig' }] },
+    { id: 2, nombre: 'Bolívar', ciudades: [{ id: 5, nombre: 'Guaranda' }, { id: 6, nombre: 'San Miguel' }, { id: 7, nombre: 'Echeandía' }] },
+    { id: 3, nombre: 'Cañar', ciudades: [{ id: 8, nombre: 'Azogues' }, { id: 9, nombre: 'Biblián' }, { id: 10, nombre: 'La Troncal' }] },
+    { id: 4, nombre: 'Carchi', ciudades: [{ id: 11, nombre: 'Tulcán' }, { id: 12, nombre: 'Mira' }, { id: 13, nombre: 'Montúfar' }] },
+    { id: 5, nombre: 'Chimborazo', ciudades: [{ id: 14, nombre: 'Riobamba' }, { id: 15, nombre: 'Guano' }, { id: 16, nombre: 'Alausí' }] },
+    { id: 6, nombre: 'Cotopaxi', ciudades: [{ id: 17, nombre: 'Latacunga' }, { id: 18, nombre: 'La Maná' }, { id: 19, nombre: 'Salcedo' }] },
+    { id: 7, nombre: 'El Oro', ciudades: [{ id: 20, nombre: 'Machala' }, { id: 21, nombre: 'Pasaje' }, { id: 22, nombre: 'Santa Rosa' }] },
+    { id: 8, nombre: 'Esmeraldas', ciudades: [{ id: 23, nombre: 'Esmeraldas' }, { id: 24, nombre: 'Atacames' }, { id: 25, nombre: 'Quinindé' }] },
+    { id: 9, nombre: 'Galápagos', ciudades: [{ id: 26, nombre: 'Puerto Ayora' }, { id: 27, nombre: 'Puerto Baquerizo Moreno' }] },
+    { id: 10, nombre: 'Guayas', ciudades: [{ id: 28, nombre: 'Guayaquil' }, { id: 29, nombre: 'Daule' }, { id: 30, nombre: 'Samborondón' }, { id: 31, nombre: 'Milagro' }] },
+    { id: 11, nombre: 'Imbabura', ciudades: [{ id: 32, nombre: 'Ibarra' }, { id: 33, nombre: 'Otavalo' }, { id: 34, nombre: 'Cotacachi' }] },
+    { id: 12, nombre: 'Loja', ciudades: [{ id: 35, nombre: 'Loja' }, { id: 36, nombre: 'Catamayo' }, { id: 37, nombre: 'Macará' }] },
+    { id: 13, nombre: 'Los Ríos', ciudades: [{ id: 38, nombre: 'Babahoyo' }, { id: 39, nombre: 'Quevedo' }, { id: 40, nombre: 'Vinces' }] },
+    { id: 14, nombre: 'Manabí', ciudades: [{ id: 41, nombre: 'Portoviejo' }, { id: 42, nombre: 'Manta' }, { id: 43, nombre: 'Chone' }] },
+    { id: 15, nombre: 'Morona Santiago', ciudades: [{ id: 44, nombre: 'Macas' }, { id: 45, nombre: 'Sucúa' }, { id: 46, nombre: 'Gualaquiza' }] },
+    { id: 16, nombre: 'Napo', ciudades: [{ id: 47, nombre: 'Tena' }, { id: 48, nombre: 'Archidona' }] },
+    { id: 17, nombre: 'Orellana', ciudades: [{ id: 49, nombre: 'Francisco de Orellana' }, { id: 50, nombre: 'Dayuma' }] },
+    { id: 18, nombre: 'Pastaza', ciudades: [{ id: 51, nombre: 'Puyo' }, { id: 52, nombre: 'Mera' }] },
+    { id: 19, nombre: 'Pichincha', ciudades: [{ id: 53, nombre: 'Quito' }, { id: 54, nombre: 'Cayambe' }, { id: 55, nombre: 'Sangolquí' }] },
+    { id: 20, nombre: 'Santa Elena', ciudades: [{ id: 56, nombre: 'Santa Elena' }, { id: 57, nombre: 'La Libertad' }, { id: 58, nombre: 'Salinas' }] },
+    { id: 21, nombre: 'Santo Domingo de los Tsáchilas', ciudades: [{ id: 59, nombre: 'Santo Domingo' }] },
+    { id: 22, nombre: 'Sucumbíos', ciudades: [{ id: 60, nombre: 'Nueva Loja' }, { id: 61, nombre: 'Shushufindi' }] },
+    { id: 23, nombre: 'Tungurahua', ciudades: [{ id: 62, nombre: 'Ambato' }, { id: 63, nombre: 'Baños' }, { id: 64, nombre: 'Pelileo' }] },
+    { id: 24, nombre: 'Zamora Chinchipe', ciudades: [{ id: 65, nombre: 'Zamora' }, { id: 66, nombre: 'Yantzaza' }] },
   ];
 
-  ciudadesFiltradas: string[] = [];
+  ciudadesFiltradas: { id: number, nombre: string }[] = [];
+
+  // Tipos de emprendimiento
+  tiposEmprendimiento = [
+    { id: 1, nombre: 'Servicio' },
+    { id: 2, nombre: 'Producto' },
+    { id: 3, nombre: 'Startup' }
+  ];
 
   constructor(
     private _formBuilder: FormBuilder,
-    private dateAdapter: DateAdapter<Date>
+    private dateAdapter: DateAdapter<Date>,
+    private authService: AuthService,
+    private router: Router
   ) {
     this.dateAdapter.setLocale('es-ES');
   }
@@ -108,11 +121,15 @@ export class RegisterComponent {
 
     this.secondFormGroup = this._formBuilder.group({
       correo: ['', [Validators.required, Validators.email]],
-      identificacion: ['', Validators.required],
+      identificacion: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      tipoUsuario: ['', Validators.required],
       carrera: [''],
       anioEstudio: [''],
+      semestre: [''],
+      fechaGraduacion: [''],
       parienteDirecto: ['', Validators.required],
-      nombrePariente: ['']
+      nombrePariente: [''],
+      areaPariente: ['']
     });
 
     this.thirdFormGroup = this._formBuilder.group({
@@ -121,46 +138,69 @@ export class RegisterComponent {
       provincia: ['', Validators.required],
       ciudad: ['', Validators.required],
       estadoEmprendimiento: ['', Validators.required],
-      tipoEmprendimiento: ['', Validators.required]
+      tipoEmprendimiento: ['', Validators.required],
+      datosPublicos: [true]
     });
 
     // Mostrar campos de estudiante según selección
-    this.secondFormGroup.get('identificacion')?.valueChanges.subscribe((value) => {
+    this.secondFormGroup.get('tipoUsuario')?.valueChanges.subscribe((value) => {
       const carreraControl = this.secondFormGroup.get('carrera');
       const anioControl = this.secondFormGroup.get('anioEstudio');
+      const semestreControl = this.secondFormGroup.get('semestre');
+      const fechaGraduacionControl = this.secondFormGroup.get('fechaGraduacion');
 
       if (value === 'Estudiante') {
         this.mostrarCamposEstudiante = true;
         carreraControl?.setValidators([Validators.required]);
         anioControl?.setValidators([Validators.required]);
+        semestreControl?.setValidators([Validators.required]);
+        fechaGraduacionControl?.clearValidators();
+      } else if (value === 'Alumni') {
+        this.mostrarCamposEstudiante = true;
+        carreraControl?.setValidators([Validators.required]);
+        fechaGraduacionControl?.setValidators([Validators.required]);
+        anioControl?.clearValidators();
+        semestreControl?.clearValidators();
       } else {
         this.mostrarCamposEstudiante = false;
         carreraControl?.clearValidators();
         anioControl?.clearValidators();
+        semestreControl?.clearValidators();
+        fechaGraduacionControl?.clearValidators();
         carreraControl?.setValue('');
         anioControl?.setValue('');
+        semestreControl?.setValue('');
+        fechaGraduacionControl?.setValue('');
       }
       carreraControl?.updateValueAndValidity();
       anioControl?.updateValueAndValidity();
+      semestreControl?.updateValueAndValidity();
+      fechaGraduacionControl?.updateValueAndValidity();
     });
 
     // Mostrar campo pariente según selección
     this.secondFormGroup.get('parienteDirecto')?.valueChanges.subscribe((value) => {
       const nombreParienteControl = this.secondFormGroup.get('nombrePariente');
+      const areaParienteControl = this.secondFormGroup.get('areaPariente');
+      
       if (value === 'si') {
         this.mostrarCampoPariente = true;
         nombreParienteControl?.setValidators([Validators.required]);
+        areaParienteControl?.setValidators([Validators.required]);
       } else {
         this.mostrarCampoPariente = false;
         nombreParienteControl?.clearValidators();
+        areaParienteControl?.clearValidators();
         nombreParienteControl?.setValue('');
+        areaParienteControl?.setValue('');
       }
       nombreParienteControl?.updateValueAndValidity();
+      areaParienteControl?.updateValueAndValidity();
     });
 
     // Filtrar ciudades según la provincia seleccionada
-    this.thirdFormGroup.get('provincia')?.valueChanges.subscribe((provinciaSeleccionada) => {
-      const provincia = this.provincias.find(p => p.nombre === provinciaSeleccionada);
+    this.thirdFormGroup.get('provincia')?.valueChanges.subscribe((provinciaId) => {
+      const provincia = this.provincias.find(p => p.id === provinciaId);
       this.ciudadesFiltradas = provincia ? provincia.ciudades : [];
       this.thirdFormGroup.get('ciudad')?.setValue('');
     });
@@ -177,16 +217,76 @@ export class RegisterComponent {
     });
   }
 
+  private formatDateToISO(date: Date): string {
+    return date.toISOString();
+  }
+
   guardar() {
     if (this.firstFormGroup.valid && this.secondFormGroup.valid && this.thirdFormGroup.valid) {
-      const data = {
-        ...this.firstFormGroup.value,
-        ...this.secondFormGroup.value,
-        ...this.thirdFormGroup.value
+      this.isLoading = true;
+
+      const firstForm = this.firstFormGroup.value;
+      const secondForm = this.secondFormGroup.value;
+      const thirdForm = this.thirdFormGroup.value;
+
+      // Determinar idRol basado en tipoUsuario
+      let idRol = 2; // Por defecto
+      if (secondForm.tipoUsuario === 'Estudiante') idRol = 2;
+      else if (secondForm.tipoUsuario === 'Alumni') idRol = 3;
+      else if (secondForm.tipoUsuario === 'Externo') idRol = 4;
+
+      const registerData: RegisterData = {
+        nombre: firstForm.nombre,
+        apellido: firstForm.apellido,
+        fechaNacimiento: this.formatDateToISO(firstForm.fechaNacimiento),
+        genero: firstForm.genero,
+        contrasena: firstForm.contrasena,
+        correo: secondForm.correo,
+        correoUees: firstForm.correoUees,
+        identificacion: secondForm.identificacion,
+        parienteDirecto: secondForm.parienteDirecto === 'si',
+        idRol: idRol,
+        nombrePariente: secondForm.nombrePariente || undefined,
+        areaPariente: secondForm.areaPariente || undefined,
+        carrera: secondForm.carrera || undefined,
+        fechaGraduacion: secondForm.fechaGraduacion ? this.formatDateToISO(secondForm.fechaGraduacion) : undefined,
+        anioEstudio: secondForm.anioEstudio || undefined,
+        semestre: secondForm.semestre || undefined,
+        emprendimiento: {
+          correoComercial: secondForm.correo,
+          correoUees: firstForm.correoUees,
+          identificacion: secondForm.identificacion,
+          parienteDirecto: secondForm.parienteDirecto === 'si' ? 'Si' : 'No',
+          nombreComercialEmprendimiento: thirdForm.nombreComercialEmprendimiento,
+          fechaCreacion: this.formatDateToISO(thirdForm.fechaCreacion),
+          ciudad: thirdForm.ciudad,
+          provinia: thirdForm.provincia,
+          estadoEmpredimiento: thirdForm.estadoEmprendimiento,
+          tipoEmprendimiento: this.tiposEmprendimiento.find(t => t.id === thirdForm.tipoEmprendimiento)?.nombre || '',
+          tipoEmprendimientoId: thirdForm.tipoEmprendimiento,
+          datosPublicos: thirdForm.datosPublicos
+        }
       };
-      console.log('Formulario completo:', data);
+
+      this.authService.register(registerData).subscribe({
+        next: (response) => {
+          console.log('Registro exitoso:', response);
+          this.isLoading = false;
+          alert('Registro exitoso');
+          // Redirigir al login 
+          this.router.navigate(['/login']);
+        },
+        error: (error) => {
+          console.error('Error en el registro:', error);
+          this.isLoading = false;
+          alert('Error en el registro: ' + (error.error?.message || 'Intente nuevamente'));
+        }
+      });
     } else {
       console.log('Formulario inválido');
+      this.markFormGroupTouched(this.firstFormGroup);
+      this.markFormGroupTouched(this.secondFormGroup);
+      this.markFormGroupTouched(this.thirdFormGroup);
     }
   }
 }
