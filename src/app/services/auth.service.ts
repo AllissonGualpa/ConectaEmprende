@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// ✅ Interfaz usada en register.component.ts
 export interface RegisterData {
   nombre: string;
   apellido: string;
@@ -41,9 +42,19 @@ export interface RegisterData {
 export class AuthService {
   private apiUrl = 'https://eureka-emprende.onrender.com/v1/auth';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
+  // Registro
   register(data: RegisterData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, data);
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.post(`${this.apiUrl}/register`, data, { headers });
+  }
+
+  // Login con cabecera correcta
+  login(email: string, password: string): Observable<any> {
+    const body = JSON.stringify({ email, password });
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post(`${this.apiUrl}/login`, body, { headers });
   }
 }

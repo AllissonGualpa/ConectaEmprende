@@ -7,13 +7,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
-    RouterLink, 
-    ReactiveFormsModule, 
+    RouterLink,
+    ReactiveFormsModule,
     CommonModule,
     MatFormFieldModule,
     MatInputModule,
@@ -28,14 +29,17 @@ export class LoginComponent {
   loginForm: FormGroup;
   hidePassword = true;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
   }
 
-  // Getters para simplificar el HTML
   get email() {
     return this.loginForm.get('email')!;
   }
@@ -44,7 +48,6 @@ export class LoginComponent {
     return this.loginForm.get('password')!;
   }
 
-  // Método para obtener mensaje de error del email
   getEmailErrorMessage() {
     if (this.email.hasError('required')) {
       return 'El correo electrónico es obligatorio';
@@ -52,17 +55,30 @@ export class LoginComponent {
     return this.email.hasError('email') ? 'Ingresa un correo válido' : '';
   }
 
-  // Método para obtener mensaje de error de la contraseña
   getPasswordErrorMessage() {
     return this.password.hasError('required') ? 'La contraseña es obligatoria' : '';
   }
 
-  // Método de login normal
   onLogin() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      console.log('Login:', email, password);
-      // autenticación con backend
+      
+      this.authService.login(email, password).subscribe({
+        next: (response) => {
+          console.log('Respuesta del backend:', response);
+
+          // Guardar el token en localStorage
+          localStorage.setItem('token', response.jwtToken);
+
+          // Redirigir después del login
+          this.router.navigate(['/inicio']);
+        },
+        error: (err) => {
+          console.error('Error al iniciar sesión:', err);
+          alert('Credenciales incorrectas o error del servidor.');
+        }
+      });
+
     } else {
       this.loginForm.markAllAsTouched();
     }
