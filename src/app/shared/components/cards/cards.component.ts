@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -9,6 +9,7 @@ export interface CardItem {
   image: string;
   category?: string;
   location?: string;
+  date?: string | Date;
   views?: number;
   favorites?: number;
 }
@@ -23,6 +24,15 @@ export interface CardItem {
 export class CardsComponent {
   @Input() items: CardItem[] = [];
   @Input() pageSize = 6;
+  // TemplateRefs for customizable slots
+  @Input() badgeTemplate?: TemplateRef<any>;
+  @Input() actionTemplate?: TemplateRef<any>;
+  @Input() overlayTemplate?: TemplateRef<any>;
+  @Input() footerTemplate?: TemplateRef<any>;
+
+  // Simple flags for small variations
+  @Input() showLocation = true;
+  @Input() ctaLabel = 'Descubrir';
 
   @Output() discover = new EventEmitter<CardItem>();
   @Output() toggleFavorite = new EventEmitter<CardItem>();

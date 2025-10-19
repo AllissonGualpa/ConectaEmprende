@@ -4,40 +4,56 @@
       <!-- imagen con overlay -->
       <div class="relative">
         <img [src]="item.image" alt="{{item.title}}" class="w-full h-44 object-cover" />
-        <!-- badge categoria -->
-        <div class="absolute top-3 left-3 bg-white/90 text-xs text-gray-700 px-2 py-1 rounded-full shadow-sm">
-          {{ item.category || 'Alimentos y Bebidas' }}
-        </div>
-        <!-- favorito icon duda si va o no-->
-        <button (click)="onToggleFavorite(item, $event)"
-                class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:scale-105 transition">
-          <svg class="w-4 h-4 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 21s-6.716-4.686-9.35-7.153C-0.004 10.595 2.692 7 6.5 7c1.796 0 3.1.864 3.5 2 .4-1.136 1.704-2 3.5-2 3.808 0 6.504 3.595 3.85 6.847C18.716 16.314 12 21 12 21z"/>
-          </svg>
-        </button>
+        
+        <!-- badge: allow parent to provide a template -->
+        <ng-container *ngIf="badgeTemplate; else defaultBadge">
+          <ng-container *ngTemplateOutlet="badgeTemplate; context: { $implicit: item }"></ng-container>
+        </ng-container>
+        <ng-template #defaultBadge>
+          <div class="absolute top-3 left-3 bg-white/90 text-xs text-gray-700 px-2 py-1 rounded-full shadow-sm">
+            {{ item.category || 'Alimentos y Bebidas' }}
+          </div>
+        </ng-template>
+
+        <!-- overlay: if a specific overlayTemplate is provided use it; otherwise show favorite button -->
+        <ng-container *ngIf="overlayTemplate; else defaultOverlay">
+          <ng-container *ngTemplateOutlet="overlayTemplate; context: { $implicit: item }"></ng-container>
+        </ng-container>
+        <ng-template #defaultOverlay>
+          <button (click)="onToggleFavorite(item, $event)"
+                  class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:scale-105 transition">
+            <svg class="w-4 h-4 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21s-6.716-4.686-9.35-7.153C-0.004 10.595 2.692 7 6.5 7c1.796 0 3.1.864 3.5 2 .4-1.136 1.704-2 3.5-2 3.808 0 6.504 3.595 3.85 6.847C18.716 16.314 12 21 12 21z"/>
+            </svg>
+          </button>
+        </ng-template>
       </div>
 
       <!-- contenido -->
-      <div class="p-5 flex flex-col h-[260px]">
+      <div class="p-5 flex flex-col min-h-[260px]">
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ item.title }}</h3>
 
-          <!-- meta row -->
+          <!-- meta row: show location if enabled, allow footerTemplate for additional meta like date -->
           <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2M7 8H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2M7 8V6a5 5 0 0 1 10 0v2" />
-              </svg>
+            <div *ngIf="showLocation" class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z" />
+                </svg>
               <span>{{ item.location || 'Guayaquil' }}</span>
             </div>
 
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" />
-              </svg>
-              <span>{{ item.views || '20k' }}</span>
-            </div>
+            <ng-container *ngIf="footerTemplate; else spacer"></ng-container>
+            <ng-template #spacer></ng-template>
           </div>
+
+          <!-- footerTemplate: allow pages to inject date badges or extra meta inside this block -->
+          <ng-container *ngIf="footerTemplate">
+            <ng-container *ngTemplateOutlet="footerTemplate; context: { $implicit: item }"></ng-container>
+          </ng-container>
 
           <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
             {{ item.description || 'En este emprendimiento encontrarás productos y servicios elaborados con calidad. Descripción breve...' }}
@@ -46,10 +62,16 @@
 
         <!-- CTA -->
         <div class="mt-4">
-          <button (click)="onDiscover(item)"
-                  class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg shadow transition">
-            Descubrir
-          </button>
+          <ng-container *ngIf="actionTemplate; else defaultCta">
+            <!-- allow actionTemplate to also render primary/secondary buttons; pass item -->
+            <ng-container *ngTemplateOutlet="actionTemplate; context: { $implicit: item }"></ng-container>
+          </ng-container>
+          <ng-template #defaultCta>
+            <button (click)="onDiscover(item)"
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg active:scale-95 transition duration-150">
+              {{ ctaLabel }}
+            </button>
+          </ng-template>
         </div>
       </div>
     </article>

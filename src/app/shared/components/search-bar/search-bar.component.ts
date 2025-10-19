@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 
 export interface SearchPayload {
@@ -11,7 +15,7 @@ export interface SearchPayload {
 @Component({
   selector: 'app-search-bar',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, MatNativeDateModule, MatInputModule, MatFormFieldModule],
   templateUrl: './search-bar.component.html',
   styleUrls: ['./search-bar.component.css']
 })
@@ -22,7 +26,7 @@ export class SearchBarComponent implements OnInit {
   @Input() filters: Array<{ key: string; label: string; options?: string[] }> = [
     { key: 'category', label: 'Categoria', options: ['Arte y cultura', 'Salud y Bienestar', 'Tecnología'] },
     { key: 'location', label: 'Ubicación', options: ['Quito', 'Guayaquil', 'Cuenca'] },
-    { key: 'type', label: 'Tipo', options: ['Producto', 'Servicio', 'Evento'] }
+    { key: 'type', label: 'Tipo', options: ['Producto', 'Servicio', 'Evento'] },
   ];
 
   @Input() labelQuery = 'Buscar por nombre o tipo';
@@ -47,7 +51,15 @@ export class SearchBarComponent implements OnInit {
     const payload: SearchPayload = { query: values.query?.trim() ?? '' };
     // include dynamic filter values by key
     this.filters.forEach((f) => {
-      payload[f.key] = values[f.key] || '';
+      const val = values[f.key];
+      if (f.key === 'date' && val) {
+        // mat-datepicker may return Date object; normalize to YYYY-MM-DD
+        const d = val instanceof Date ? val : new Date(val);
+        const iso = d.toISOString().slice(0, 10);
+        payload[f.key] = iso;
+      } else {
+        payload[f.key] = val || '';
+      }
     });
     this.search.emit(payload);
   }
