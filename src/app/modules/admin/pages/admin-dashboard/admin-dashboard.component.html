@@ -1,0 +1,66 @@
+<div class="flex min-h-screen bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-md p-4 flex flex-col justify-between">
+    <div>
+      <h2 class="text-xl font-bold text-orange-600 mb-6">ConectaEmprende</h2>
+      <nav class="space-y-4">
+        <a routerLink="/admin" class="flex items-center gap-3 text-gray-700 hover:text-orange-600">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/admin/solicitudes" class="flex items-center gap-3 text-gray-700 hover:text-orange-600">
+          <i class="fa-solid fa-envelope"></i>
+          <span>Solicitudes</span>
+        </a>
+        <a routerLink="/admin/emprendimientos" class="flex items-center gap-3 text-gray-700 hover:text-orange-600">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Emprendimientos</span>
+        </a>
+        <a routerLink="/admin/analytics" class="flex items-center gap-3 text-gray-700 hover:text-orange-600">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Analytics</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Perfil -->
+    <div class="border-t pt-4 mt-4">
+      <div class="flex items-center gap-3">
+        <img src="https://i.pravatar.cc/100" alt="Admin" class="w-10 h-10 rounded-full" />
+        <div>
+          <p class="font-semibold">{{ user.name }}</p>
+          <p class="text-sm text-gray-500">{{ user.role }}</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenido -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <h1 class="text-2xl font-bold mb-6">¡Bienvenido {{ user.name }}!</h1>
+
+    <!-- Tarjetas -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+      <div class="bg-white p-6 rounded-xl shadow-md">
+        <p class="text-gray-500">Usuarios Totales</p>
+        <h2 class="text-3xl font-bold text-orange-600">1,248</h2>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-md">
+        <p class="text-gray-500">Emprendimientos</p>
+        <h2 class="text-3xl font-bold text-green-600">1,248</h2>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow-md">
+        <p class="text-gray-500">Visitas Totales</p>
+        <h2 class="text-3xl font-bold text-blue-600">1,248</h2>
+      </div>
+    </div>
+
+    <!-- Placeholder gráfico -->
+    <div class="bg-white p-6 rounded-xl shadow-md">
+      <h3 class="text-lg font-semibold mb-4">Crecimiento con el tiempo</h3>
+      <div class="h-64 flex items-center justify-center text-gray-400 border-2 border-dashed rounded-lg">
+        (Aquí irá el gráfico)
+      </div>
+    </div>
+  </main>
+</div>

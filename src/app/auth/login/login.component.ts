@@ -62,23 +62,24 @@ export class LoginComponent {
   onLogin() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      
+
       this.authService.login(email, password).subscribe({
         next: (response) => {
           console.log('Respuesta del backend:', response);
-
-          // Guardar el token en localStorage
           localStorage.setItem('token', response.jwtToken);
 
-          // Redirigir después del login
-          this.router.navigate(['/inicio']);
+          // Redirección según usuario
+          if (email === 'sofia@email.com' && password === 'sofia123') {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/inicio']);
+          }
         },
         error: (err) => {
           console.error('Error al iniciar sesión:', err);
           alert('Credenciales incorrectas o error del servidor.');
         }
       });
-
     } else {
       this.loginForm.markAllAsTouched();
     }

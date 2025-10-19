@@ -5,6 +5,7 @@ import { InicioComponent } from './shared/pages/inicio/inicio.component';
 import { EmprendimientosComponent } from './shared/pages/emprendimientos/emprendimientos.component';
 import { StartupsComponent } from './shared/pages/startups/startups.component';
 import { BlogComponent } from './shared/pages/blog/blog.component';
+import { AdminDashboardComponent } from './modules/admin/pages/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -13,5 +14,7 @@ export const routes: Routes = [
   { path: 'inicio', component: InicioComponent },
   { path: 'emprendimientos', component: EmprendimientosComponent },
   { path: 'startups', component: StartupsComponent},
-  { path: 'blog', component: BlogComponent }
+  { path: 'blog', component: BlogComponent },
+  { path: 'admin', component: AdminDashboardComponent }
+  
 ];

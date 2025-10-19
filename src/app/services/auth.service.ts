@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// ✅ Interfaz usada en register.component.ts
+// Interfaz usada en register.component.ts
 export interface RegisterData {
   nombre: string;
   apellido: string;
@@ -50,7 +50,7 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, data, { headers });
   }
 
-  // Login con cabecera correcta
+  // Login
   login(email: string, password: string): Observable<any> {
     const body = JSON.stringify({ email, password });
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
