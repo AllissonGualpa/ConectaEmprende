@@ -14,9 +14,7 @@ import { AuthService, RegisterData } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
 export const MY_DATE_FORMATS = {
-  parse: {
-    dateInput: 'DD/MM/YYYY',
-  },
+  parse: { dateInput: 'DD/MM/YYYY' },
   display: {
     dateInput: 'DD/MM/YYYY',
     monthYearLabel: 'MMMM YYYY',
@@ -63,7 +61,7 @@ export class RegisterComponent {
 
   isLoading = false;
 
-  // Provincias y ciudades de Ecuador con IDs
+  // Provincias y ciudades de Ecuador
   provincias = [
     { id: 1, nombre: 'Azuay', ciudades: [{ id: 1, nombre: 'Cuenca' }, { id: 2, nombre: 'Gualaceo' }, { id: 3, nombre: 'Paute' }, { id: 4, nombre: 'Sígsig' }] },
     { id: 2, nombre: 'Bolívar', ciudades: [{ id: 5, nombre: 'Guaranda' }, { id: 6, nombre: 'San Miguel' }, { id: 7, nombre: 'Echeandía' }] },
@@ -93,11 +91,11 @@ export class RegisterComponent {
 
   ciudadesFiltradas: { id: number, nombre: string }[] = [];
 
-  // Tipos de emprendimiento
+  // Tipos de emprendimiento según Supabase
   tiposEmprendimiento = [
-    { id: 1, nombre: 'Servicio' },
-    { id: 2, nombre: 'Producto' },
-    { id: 3, nombre: 'Startup' }
+    { id: 1, nombre: 'Startup', value: 'Startup' },
+    { id: 2, nombre: 'Emprendimiento - Servicio', value: 'Servicio' },
+    { id: 4, nombre: 'Emprendimiento - Producto', value: 'Producto' },
   ];
 
   constructor(
@@ -182,7 +180,7 @@ export class RegisterComponent {
     this.secondFormGroup.get('parienteDirecto')?.valueChanges.subscribe((value) => {
       const nombreParienteControl = this.secondFormGroup.get('nombrePariente');
       const areaParienteControl = this.secondFormGroup.get('areaPariente');
-      
+
       if (value === 'si') {
         this.mostrarCampoPariente = true;
         nombreParienteControl?.setValidators([Validators.required]);
@@ -229,27 +227,24 @@ export class RegisterComponent {
       const secondForm = this.secondFormGroup.value;
       const thirdForm = this.thirdFormGroup.value;
 
-      // Determinar idRol basado en tipoUsuario
-      let idRol = 2; // Por defecto
-      if (secondForm.tipoUsuario === 'Estudiante') idRol = 2;
-      else if (secondForm.tipoUsuario === 'Alumni') idRol = 3;
-      else if (secondForm.tipoUsuario === 'Externo') idRol = 4;
+      const idRolEmprendedor = 2;
 
+      // CAMBIO PRINCIPAL: Ahora correo es correoUees y correoUees es el corporativo
       const registerData: RegisterData = {
         nombre: firstForm.nombre,
         apellido: firstForm.apellido,
-        fechaNacimiento: this.formatDateToISO(firstForm.fechaNacimiento),
+        fechaNacimiento: this.formatDateToISO(firstForm.fechaNacimiento as Date),
         genero: firstForm.genero,
         contrasena: firstForm.contrasena,
-        correo: secondForm.correo,
-        correoUees: firstForm.correoUees,
+        correo: firstForm.correoUees, // ← CORRECCIÓN: Correo principal es el de UEES
+        correoUees: secondForm.correo, // ← CORRECCIÓN: Correo corporativo va aquí
         identificacion: secondForm.identificacion,
         parienteDirecto: secondForm.parienteDirecto === 'si',
-        idRol: idRol,
+        idRol: idRolEmprendedor,
         nombrePariente: secondForm.nombrePariente || undefined,
         areaPariente: secondForm.areaPariente || undefined,
         carrera: secondForm.carrera || undefined,
-        fechaGraduacion: secondForm.fechaGraduacion ? this.formatDateToISO(secondForm.fechaGraduacion) : undefined,
+        fechaGraduacion: secondForm.fechaGraduacion ? this.formatDateToISO(secondForm.fechaGraduacion as Date) : undefined,
         anioEstudio: secondForm.anioEstudio || undefined,
         semestre: secondForm.semestre || undefined,
         emprendimiento: {
@@ -258,7 +253,7 @@ export class RegisterComponent {
           identificacion: secondForm.identificacion,
           parienteDirecto: secondForm.parienteDirecto === 'si' ? 'Si' : 'No',
           nombreComercialEmprendimiento: thirdForm.nombreComercialEmprendimiento,
-          fechaCreacion: this.formatDateToISO(thirdForm.fechaCreacion),
+          fechaCreacion: this.formatDateToISO(thirdForm.fechaCreacion as Date),
           ciudad: thirdForm.ciudad,
           provinia: thirdForm.provincia,
           estadoEmpredimiento: thirdForm.estadoEmprendimiento,
@@ -268,25 +263,25 @@ export class RegisterComponent {
         }
       };
 
+      console.log('Datos a enviar:', registerData);
+
       this.authService.register(registerData).subscribe({
         next: (response) => {
-          console.log('Registro exitoso:', response);
           this.isLoading = false;
-          alert('Registro exitoso');
-          // Redirigir al login 
+          alert('Registro exitoso. Bienvenido a Eureka Emprende!');
           this.router.navigate(['/login']);
         },
         error: (error) => {
-          console.error('Error en el registro:', error);
           this.isLoading = false;
-          alert('Error en el registro: ' + (error.error?.message || 'Intente nuevamente'));
+          const errorMessage = error.error?.message || error.message || 'Error desconocido';
+          alert('Error en el registro: ' + errorMessage);
         }
       });
     } else {
-      console.log('Formulario inválido');
       this.markFormGroupTouched(this.firstFormGroup);
       this.markFormGroupTouched(this.secondFormGroup);
       this.markFormGroupTouched(this.thirdFormGroup);
+      alert('Por favor, complete todos los campos requeridos correctamente');
     }
   }
 }
