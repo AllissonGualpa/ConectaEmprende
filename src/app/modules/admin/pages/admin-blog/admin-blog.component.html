@@ -1,0 +1,179 @@
+<div class="flex min-h-screen bg-gray-50">
+  <app-navbar-admin></app-navbar-admin>
+
+  <!-- Contenido principal -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <!-- Buscador -->
+      <div class="flex-1 max-w-2xl">
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Buscar blogs por título, categoría o tipo..."
+            (input)="onSearch($event)"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          />
+          <!-- Ícono de lupa -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Botones a la derecha -->
+      <div class="flex gap-3 ml-4">
+        <!-- Botón Consultar -->
+        <button
+            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
+            Consultar
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+        </button>
+
+        <!-- Botón Crear Blog -->
+        <button
+          (click)="crearBlog()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200"
+        >
+          <i class="fa-solid fa-plus"></i>
+          Crear Blog
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla de Blogs -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Título
+                <i class="fa-solid fa-sort ml-2 text-gray-400"></i>
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Descripción
+                <i class="fa-solid fa-sort ml-2 text-gray-400"></i>
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Estado
+                <i class="fa-solid fa-sort ml-2 text-gray-400"></i>
+              </th>
+              <th
+                class="px-6py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Tag
+                <i class="fa-solid fa-sort ml-2 text-gray-400"></i>
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Fecha
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-gray-600"
+              >
+                Acción
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr
+              *ngFor="let blog of filteredBlogs"
+              class="hover:bg-gray-50 transition-colors"
+            >
+              <td class="px-6 py-4 text-sm text-gray-900">
+                {{ blog.nombre }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">
+                {{ blog.categoria }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">
+                {{ blog.tipo }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">
+                {{ blog.subtipo }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">
+                {{ blog.fecha }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex gap-3">
+                  <button
+                    (click)="editarBlog(blog)"
+                    class="text-purple-600 hover:text-purple-800 transition-colors"
+                    title="Editar"
+                  >
+                    <i class="fa-solid fa-pen text-lg"></i>
+                  </button>
+                  <button
+                    (click)="eliminarBlog(blog)"
+                    class="text-red-600 hover:text-red-800 transition-colors"
+                    title="Eliminar"
+                  >
+                    <i class="fa-solid fa-trash text-lg"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Mensaje cuando no hay blogs -->
+            <tr *ngIf="filteredBlogs.length === 0 && !loading">
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                No se encontraron blogs
+              </td>
+            </tr>
+
+            <!-- Loading -->
+            <tr *ngIf="loading">
+              <td colspan="6" class="px-6 py-8 text-center">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i>
+                <p class="mt-2 text-gray-600">Cargando blogs...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div
+        class="bg-gray-50 px-6 py-4 flex items-center justify-center gap-2 mt-8"
+      >
+        <button class="px-3 py-1 text-gray-600 hover:text-orange-600">
+          Regresar
+        </button>
+        <button class="px-3 py-1 bg-orange-500 text-white rounded">1</button>
+        <button class="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded">
+          2
+        </button>
+        <button class="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded">
+          3
+        </button>
+        <button class="px-3 py-1 text-gray-600 hover:text-orange-600">
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,8 @@
+table th, table td {
+  transition: background-color 0.2s ease;
+}
+
+aside a.active {
+  color: #276BC7;
+  font-weight: 600;
+}
