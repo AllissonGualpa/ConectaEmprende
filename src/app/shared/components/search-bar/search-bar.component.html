@@ -23,12 +23,23 @@
       <ng-container *ngFor="let f of filters">
         <div class="flex flex-col text-left">
           <span class="text-xs text-gray-400 leading-tight">{{ f.label }}</span>
-          <select
-            [formControlName]="f.key"
-            class="text-sm md:text-base text-gray-700 bg-transparent outline-none">
-            <option value="">Seleccionar</option>
-            <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
-          </select>
+          <ng-container [ngSwitch]="f.key">
+            <ng-container *ngSwitchCase="'date'">
+              <mat-form-field appearance="fill" class="w-40">
+                <input matInput [matDatepicker]="picker" [formControlName]="f.key" />
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              <select
+                [formControlName]="f.key"
+                class="text-sm md:text-base text-gray-700 bg-transparent outline-none">
+                <option value="">Seleccionar</option>
+                <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+              </select>
+            </ng-container>
+          </ng-container>
         </div>
       </ng-container>
     </div>
@@ -46,12 +57,23 @@
     <!-- filtros en cel si es q-->
     <div class="mt-3 md:hidden flex items-center gap-3 w-full">
       <ng-container *ngFor="let f of filters">
-        <select
-          [formControlName]="f.key"
-          class="flex-1 text-sm p-2 border rounded-md">
-          <option value="">{{ f.label }}</option>
-          <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
-        </select>
+        <ng-container [ngSwitch]="f.key">
+          <ng-container *ngSwitchCase="'date'">
+            <mat-form-field appearance="fill" class="flex-1">
+              <input matInput [matDatepicker]="mobilePicker" [formControlName]="f.key" />
+              <mat-datepicker-toggle matSuffix [for]="mobilePicker"></mat-datepicker-toggle>
+              <mat-datepicker #mobilePicker></mat-datepicker>
+            </mat-form-field>
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            <select
+              [formControlName]="f.key"
+              class="flex-1 text-sm p-2 border rounded-md">
+              <option value="">{{ f.label }}</option>
+              <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+            </select>
+          </ng-container>
+        </ng-container>
       </ng-container>
     </div>
   </form>

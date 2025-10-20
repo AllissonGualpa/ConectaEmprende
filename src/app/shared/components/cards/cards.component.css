@@ -5,3 +5,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
