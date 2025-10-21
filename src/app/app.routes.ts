@@ -10,6 +10,7 @@ import { EventosComponent } from './modules/landing/eventos/eventos.component';
 import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.component';
 import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
+import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.component';
 
 
 export const routes: Routes = [
@@ -23,6 +24,7 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboardComponent },
   { path: 'eventos', component: EventosComponent },
   { path: 'admin/blog', component: AdminBlogComponent },
+  { path: 'admin/evento', component: AdminEventoComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },
   { path: 'emprendedor/gestion', component: GestionEmprendedor}
   
