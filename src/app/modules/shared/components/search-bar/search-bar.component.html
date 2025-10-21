@@ -2,30 +2,30 @@
   <form
     (ngSubmit)="submit()"
     [formGroup]="form"
-    class="w-full max-w-6xl bg-white rounded-full shadow-lg px-6 py-4 flex flex-col md:flex-row md:items-center md:gap-6 relative z-50">
+    class="w-full max-w-6xl bg-white rounded-2xl md:rounded-full shadow-lg px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:gap-4 lg:gap-6 relative z-50">
 
     <!--input-->
-    <div class="flex-1 min-w-[200px]">
+    <div class="flex-1 min-w-0">
       <input
         formControlName="query"
         type="search"
         [placeholder]="labelQuery"
         aria-label="Buscar"
-        class="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-base md:text-lg"
+        class="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base md:text-lg"
       />
     </div>
 
     <!-- separador -->
-    <div class="hidden md:block h-8 w-px bg-gray-200"></div>
+    <div class="hidden md:block h-8 w-px bg-gray-200 flex-shrink-0"></div>
 
-    <!--filtros-->
-    <div class="hidden md:flex items-center gap-6">
+    <!--filtros desktop-->
+    <div class="hidden md:flex items-center gap-3 lg:gap-6 flex-wrap">
       <ng-container *ngFor="let f of filters">
-        <div class="flex flex-col text-left">
-          <span class="text-xs text-gray-400 leading-tight">{{ f.label }}</span>
+        <div class="flex flex-col text-left min-w-[120px]">
+          <span class="text-xs text-gray-400 leading-tight mb-1">{{ f.label }}</span>
           <ng-container [ngSwitch]="f.key">
             <ng-container *ngSwitchCase="'date'">
-              <mat-form-field appearance="fill" class="w-40">
+              <mat-form-field appearance="fill" class="w-36 lg:w-40">
                 <input matInput [matDatepicker]="picker" [formControlName]="f.key" />
                 <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-datepicker #picker></mat-datepicker>
@@ -34,7 +34,7 @@
             <ng-container *ngSwitchDefault>
               <select
                 [formControlName]="f.key"
-                class="text-sm md:text-base text-gray-700 bg-transparent outline-none">
+                class="text-sm lg:text-base text-gray-700 bg-transparent outline-none cursor-pointer hover:text-gray-900 transition-colors">
                 <option value="">Seleccionar</option>
                 <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
               </select>
@@ -48,18 +48,19 @@
     <button
       type="submit"
       aria-label="Buscar"
-      class="mt-3 md:mt-0 md:ml-3 inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white rounded-full w-11 h-11 shadow transition-colors">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      class="mt-3 md:mt-0 md:ml-2 lg:ml-3 inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0 self-center md:self-auto">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
       </svg>
     </button>
 
-    <!-- filtros en cel si es q-->
-    <div class="mt-3 md:hidden flex items-center gap-3 w-full">
+    <!-- filtros móvil -->
+    <div class="mt-4 md:hidden flex flex-col gap-3 w-full">
       <ng-container *ngFor="let f of filters">
         <ng-container [ngSwitch]="f.key">
           <ng-container *ngSwitchCase="'date'">
-            <mat-form-field appearance="fill" class="flex-1">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>{{ f.label }}</mat-label>
               <input matInput [matDatepicker]="mobilePicker" [formControlName]="f.key" />
               <mat-datepicker-toggle matSuffix [for]="mobilePicker"></mat-datepicker-toggle>
               <mat-datepicker #mobilePicker></mat-datepicker>
@@ -68,7 +69,7 @@
           <ng-container *ngSwitchDefault>
             <select
               [formControlName]="f.key"
-              class="flex-1 text-sm p-2 border rounded-md">
+              class="w-full text-sm sm:text-base p-3 border border-gray-300 rounded-lg outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all bg-white text-gray-700">
               <option value="">{{ f.label }}</option>
               <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
             </select>

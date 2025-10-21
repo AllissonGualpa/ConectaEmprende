@@ -11,21 +11,23 @@
 
     <!--contenido-->
     <div
-      class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[520px] md:min-h-[580px] flex flex-col items-center justify-center text-center text-white">
+      class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[420px] sm:min-h-[520px] md:min-h-[580px] lg:min-h-[620px] flex flex-col items-center justify-center text-center text-white py-12 sm:py-16">
 
       <!--titulo-->
-      <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-4 font-poppins px-4">
         Emprendimientos
-      </h1> <br>
+      </h1>
 
       <!--parrafo-->
-      <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-2xl mx-auto leading-relaxed">
-        Explora proyectos creativos y negocios locales que inspiran. <br>
+      <p class="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 font-medium max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4 mt-2 sm:mt-4">
+        Explora proyectos creativos y negocios locales que inspiran.
+        <span class="hidden sm:inline"><br></span>
+        <span class="sm:hidden"> </span>
         Descubre cómo los emprendedores están transformando ideas en realidades cercanas a ti.
       </p>
 
       <!-- search bar-->
-      <div class="w-full flex justify-center mt-10 px-4 ">
+      <div class="w-full flex justify-center mt-6 sm:mt-8 md:mt-10 px-4">
         <div class="w-full max-w-5xl">
           <app-search-bar
             (search)="onSearch($event)"
@@ -41,15 +43,16 @@
 
     </div>
   </section>
-    <!-- tarjetas -->
-  <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <app-cards
-    [items]="filteredCards"
-    [pageSize]="6"
-    (discover)="onDiscover($event)"
-    (toggleFavorite)="onToggleFavorite($event)"></app-cards>
-</section>
+  
+  <!-- tarjetas -->
+  <section class="py-8 sm:py-10 md:py-12 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <app-cards
+      [items]="filteredCards"
+      [pageSize]="6"
+      (discover)="onDiscover($event)"
+      (toggleFavorite)="onToggleFavorite($event)">
+    </app-cards>
+  </section>
 </main>
 
-<br>
 <app-footer></app-footer>
