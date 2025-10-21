@@ -9,6 +9,7 @@ import { AdminDashboardComponent } from './modules/admin/admin-dashboard/admin-d
 import { EventosComponent } from './modules/landing/eventos/eventos.component';
 import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.component';
 import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
+import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 
 
 export const routes: Routes = [
@@ -23,5 +24,6 @@ export const routes: Routes = [
   { path: 'eventos', component: EventosComponent },
   { path: 'admin/blog', component: AdminBlogComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },
+  { path: 'emprendedor/gestion', component: GestionEmprendedor}
   
 ];
