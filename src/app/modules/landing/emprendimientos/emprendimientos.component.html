@@ -24,7 +24,7 @@
         Descubre cómo los emprendedores están transformando ideas en realidades cercanas a ti.
       </p>
 
-      <!-- search bar -->
+      <!-- search bar-->
       <div class="w-full flex justify-center mt-10 px-4 ">
         <div class="w-full max-w-5xl">
           <app-search-bar
@@ -43,8 +43,8 @@
   </section>
     <!-- tarjetas -->
   <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <app-cards
-    [items]="cardsArray"
+      <app-cards
+    [items]="filteredCards"
     [pageSize]="6"
     (discover)="onDiscover($event)"
     (toggleFavorite)="onToggleFavorite($event)"></app-cards>
