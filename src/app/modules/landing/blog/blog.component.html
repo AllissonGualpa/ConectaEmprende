@@ -5,21 +5,25 @@
   <section
     class="relative bg-center bg-cover bg-no-repeat"
     style="background-image: url('/assets/img/emprendimiento/foto1.png');"
-    aria-label="Sección de bienvenida al blog">
-
+    aria-label="Sección de bienvenida al blog"
+  >
     <div class="absolute inset-0 bg-black/50"></div>
 
     <div
       class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[420px] md:min-h-[460px]
-      flex flex-col items-center justify-center text-center text-white">
+      flex flex-col items-center justify-center text-center text-white"
+    >
+      <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
+        Blog
+      </h1>
 
-      <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">Blog</h1>
-
-      <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-3xl mx-auto leading-relaxed mt-2">
-        Bienvenido a nuestro blog. <br>
-        Un espacio creado para acompañarte en tu camino emprendedor. Aquí encontrarás tips prácticos,
-        guías, tendencias y recursos pensados para ayudarte a crecer, mejorar tus ideas y darte el impulso
-        que necesitas.
+      <p
+        class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-3xl mx-auto leading-relaxed mt-2"
+      >
+        Bienvenido a nuestro blog. <br />
+        Un espacio creado para acompañarte en tu camino emprendedor. Aquí
+        encontrarás tips prácticos, guías, tendencias y recursos pensados para
+        ayudarte a crecer, mejorar tus ideas y darte el impulso que necesitas.
       </p>
 
       <div class="w-full flex justify-center mt-6 px-4">
@@ -28,8 +32,23 @@
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre'"
             [filters]="[
-              { key: 'tag', label: 'Tag', options: ['Finanzas', 'Liderazgo', 'Estrategia', 'Inversión', 'Legal', 'Pitch', 'Networking', 'Cultura', 'Escalabilidad'] }
-            ]">
+              {
+                key: 'tag',
+                label: 'Tag',
+                options: [
+                  'Finanzas',
+                  'Liderazgo',
+                  'Estrategia',
+                  'Inversión',
+                  'Legal',
+                  'Pitch',
+                  'Networking',
+                  'Cultura',
+                  'Escalabilidad'
+                ]
+              }
+            ]"
+          >
           </app-search-bar>
         </div>
       </div>
@@ -37,7 +56,7 @@
   </section>
 
   <!-- Sección: Novedades del blog -->
-  <section class="py-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="py-12 max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
     <h2 class="text-3xl sm:text-4xl font-bold text-orange-500 mb-8 font-poppins">
       Novedades del blog
     </h2>
@@ -52,40 +71,72 @@
 
     <!-- Contenido -->
     <ng-container *ngIf="!cargando && !error && blogCardsArray.length > 0">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-          *ngIf="blogCardsArray[0]">
-          <img [src]="blogCardsArray[0].image" [alt]="blogCardsArray[0].title" class="w-full h-44 object-cover">
-          <div class="p-4">
-            <p class="text-xs text-gray-500 mb-1">{{ blogCardsArray[0].date }}</p>
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ blogCardsArray[0].title }}</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ blogCardsArray[0].description }}</p>
-
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <!-- Artículo principal -->
+        <div
+          class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+          *ngIf="blogCardsArray[0]"
+          (click)="abrirDetalle(blogCardsArray[0])"
+        >
+          <img
+            [src]="blogCardsArray[0].image"
+            [alt]="blogCardsArray[0].title"
+            class="w-full h-64 object-cover"
+          />
+          <div class="p-5">
+            <p class="text-xs text-gray-500 mb-1">
+              {{ blogCardsArray[0].date }}
+            </p>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+              {{ blogCardsArray[0].title }}
+            </h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-3">
+              {{ blogCardsArray[0].description }}
+            </p>
             <div class="flex flex-wrap gap-2">
-              <span *ngFor="let tag of blogCardsArray[0].tags"
+              <span
+                *ngFor="let tag of blogCardsArray[0].tags"
                 class="text-xs font-medium px-2 py-1 rounded-full border"
-                [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+                [style.borderColor]="'#C0A537'"
+                [style.color]="'#C0A537'"
+              >
                 {{ tag }}
               </span>
             </div>
           </div>
         </div>
 
+        <!-- Artículos secundarios -->
         <div class="flex flex-col gap-3">
-          <div *ngFor="let card of blogCardsArray.slice(1, 4)"
+          <div
+            *ngFor="let card of blogCardsArray.slice(1, 4)"
             class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-row gap-3 cursor-pointer"
-            (click)="abrirDetalle(card)">
-            <img [src]="card.image" [alt]="card.title" class="w-28 h-24 object-cover flex-shrink-0">
+            (click)="abrirDetalle(card)"
+          >
+            <img
+              [src]="card.image"
+              [alt]="card.title"
+              class="w-28 h-24 object-cover flex-shrink-0"
+            />
             <div class="p-2 flex flex-col justify-between flex-1">
               <div>
                 <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
-                <h4 class="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{{ card.title }}</h4>
-                <p class="text-gray-600 text-xs mb-1 line-clamp-1">{{ card.description }}</p>
+                <h4
+                  class="text-sm font-semibold text-gray-800 mb-1 line-clamp-2"
+                >
+                  {{ card.title }}
+                </h4>
+                <p class="text-gray-600 text-xs mb-1 line-clamp-1">
+                  {{ card.description }}
+                </p>
               </div>
               <div class="flex flex-wrap gap-1">
-                <span *ngFor="let tag of card.tags"
+                <span
+                  *ngFor="let tag of card.tags"
                   class="text-xs font-medium px-2 py-0.5 rounded-full border"
-                  [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+                  [style.borderColor]="'#C0A537'"
+                  [style.color]="'#C0A537'"
+                >
                   {{ tag }}
                 </span>
               </div>
@@ -94,20 +145,36 @@
         </div>
       </div>
 
+      <!-- Más artículos -->
       <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div *ngFor="let card of blogCardsArray.slice(4)"
+        <div
+          *ngFor="let card of blogCardsArray.slice(4)"
           class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-          (click)="abrirDetalle(card)">
-          <img [src]="card.image" [alt]="card.title" class="w-full h-36 object-cover">
+          (click)="abrirDetalle(card)"
+        >
+          <img
+            [src]="card.image"
+            [alt]="card.title"
+            class="w-full h-36 object-cover"
+          />
           <div class="p-3">
             <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
-            <h3 class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.title }}</h3>
-            <p class="text-gray-600 text-xs mb-2 line-clamp-2">{{ card.description }}</p>
+            <h3
+              class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2"
+            >
+              {{ card.title }}
+            </h3>
+            <p class="text-gray-600 text-xs mb-2 line-clamp-2">
+              {{ card.description }}
+            </p>
 
             <div class="flex flex-wrap gap-1.5">
-              <span *ngFor="let tag of card.tags"
+              <span
+                *ngFor="let tag of card.tags"
                 class="text-xs font-medium px-2.5 py-1 rounded-full border"
-                [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+                [style.borderColor]="'#C0A537'"
+                [style.color]="'#C0A537'"
+              >
                 {{ tag }}
               </span>
             </div>
@@ -116,11 +183,15 @@
       </div>
     </ng-container>
 
-    <div *ngIf="!cargando && !error && blogCardsArray.length === 0" class="text-center text-gray-500 mt-6">
+    <div
+      *ngIf="!cargando && !error && blogCardsArray.length === 0"
+      class="text-center text-gray-500 mt-6"
+    >
       No hay artículos disponibles en este momento.
     </div>
   </section>
 </main>
 
-<br>
+<br />
+
 <app-footer></app-footer>

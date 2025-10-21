@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'; 
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -185,13 +185,66 @@ export class AdminBlogComponent implements OnInit {
     this.router.navigate(['/admin/blog/create']);
   }
 
+  /** Editar blog */
   editarBlog(blog: any) {
-    console.log('Editar blog:', blog);
+    // Aquí puedes usar un prompt o un modal para editar campos simples
+    const nuevoTitulo = prompt('Editar título:', blog.titulo);
+    if (nuevoTitulo === null) return; // Cancelar edición
+
+    const nuevaDescripcion = prompt('Editar descripción corta:', blog.descripcionCorta);
+    if (nuevaDescripcion === null) return;
+
+    const nuevoContenido = prompt('Editar contenido:', blog.contenido);
+    if (nuevoContenido === null) return;
+
+    const updatedBlog = {
+      ...blog,
+      titulo: nuevoTitulo,
+      descripcionCorta: nuevaDescripcion,
+      contenido: nuevoContenido,
+      idsTags: blog.tags.map((t: any) => t.idTag) // Mantener los tags actuales
+    };
+
+    const token = localStorage.getItem('token');
+    if (!token) return alert('No estás autenticado.');
+
+    const headers = { Authorization: `Bearer ${token}` };
+    const userId = 1; // Cambia según tu lógica de usuario
+    const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.id}?idUsuario=${userId}`;
+
+    this.http.put(apiUrl, updatedBlog, { headers }).subscribe({
+      next: (res) => {
+        alert('Blog actualizado correctamente.');
+        this.loadBlogs(); // Recargar tabla
+      },
+      error: (err) => {
+        console.error('Error al actualizar blog:', err);
+        alert('Error al actualizar blog.');
+      }
+    });
   }
 
-  eliminarBlog(blog: any) {
-    if (confirm(`¿Estás seguro de que quieres eliminar el blog "${blog.titulo}"?`)) {
-      console.log('Eliminar blog:', blog);
-    }
+  /** Archivar blog */
+  archivarBlog(blog: any) {
+    if (!confirm(`¿Deseas archivar el blog "${blog.titulo}"?`)) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return alert('No estás autenticado.');
+
+    const headers = { Authorization: `Bearer ${token}` };
+    const userId = 1; // Cambia según tu lógica de usuario
+    const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.id}/archivar?idUsuario=${userId}`;
+
+    this.http.put(apiUrl, null, { headers }).subscribe({
+      next: () => {
+        alert('Blog archivado correctamente.');
+        this.loadBlogs(); // Recargar tabla
+      },
+      error: (err) => {
+        console.error('Error al archivar blog:', err);
+        alert('Error al archivar blog.');
+      }
+    });
   }
+
 }

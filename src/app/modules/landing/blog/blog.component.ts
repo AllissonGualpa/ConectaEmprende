@@ -38,49 +38,50 @@ export class BlogComponent implements OnInit {
 
     const token = localStorage.getItem('token');
 
-    let headers = new HttpHeaders();
+    let options: any = { responseType: 'json', observe: 'body' as const };
     if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+      options.headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     }
 
-    this.http
-      .get<any[]>(url, { headers, responseType: 'json', observe: 'body' })
-      .subscribe({
-        next: (data) => {
-          if (Array.isArray(data)) {
-            this.blogCardsArray = data.map((item: any) => ({
-              id: item.idArticulo,
-              title: item.titulo,
-              description: item.descripcionCorta,
-              image: item.urlImagen || '/assets/img/blog/default.jpg',
-              tags: item.tags?.map((t: any) => t.nombre) || [],
-              date: new Date(item.fechaCreacion).toLocaleDateString('es-EC', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }),
-              contenido: item.contenido
-            }));
-          } else {
-            console.warn('Formato de respuesta inesperado:', data);
-            this.error = 'La respuesta del servidor no es válida.';
-          }
+    this.http.get<any[]>(url, options).subscribe({
+      next: (data) => {
+        if (Array.isArray(data)) {
+          this.blogCardsArray = data.map((item: any) => ({
+            id: item.idArticulo,
+            title: item.titulo,
+            description: item.descripcionCorta,
+            image: item.urlImagen || '/assets/img/blog/default.jpg',
+            tags: item.tags?.map((t: any) => t.nombre) || [],
+            date: new Date(item.fechaCreacion).toLocaleDateString('es-EC', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }),
+            contenido: item.contenido
+          }));
+        } else {
+          console.warn('Formato de respuesta inesperado:', data);
+          this.error = 'La respuesta del servidor no es válida.';
+        }
 
-          this.cargando = false;
-        },
-        error: (err) => {
-          console.error('Error al cargar artículos:', err);
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar artículos:', err);
+        if (err.status === 401 && !token) {
+          this.error = null; // usuario no logueado, no mostrar error
+        } else {
           this.error =
             err.status === 401
               ? 'No tienes autorización para ver los artículos. Inicia sesión primero.'
               : 'No se pudieron cargar los artículos. Inténtalo más tarde.';
-          this.cargando = false;
         }
-      });
+        this.cargando = false;
+      }
+    });
   }
 
   abrirDetalle(card: any) {
-    // Pasamos todo el artículo al componente detalle como query param
     const articuloData = encodeURIComponent(JSON.stringify(card));
     this.router.navigate(['/blog', card.id], { queryParams: { data: articuloData } });
   }
