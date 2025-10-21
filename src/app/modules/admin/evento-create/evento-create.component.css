@@ -1,0 +1,19 @@
+:host {
+	display: block;
+}
+
+form {
+
+	box-sizing: border-box;
+}
+
+.mat-dialog-container {
+	padding: 0 !important;
+}
+
+
+.overflow-auto {
+	-webkit-overflow-scrolling: touch;
+}
+
+

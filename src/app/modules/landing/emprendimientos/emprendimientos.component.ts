@@ -16,11 +16,28 @@ export class EmprendimientosComponent {
 
   //SEARCH BAR
    onSearch(payload: { query: string; [key: string]: any }) {
-    console.log('Búsqueda en Emprendimientos:', payload);
-    // Aquí puedes:
-    // - llamar a un servicio para filtrar resultados
-    // - navegar a una página de resultados con query params
-    // - aplicar los filtros en el estado del componente
+    // payload puede contener: { query, category, location, type }
+    const q = (payload.query || '').toLowerCase().trim();
+  const category = ((payload as any)['category'] || '').toLowerCase();
+  const location = ((payload as any)['location'] || '').toLowerCase();
+  const type = ((payload as any)['type'] || '').toLowerCase();
+
+    this.filteredCards = this.cardsArray.filter(c => {
+      const matchQuery = !q || (
+        (c.title || '').toLowerCase().includes(q) ||
+        (c.description || '').toLowerCase().includes(q) ||
+        (c.category || '').toLowerCase().includes(q) ||
+        String(c.id).toLowerCase().includes(q)
+      );
+
+      const matchCategory = !category || (c.category || '').toLowerCase().includes(category);
+      const matchLocation = !location || (c.location || '').toLowerCase().includes(location);
+      // Note: 'type' isn't a field on CardItem by default; if you store it in description or category, adjust accordingly
+      const matchType = !type || (c.description || '').toLowerCase().includes(type) || (c.category || '').toLowerCase().includes(type);
+
+      return matchQuery && matchCategory && matchLocation && matchType;
+    });
+    // reset pagination in cards component if needed
     
   }
 
@@ -35,6 +52,8 @@ export class EmprendimientosComponent {
     // ...mas items EJEMPLOS
   ];
 
+  filteredCards: CardItem[] = [];
+
   // manejadores emitidos por <app-cards>
   onDiscover(item: CardItem) {
     console.log('Descubrir item:', item);
@@ -45,6 +64,11 @@ export class EmprendimientosComponent {
   onToggleFavorite(item: CardItem) {
     console.log('Toggle favorito:', item);
     // lógica para marcar favorito (llamar API o cambiar estado local)
+  }
+
+  ngOnInit(): void {
+    // initialize filtered list
+    this.filteredCards = this.cardsArray.slice();
   }
 
 }

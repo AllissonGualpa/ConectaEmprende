@@ -1,10 +1,12 @@
-import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 
 export interface SearchPayload {
@@ -19,7 +21,7 @@ export interface SearchPayload {
   templateUrl: './search-bar.component.html',
   styleUrls: ['./search-bar.component.css']
 })
-export class SearchBarComponent implements OnInit {
+export class SearchBarComponent implements OnInit, OnDestroy {
   @Output() search = new EventEmitter<SearchPayload>();
 
   // dynamic filters: array of { key,label,options } no agregar nada aqui si no en el html por ejemplo el key date (plantilla)
@@ -33,6 +35,7 @@ export class SearchBarComponent implements OnInit {
   @Input() containerClass = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
   form: FormGroup = this.fb.group({ query: [''] });
+  private sub?: Subscription;
 
   constructor(private fb: FormBuilder) {}
 
@@ -43,6 +46,7 @@ export class SearchBarComponent implements OnInit {
         this.form.addControl(f.key, this.fb.control(''));
       }
     });
+    this.sub = this.form.valueChanges.pipe(debounceTime(250)).subscribe(() => this.submit());
   }
 
   submit() {
@@ -67,5 +71,9 @@ export class SearchBarComponent implements OnInit {
   clear() {
     this.form.reset();
     this.submit();
+  }
+
+  ngOnDestroy(): void {
+    if (this.sub) this.sub.unsubscribe();
   }
 }
