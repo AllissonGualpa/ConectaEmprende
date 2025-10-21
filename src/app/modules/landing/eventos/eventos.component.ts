@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavbarComponent } from '../../components/navbar/navbar.component';
-import { FooterComponent } from '../../components/footer/footer.component';
-import { SearchBarComponent } from '../../components/search-bar/search-bar.component';
-import { CardsComponent, CardItem } from '../../components/cards/cards.component'; 
+import { NavbarComponent } from '../../../layout/navbar/navbar.component';
+import { FooterComponent } from '../../../layout/footer/footer.component';
+import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
+import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'; 
 
 
 @Component({

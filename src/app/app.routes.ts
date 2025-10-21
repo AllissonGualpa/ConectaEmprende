@@ -1,14 +1,14 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
-import { InicioComponent } from './shared/pages/inicio/inicio.component';
-import { EmprendimientosComponent } from './shared/pages/emprendimientos/emprendimientos.component';
-import { StartupsComponent } from './shared/pages/startups/startups.component';
-import { BlogComponent } from './shared/pages/blog/blog.component';
-import { AdminDashboardComponent } from './modules/admin/pages/admin-dashboard/admin-dashboard.component';
-import { EventosComponent } from './shared/pages/eventos/eventos.component';
-import { AdminBlogComponent } from './modules/admin/pages/admin-blog/admin-blog.component';
-import { BlogCreateComponent } from './modules/admin/pages/blog-create/blog-create.component';
+import { LoginComponent } from './modules/auth/login/login.component';
+import { RegisterComponent } from './modules/auth/register/register.component';
+import { InicioComponent } from './modules/landing/inicio/inicio.component';
+import { EmprendimientosComponent } from './modules/landing/emprendimientos/emprendimientos.component';
+import { StartupsComponent } from './modules/landing/startups/startups.component';
+import { BlogComponent } from './modules/landing/blog/blog.component';
+import { AdminDashboardComponent } from './modules/admin/admin-dashboard/admin-dashboard.component';
+import { EventosComponent } from './modules/landing/eventos/eventos.component';
+import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.component';
+import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
 
 
 export const routes: Routes = [

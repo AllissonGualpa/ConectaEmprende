@@ -10,7 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIcon } from "@angular/material/icon";
 import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { CustomDateAdapter } from '../../shared/adapters/CustomDateAdapter';
-import { AuthService, RegisterData } from '../../services/auth.service';
+import { AuthService, RegisterData } from '../auth.service';
 import { Router } from '@angular/router';
 
 export const MY_DATE_FORMATS = {

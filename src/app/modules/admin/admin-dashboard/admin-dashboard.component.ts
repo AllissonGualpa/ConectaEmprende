@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { NavbarAdminComponent } from '../../../../shared/components/navbar-admin/navbar-admin.component';
+import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 
 
 @Component({
