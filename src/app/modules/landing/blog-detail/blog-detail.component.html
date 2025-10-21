@@ -1,0 +1,34 @@
+<app-navbar></app-navbar>
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div *ngIf="cargando" class="text-center text-gray-500 py-10">Cargando artículo...</div>
+  <div *ngIf="error" class="text-center text-red-500 py-10">{{ error }}</div>
+
+  <ng-container *ngIf="!cargando && articulo">
+    <img [src]="articulo.image" [alt]="articulo.title" class="w-full h-72 object-cover rounded-lg shadow-md mb-6" />
+
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 font-poppins">{{ articulo.title }}</h1>
+    <p class="text-sm text-gray-500 mb-4">{{ articulo.date }}</p>
+
+    <div class="flex flex-wrap gap-2 mb-5">
+      <span *ngFor="let tag of articulo.tags"
+        class="text-xs font-medium px-2 py-1 rounded-full border"
+        [style.borderColor]="'#C0A537'"
+        [style.color]="'#C0A537'">
+        {{ tag }}
+      </span>
+    </div>
+
+    <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+      {{ articulo.contenido }}
+    </p>
+
+    <div class="mt-10 text-center">
+      <button (click)="volverAlBlog()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow">
+        ← Volver al blog
+      </button>
+    </div>
+  </ng-container>
+</main>
+
+<app-footer></app-footer>

@@ -7,10 +7,8 @@
     style="background-image: url('/assets/img/emprendimiento/foto1.png');"
     aria-label="Sección de bienvenida al blog">
 
-    <!-- Capa oscura -->
     <div class="absolute inset-0 bg-black/50"></div>
 
-    <!-- Contenido -->
     <div
       class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[420px] md:min-h-[460px]
       flex flex-col items-center justify-center text-center text-white">
@@ -24,7 +22,6 @@
         que necesitas.
       </p>
 
-      <!-- Search bar -->
       <div class="w-full flex justify-center mt-6 px-4">
         <div class="w-full max-w-4xl">
           <app-search-bar
@@ -45,41 +42,71 @@
       Novedades del blog
     </h2>
 
-    <!-- Grid principal -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <!-- Artículo principal -->
-      <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-        <img [src]="blogCardsArray[0].image" [alt]="blogCardsArray[0].title" class="w-full h-44 object-cover">
-        <div class="p-4">
-          <p class="text-xs text-gray-500 mb-1">{{ blogCardsArray[0].date }}</p>
-          <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ blogCardsArray[0].title }}</h3>
-          <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ blogCardsArray[0].description }}</p>
+    <div *ngIf="cargando" class="text-center py-8 text-gray-500 text-sm">
+      Cargando artículos...
+    </div>
 
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let tag of blogCardsArray[0].tags"
-              class="text-xs font-medium px-2 py-1 rounded-full border"
-              [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
-              {{ tag }}
-            </span>
+    <div *ngIf="error" class="text-center py-8 text-red-500">
+      {{ error }}
+    </div>
+
+    <!-- Contenido -->
+    <ng-container *ngIf="!cargando && !error && blogCardsArray.length > 0">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+          *ngIf="blogCardsArray[0]">
+          <img [src]="blogCardsArray[0].image" [alt]="blogCardsArray[0].title" class="w-full h-44 object-cover">
+          <div class="p-4">
+            <p class="text-xs text-gray-500 mb-1">{{ blogCardsArray[0].date }}</p>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ blogCardsArray[0].title }}</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">{{ blogCardsArray[0].description }}</p>
+
+            <div class="flex flex-wrap gap-2">
+              <span *ngFor="let tag of blogCardsArray[0].tags"
+                class="text-xs font-medium px-2 py-1 rounded-full border"
+                [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          <div *ngFor="let card of blogCardsArray.slice(1, 4)"
+            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-row gap-3 cursor-pointer"
+            (click)="abrirDetalle(card)">
+            <img [src]="card.image" [alt]="card.title" class="w-28 h-24 object-cover flex-shrink-0">
+            <div class="p-2 flex flex-col justify-between flex-1">
+              <div>
+                <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
+                <h4 class="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{{ card.title }}</h4>
+                <p class="text-gray-600 text-xs mb-1 line-clamp-1">{{ card.description }}</p>
+              </div>
+              <div class="flex flex-wrap gap-1">
+                <span *ngFor="let tag of card.tags"
+                  class="text-xs font-medium px-2 py-0.5 rounded-full border"
+                  [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Artículos secundarios -->
-      <div class="flex flex-col gap-3">
-        <div *ngFor="let card of blogCardsArray.slice(1, 4)"
-          class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-row gap-3 cursor-pointer"
+      <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div *ngFor="let card of blogCardsArray.slice(4)"
+          class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
           (click)="abrirDetalle(card)">
-          <img [src]="card.image" [alt]="card.title" class="w-28 h-24 object-cover flex-shrink-0">
-          <div class="p-2 flex flex-col justify-between flex-1">
-            <div>
-              <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
-              <h4 class="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{{ card.title }}</h4>
-              <p class="text-gray-600 text-xs mb-1 line-clamp-1">{{ card.description }}</p>
-            </div>
-            <div class="flex flex-wrap gap-1">
+          <img [src]="card.image" [alt]="card.title" class="w-full h-36 object-cover">
+          <div class="p-3">
+            <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
+            <h3 class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.title }}</h3>
+            <p class="text-gray-600 text-xs mb-2 line-clamp-2">{{ card.description }}</p>
+
+            <div class="flex flex-wrap gap-1.5">
               <span *ngFor="let tag of card.tags"
-                class="text-xs font-medium px-2 py-0.5 rounded-full border"
+                class="text-xs font-medium px-2.5 py-1 rounded-full border"
                 [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
                 {{ tag }}
               </span>
@@ -87,37 +114,10 @@
           </div>
         </div>
       </div>
-    </div>
+    </ng-container>
 
-    <!-- Grid inferior -->
-    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      <div *ngFor="let card of blogCardsArray.slice(4)"
-        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-        (click)="abrirDetalle(card)">
-        <img [src]="card.image" [alt]="card.title" class="w-full h-36 object-cover">
-        <div class="p-3">
-          <p class="text-xs text-gray-500 mb-1">{{ card.date }}</p>
-          <h3 class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.title }}</h3>
-          <p class="text-gray-600 text-xs mb-2 line-clamp-2">{{ card.description }}</p>
-
-          <div class="flex flex-wrap gap-1.5">
-            <span *ngFor="let tag of card.tags"
-              class="text-xs font-medium px-2.5 py-1 rounded-full border"
-              [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
-              {{ tag }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Paginación -->
-    <div class="flex justify-center items-center gap-2 mt-10">
-      <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">Regresar</button>
-      <button class="px-3 py-1 rounded-lg bg-orange-500 text-white text-sm">1</button>
-      <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">2</button>
-      <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">3</button>
-      <button class="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-gray-100">Siguiente</button>
+    <div *ngIf="!cargando && !error && blogCardsArray.length === 0" class="text-center text-gray-500 mt-6">
+      No hay artículos disponibles en este momento.
     </div>
   </section>
 </main>

@@ -24,7 +24,7 @@ export class AdminBlogComponent implements OnInit {
   fechaInicio: string = '';
   fechaFin: string = '';
 
-  availableTags: any[] = []; // se cargan desde la API
+  availableTags: any[] = [];
 
   private baseApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/articulos';
   private tagsApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/tags';
@@ -148,7 +148,7 @@ export class AdminBlogComponent implements OnInit {
 
   /** Maneja cambios en filtros */
   onFilterChange() {
-    this.loadBlogs(); // Recarga desde API y aplica filtros
+    this.loadBlogs();
   }
 
   /** Maneja búsqueda */

@@ -158,7 +158,7 @@ export class BlogCreateComponent implements OnInit {
   }
 
   onContentChange() {
-    // Agregar lógica adicional aquí si es necesario
+    // Agregar lógica adicional aquí
   }
 
   aplicarFormato(tipo: string) {
@@ -273,8 +273,8 @@ export class BlogCreateComponent implements OnInit {
       titulo: this.blog.titulo,
       descripcionCorta: this.blog.resumen,
       contenido: this.blog.contenido,
-      idImagen: 1, // por ahora siempre 1
-      estado: 'BORRADOR', //
+      idImagen: 1,
+      estado: 'BORRADOR',
       idsTags: this.blog.tags.map(t => t.idTag)
     };
 
@@ -308,4 +308,17 @@ export class BlogCreateComponent implements OnInit {
       this.router.navigate(['/admin/blog']);
     }
   }
+
+  editarBlog() {
+    console.log('Modo edición activado');
+    alert('Función de editar en construcción...');
+  }
+
+  archivarBlog() {
+    if (confirm('¿Seguro que quieres archivar este artículo?')) {
+      console.log('Artículo archivado');
+      alert('Artículo archivado (simulado)');
+    }
+  }
+
 }
