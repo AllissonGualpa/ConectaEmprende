@@ -1,84 +1,62 @@
+// =======================
+// Angular Material Theming
+// =======================
+
+// 1️⃣ @use debe ir al inicio, antes de cualquier regla
 @use '@angular/material' as mat;
 
-// Paleta PRIMARY (naranja)
+// =======================
+// Paletas y Tema Base
+// =======================
+$conectaEmprende-primary: mat.define-palette(mat.$indigo-palette);
+$conectaEmprende-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$conectaEmprende-warn: mat.define-palette(mat.$red-palette);
+
+$conectaEmprende-theme: mat.define-light-theme((
+  color: (
+    primary: $conectaEmprende-primary,
+    accent: $conectaEmprende-accent,
+    warn: $conectaEmprende-warn
+  ),
+  typography: mat.define-typography-config(),
+  density: 0
+));
+
+// =======================
+// Mixins Base Angular Material
+// =======================
+@include mat.core();
+@include mat.all-component-themes($conectaEmprende-theme);
+
+// =======================
+// Paletas Personalizadas
+// =======================
+
+// Primary (naranja)
 $my-primary-palette: mat.define-palette((
-  50: #fde9db,
-  100: #fbd2b7,
-  200: #f7b98f,
-  300: #f29f66,
-  400: #ef8b46,
-  500: #ED6C1C,
-  600: #d55e18,
-  700: #b94e14,
-  800: #9d3f10,
-  900: #702b09,
-  contrast: (
-    50: black,
-    100: black,
-    200: black,
-    300: black,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white
-  )
+  50: #fde9db, 100: #fbd2b7, 200: #f7b98f, 300: #f29f66,
+  400: #ef8b46, 500: #ED6C1C, 600: #d55e18, 700: #b94e14,
+  800: #9d3f10, 900: #702b09,
+  contrast: (50:black,100:black,200:black,300:black,400:white,500:white,600:white,700:white,800:white,900:white)
 ));
 
-// Paleta ACCENT (amarillo claro)
+// Accent (amarillo claro)
 $my-accent-palette: mat.define-palette((
-  50: #fffef7,
-  100: #fffce9,
-  200: #fffce0,
-  300: #fffbd7,
-  400: #fffbd0,
-  500: #FFFDE5,
-  600: #f2eacb,
-  700: #e6dcb5,
-  800: #d9ce9e,
-  900: #bfb179,
-  contrast: (
-    50: black,
-    100: black,
-    200: black,
-    300: black,
-    400: black,
-    500: black,
-    600: black,
-    700: black,
-    800: black,
-    900: black
-  )
+  50:#fffef7,100:#fffce9,200:#fffce0,300:#fffbd7,400:#fffbd0,
+  500:#FFFDE5,600:#f2eacb,700:#e6dcb5,800:#d9ce9e,900:#bfb179,
+  contrast:(50:black,100:black,200:black,300:black,400:black,500:black,600:black,700:black,800:black,900:black)
 ));
 
-// Paleta WARN (azul)
+// Warn (azul)
 $my-warn-palette: mat.define-palette((
-  50: #e3e9f8,
-  100: #bac7f0,
-  200: #8ca1e7,
-  300: #5e7bde,
-  400: #3d5fd7,
-  500: #276BC7,
-  600: #205fb3,
-  700: #184f99,
-  800: #103f7f,
-  900: #072a5a,
-  contrast: (
-    50: black,
-    100: black,
-    200: black,
-    300: white,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white
-  )
+  50:#e3e9f8,100:#bac7f0,200:#8ca1e7,300:#5e7bde,400:#3d5fd7,
+  500:#276BC7,600:#205fb3,700:#184f99,800:#103f7f,900:#072a5a,
+  contrast:(50:black,100:black,200:black,300:white,400:white,500:white,600:white,700:white,800:white,900:white)
 ));
 
-// Definir tema principal
+// =======================
+// Tema Personalizado
+// =======================
 $my-theme: mat.define-light-theme((
   color: (
     primary: $my-primary-palette,
@@ -89,8 +67,14 @@ $my-theme: mat.define-light-theme((
   density: 0
 ));
 
-// Estilos base de Angular Material
+// =======================
+// Aplicar Tema Personalizado
+// =======================
 @include mat.core();
-
-// Aplica los estilos del tema
 @include mat.all-component-themes($my-theme);
+
+// =======================
+// Estilos Globales
+// =======================
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

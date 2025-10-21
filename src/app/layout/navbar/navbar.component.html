@@ -1,23 +1,155 @@
-<nav class="bg-white border-b shadow-sm sticky top-0 z-50 font-poppins">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="h-16 flex items-center">
-      <!--logo-->
-      <div class="flex items-center">
-<a routerLink="/inicio" class="font-poppins font-normal text-orange-500 text-lg tracking-tight">ConectaEmprende</a> 
-    </div>
+<header class="sticky top-0 z-50 bg-white border-b shadow-sm">
+      <mat-toolbar class="!bg-white !h-16 !min-h-16 !p-0">
+        <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            
+            <!-- Logo -->
+            <div class="flex items-center flex-shrink-0">
+              <a 
+                routerLink="/inicio" 
+                class="font-poppins font-normal text-orange-500 text-lg tracking-tight hover:text-orange-600 transition-colors no-underline"
+              >
+                ConectaEmprende
+              </a>
+            </div>
 
-      <!--titulo-->
-      <div class="flex-1 flex justify-center hidden md:flex space-x-8">
-        <a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Inicio</a>
-        <a routerLink="/emprendimientos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Emprendimientos</a>
-        <a routerLink="/eventos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Eventos</a>
-        <a routerLink="/blog" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm">Blog</a>
-      </div>
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex flex-1 justify-center">
+              <div class="flex items-center space-x-1">
+                <a 
+                  routerLink="/inicio" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Inicio
+                </a>
+                <a 
+                  routerLink="/emprendimientos" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Emprendimientos
+                </a>
+                <a 
+                  routerLink="/startups" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Startups
+                </a>
+                <a 
+                  routerLink="/eventos" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Eventos
+                </a>
+                <a 
+                  routerLink="/blog" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Blog
+                </a>
+                <a 
+                  routerLink="/emprendedor/gestion" 
+                  routerLinkActive="!text-orange-500 !font-medium" 
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline"
+                >
+                  Perfil
+                </a>
+              </div>
+            </nav>
 
-      <!--aparte-->
-      <div class="ml-auto flex items-center space-x-4">
-        <a routerLink="/login" class="hidden md:inline-block bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm">Inicia Sesión</a>
-      </div>
-    </div>
-  </div>
-</nav>
+            <!-- Desktop Login -->
+            <div class="hidden md:flex items-center">
+              <a 
+                routerLink="/login" 
+                mat-raised-button 
+                class="!bg-orange-500 hover:!bg-orange-600 !text-white !px-6 !py-2 !rounded-md !text-sm !font-medium !shadow-sm hover:!shadow-md !transition-all no-underline"
+              >
+                Inicia Sesión
+              </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button 
+              mat-icon-button 
+              class="md:hidden !text-gray-700"
+              (click)="toggleMobile()"
+              [attr.aria-label]="mobileOpen() ? 'Cerrar menú' : 'Abrir menú'"
+            >
+              <mat-icon>{{ mobileOpen() ? 'close' : 'menu' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-toolbar>
+
+      <!-- Mobile Navigation (fuera del toolbar) -->
+      @if (mobileOpen()) {
+        <nav class="md:hidden bg-white border-t">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col space-y-2">
+              <a 
+                routerLink="/inicio" 
+                routerLinkActive="!text-orange-500 !bg-orange-50" 
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobile()"
+                class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block"
+              >
+                Inicio
+              </a>
+              <a 
+                routerLink="/emprendimientos" 
+                routerLinkActive="!text-orange-500 !bg-orange-50" 
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobile()"
+                class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block"
+              >
+                Emprendimientos
+              </a>
+              <a 
+                routerLink="/startups" 
+                routerLinkActive="!text-orange-500 !bg-orange-50" 
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobile()"
+                class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block"
+              >
+                Startups
+              </a>
+              <a 
+                routerLink="/eventos" 
+                routerLinkActive="!text-orange-500 !bg-orange-50" 
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobile()"
+                class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block"
+              >
+                Eventos
+              </a>
+              <a 
+                routerLink="/blog" 
+                routerLinkActive="!text-orange-500 !bg-orange-50" 
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobile()"
+                class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block"
+              >
+                Blog
+              </a>
+              <a 
+                routerLink="/login" 
+                (click)="closeMobile()"
+                class="bg-orange-500 hover:bg-orange-600 text-white text-center px-4 py-3 rounded-md text-sm font-medium transition-all no-underline block mt-2"
+              >
+                Inicia Sesión
+              </a>
+            </div>
+          </div>
+        </nav>
+      }
+    </header>
