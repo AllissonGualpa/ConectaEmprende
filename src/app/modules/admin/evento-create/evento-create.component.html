@@ -1,0 +1,75 @@
+<form [formGroup]="form" (ngSubmit)="crear()" class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col" style="max-height:80vh;">
+  <!-- Scrollable content area -->
+  <div class="flex-1 overflow-auto pr-2">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <div>
+      <!-- Nombre -->
+      <label class="block font-semibold text-gray-700 mb-1">Nombre del evento:</label>
+      <input
+        formControlName="nombre"
+        type="text"
+        placeholder="Ingrese el nombre del evento"
+        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 mb-3"
+      />
+        <!--descripcion-->
+      <label class="block font-semibold text-gray-700 mb-1">Descripción:</label>
+      <textarea formControlName="descripcion" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 mb-3"></textarea>
+
+        <!--fecha-->
+      <label class="block font-semibold text-gray-700 mb-1">Fecha:</label>
+      <input
+        formControlName="fecha"
+        type="date"
+        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 mb-3"
+      />
+
+      <!--hora-->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Hora inicio:</label>
+          <input formControlName="horaInicio" type="time" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+        </div>
+        <div>
+          <label class="block font-semibold text-gray-700 mb-1">Hora fin:</label>
+          <input formControlName="horaFin" type="time" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+        </div>
+      </div>
+
+      <!--tipo-->
+      <label class="block font-semibold text-gray-700 mt-4 mb-1">Tipo:</label>
+      <select formControlName="tipo" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 mb-3">
+        <option value="PRESENCIAL">Presencial</option>
+        <option value="VIRTUAL">Virtual</option>
+      </select>
+
+      <!--link-direccin-->
+      <label class="block font-semibold text-gray-700 mb-1">Link de inscripción:</label>
+      <input formControlName="link" type="url" placeholder="Ingrese el link del evento" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      
+      <label class="block font-semibold text-gray-700 mt-3 mb-1">Dirección / Lugar:</label>
+      <input formControlName="direccion" type="text" placeholder="Ej: Auditorio X / Online" class="w-full border border-gray-300 rounded-md px-3 py-2 mb-3" />
+    </div>
+
+  <!--img-->
+    <div class="flex items-center justify-center">
+      <div class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors duration-200">
+        <p class="text-sm text-gray-500 mb-3">
+          <span class="text-orange-500 font-medium">Subir imagen</span> (SVG, PNG, JPG o GIF — recomendado 800x400px)
+        </p>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+      </div>
+    </div>
+    </div>
+
+  </div>
+
+  <!-- boton-->
+  <div class="mt-4 flex justify-end items-center">
+    <div *ngIf="error" class="text-red-600 mr-4">{{ error }}</div>
+    <button type="button" (click)="cancelar()" class="mr-3 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md">Cancelar</button>
+    <button type="submit" [disabled]="loading" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-md shadow-sm text-sm font-medium transition-colors duration-200">
+      {{ loading ? (dialogData?.mode === 'edit' ? 'Editando...' : 'Creando...') : (dialogData?.mode === 'edit' ? 'Editar evento' : 'Crear Evento') }}
+    </button>
+  </div>
+</form>

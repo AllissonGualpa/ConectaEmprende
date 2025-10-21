@@ -11,6 +11,9 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
+import { EventoDeleteComponent } from '../evento-delete/evento-delete.component';
 
 
 interface Evento {
@@ -37,6 +40,7 @@ interface Evento {
     MatDatepickerModule,
     MatNativeDateModule,
     MatPaginatorModule,
+    MatDialogModule,
     FormsModule,
     NavbarAdminComponent
   ],
@@ -44,10 +48,15 @@ interface Evento {
   styleUrls: ['./admin-evento.component.css']
 })
 export class AdminEventoComponent {
+  constructor(private dialog: MatDialog) {}
+  ngOnInit(): void {
+    this.applyFilters();
+  }
   searchText: string = '';
   fechaInicio: Date | null = null;
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
+  filteredEventos: Evento[] = [];
 
 
   displayedColumns: string[] = ['id', 'organizador', 'nombre', 'fecha', 'hora' ,'action'];
@@ -145,6 +154,76 @@ export class AdminEventoComponent {
     }
   ];
 
+  constructorInit() {
+    // initialize filtered list
+    this.filteredEventos = this.eventos.slice();
+  }
+
+  private parseEventDate(dateStr: string): Date | null {
+    if (!dateStr) return null;
+    // try dd/MM/yyyy
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const d = Number(parts[0]);
+        const m = Number(parts[1]) - 1;
+        const y = Number(parts[2]);
+        const dt = new Date(y, m, d);
+        if (!isNaN(dt.getTime())) return dt;
+      }
+    }
+    const dt = new Date(dateStr);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  private startOfDay(d: Date): Date {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  }
+
+  private endOfDay(d: Date): Date {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  }
+
+  applyFilters(): void {
+    const q = (this.searchText || '').toLowerCase().trim();
+    const hasQ = q.length > 0;
+    const hasFechaInicio = !!this.fechaInicio;
+    const hasFechaFin = !!this.fechaFin;
+    const estadoSel = (this.estadoSeleccionado || '').toLowerCase();
+
+    this.filteredEventos = this.eventos.filter(e => {
+      // text search against nombre and organizador
+      if (hasQ) {
+        const hay = (e.nombre || '').toLowerCase().includes(q) || (e.organizador || '').toLowerCase().includes(q);
+        if (!hay) return false;
+      }
+
+      // estado filter
+      if (estadoSel) {
+        const est = (e.estado || '').toLowerCase();
+        if (!est.includes(estadoSel)) return false;
+      }
+
+      // date range filter
+      if (hasFechaInicio || hasFechaFin) {
+        const evtDate = this.parseEventDate(e.fecha);
+        if (!evtDate) return false;
+        if (hasFechaInicio && evtDate < this.startOfDay(this.fechaInicio!)) return false;
+        if (hasFechaFin && evtDate > this.endOfDay(this.fechaFin!)) return false;
+      }
+
+      return true;
+    });
+  }
+
+  clearFilters(): void {
+    this.searchText = '';
+    this.fechaInicio = null;
+    this.fechaFin = null;
+    this.estadoSeleccionado = '';
+    this.applyFilters();
+  }
+
   getEstadoClass(estado: string): string {
     switch(estado) {
       case 'Activo':
@@ -159,11 +238,45 @@ export class AdminEventoComponent {
   }
 
   editarEvento(evento: Evento): void {
-    console.log('Editar:', evento);
+    this.abrirEditarEvento(evento);
   }
 
   eliminarEvento(evento: Evento): void {
-    console.log('Eliminar:', evento);
+    this.abrirEliminarEvento(evento);
+  }
+
+  abrirEliminarEvento(evento: Evento): void {
+    const ref = this.dialog.open(EventoDeleteComponent, {
+      width: '520px',
+      data: {
+        title: '¿Estás seguro de eliminar el evento seleccionado?',
+        message: `Esta acción eliminará permanentemente toda la información asociada al evento '${evento.nombre}'. Por favor, confirma que deseas proceder con la eliminación.`
+      }
+    });
+
+    ref.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        // eliminar del array
+        this.eventos = this.eventos.filter(e => e.id !== evento.id);
+        this.applyFilters();
+      }
+    });
+  }
+
+  abrirEditarEvento(evento: Evento): void {
+    const ref = this.dialog.open(EventoCreateComponent, {
+      width: '820px',
+      maxWidth: '95vw',
+      data: { mode: 'edit', event: evento }
+    });
+
+    ref.afterClosed().subscribe((result: any) => {
+      if (result) {
+        // update the event in the array
+        this.eventos = this.eventos.map(e => e.id === result.id ? { ...e, ...result } : e);
+        this.applyFilters();
+      }
+    });
   }
 
   consultar(): void {
@@ -172,6 +285,14 @@ export class AdminEventoComponent {
 
   crearEvento(): void {
     console.log('Crear nuevo evento');
+  }
+  
+  abrirCrearEvento(): void {
+    this.dialog.open(EventoCreateComponent, {
+      width: '820px',
+      maxWidth: '95vw',
+      panelClass: 'evento-create-dialog'
+    });
   }
   
 }
