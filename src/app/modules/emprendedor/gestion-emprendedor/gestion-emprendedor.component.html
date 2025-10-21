@@ -1,0 +1,97 @@
+<app-navbar></app-navbar>  
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-5xl mx-auto">
+        
+        <!-- Navegación de Tabs -->
+        <div class="mb-8 flex justify-center">
+          
+          <!-- Selector móvil -->
+          <div class="sm:hidden w-full">
+            <label for="tabs" class="sr-only">Selecciona una sección</label>
+            <select 
+              id="tabs" 
+              [(ngModel)]="selectedIndex"
+              class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 shadow-md">
+              <option [value]="0">Mi Perfil</option>
+              <option [value]="1">MI emprendimiento</option>
+              <option [value]="2">Mensajería</option>
+            </select>
+          </div>
+          
+          <!-- Tabs desktop -->
+          <ul class="hidden sm:inline-flex text-sm font-medium text-center text-gray-500 rounded-lg shadow-md overflow-hidden">
+            <li>
+              <button
+                (click)="selectedIndex = 0"
+                [class]="selectedIndex === 0 
+                  ? 'inline-block px-6 py-2.5 text-white bg-orange-500 border-r border-orange-400 font-semibold focus:outline-none transition-all duration-300' 
+                  : 'inline-block px-6 py-2.5 bg-white border-r border-gray-200 hover:text-orange-500 hover:bg-orange-50 focus:outline-none transition-all duration-300'">
+                Mi Perfil
+              </button>
+            </li>
+            <li>
+              <button
+                (click)="selectedIndex = 1"
+                [class]="selectedIndex === 1 
+                  ? 'inline-block px-6 py-2.5 text-white bg-orange-500 border-r border-orange-400 font-semibold focus:outline-none transition-all duration-300' 
+                  : 'inline-block px-6 py-2.5 bg-white border-r border-gray-200 hover:text-orange-500 hover:bg-orange-50 focus:outline-none transition-all duration-300'">
+                Mis Emprendimientos
+              </button>
+            </li>
+            <li>
+              <button
+                (click)="selectedIndex = 2"
+                [class]="selectedIndex === 2 
+                  ? 'inline-block px-6 py-2.5 text-white bg-orange-500 font-semibold focus:outline-none transition-all duration-300' 
+                  : 'inline-block px-6 py-2.5 bg-white border-r border-gray-200 hover:text-orange-500 hover:bg-orange-50 focus:outline-none transition-all duration-300'">
+                Eventos
+              </button>
+            </li>
+            <li>
+              <button
+                (click)="selectedIndex = 3"
+                [class]="selectedIndex === 3 
+                  ? 'inline-block px-6 py-2.5 text-white bg-orange-500 font-semibold focus:outline-none transition-all duration-300' 
+                  : 'inline-block px-6 py-2.5 bg-white hover:text-orange-500 hover:bg-orange-50 focus:outline-none transition-all duration-300'">
+                Mensajería
+              </button>
+            </li>
+          </ul>
+          
+        </div>
+        
+        <!-- Contenido de las secciones -->
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12">
+          
+          <!-- Mi Perfil -->
+          <div *ngIf="selectedIndex === 0" class="animate-fade-in">
+            <app-seccion-personal></app-seccion-personal>
+          </div>
+          
+          <!-- MI emprendimiento -->
+          <div *ngIf="selectedIndex === 1" class="animate-fade-in">
+            <!-- <app-seccion-emprendimiento></app-seccion-emprendimiento> -->
+            <div class="text-center py-20">
+              <p class="text-gray-400 text-xl">Sección en construcción</p>
+            </div>
+          </div>
+
+          <div *ngIf="selectedIndex === 2" class="animate-fade-in">
+            <!-- <app-seccion-mensajeria></app-seccion-mensajeria> -->
+            <div class="text-center py-20">
+              <p class="text-gray-400 text-xl">Sección en construcción</p>
+            </div>
+          </div>
+          
+          <!-- Mensajería -->
+          <div *ngIf="selectedIndex === 3" class="animate-fade-in">
+            <!-- <app-seccion-mensajeria></app-seccion-mensajeria> -->
+            <div class="text-center py-20">
+              <p class="text-gray-400 text-xl">Sección en construcción</p>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
