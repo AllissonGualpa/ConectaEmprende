@@ -1,0 +1,164 @@
+<div class="flex min-h-screen bg-gray-50">
+  <!-- Sidebar Navigation -->
+  <aside class="w-64 bg-white shadow-lg fixed left-0 top-0 h-full">
+    <app-navbar-admin></app-navbar-admin>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 ml-64">
+    <div class="p-6">
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-semibold text-gray-800">Eventos</h1>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <!-- Buscador -->
+          <div class="md:col-span-1">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-icon matPrefix class="text-gray-400">search</mat-icon>
+              <input matInput placeholder="Buscar..." [(ngModel)]="searchText">
+            </mat-form-field>
+          </div>
+
+          <!-- Fecha Inicio -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput [matDatepicker]="pickerInicio" placeholder="30/07/2025" [(ngModel)]="fechaInicio">
+              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+              <mat-datepicker #pickerInicio></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- Fecha Fin -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput [matDatepicker]="pickerFin" placeholder="30/07/2025" [(ngModel)]="fechaFin">
+              <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+              <mat-datepicker #pickerFin></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!--estados-->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Estados</label>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-select placeholder="Seleccionar estado" [(ngModel)]="estadoSeleccionado">
+                    <mat-option value="">Todos</mat-option>
+                    <mat-option value="activo">Activo</mat-option>
+                    <mat-option value="inactivo">Inactivo</mat-option>
+                    </mat-select>
+                </mat-form-field>
+        </div>
+
+          <!--boton-->
+        <div class="flex gap-2 items-end">
+            <button
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-1 transition-colors duration-200">
+                <i class="fa-solid fa-rotate-right"></i>
+                Consultar
+            </button>
+        
+            <button
+                class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-1 transition-colors duration-200">
+                <i class="fa-solid fa-plus"></i>
+                Crear
+            </button>
+        </div>
+        </div>
+      </div>
+
+      <!--tabla -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <table mat-table [dataSource]="eventos" class="w-full">
+          <!--id -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">ID</th>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800 font-medium">{{evento.id}}</td>
+          </ng-container>
+
+          <!-- Organizador Column -->
+          <ng-container matColumnDef="organizador">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+              Organizador
+              <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
+            </th>
+            <td mat-cell *matCellDef="let evento">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-lg">
+                  {{evento.organizadorIcono}}
+                </div>
+                <span class="text-gray-800">{{evento.organizador}}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!--Nombre-->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+              Nombre
+              <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
+            </th>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800">{{evento.nombre}}</td>
+          </ng-container>
+
+          <!--Fecha-->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+              Fecha
+              <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
+            </th>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800">{{evento.fecha}}</td>
+          </ng-container>
+
+          <!-- Hora/Precio Column -->
+          <ng-container matColumnDef="hora">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+              Hora
+              <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
+            </th>
+            <td mat-cell *matCellDef="let evento">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-800 font-medium">{{evento.hora}}</span>
+                <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getEstadoClass(evento.estado)">
+                  {{evento.estado}}
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Action Column -->
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">Action</th>
+            <td mat-cell *matCellDef="let evento">
+              <div class="flex gap-2">
+                <button mat-icon-button color="primary" (click)="editarEvento(evento)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="eliminarEvento(evento)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50"></tr>
+        </table>
+
+        <!-- Paginación -->
+        <div class="flex justify-center items-center gap-2 p-4 border-t">
+          <button mat-button class="text-gray-600">Regresar</button>
+          <button mat-mini-fab color="warn" class="w-8 h-8 text-sm">1</button>
+          <button mat-button>2</button>
+          <button mat-button>3</button>
+          <button mat-button class="text-gray-600">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
