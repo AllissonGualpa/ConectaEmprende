@@ -13,6 +13,7 @@ import { BlogDetailComponent } from './modules/landing/blog-detail/blog-detail.c
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.component';
 import { BlogEditComponent } from './modules/admin/blog-edit/blog-edit.component';
+import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimientos/admin-emprendimientos.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -37,5 +38,6 @@ export const routes: Routes = [
   { path: 'admin/evento', component: AdminEventoComponent },
   { path: 'admin/blog', component: AdminBlogComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },
-  { path: 'admin/blog/edit/:id', component: BlogEditComponent }
+  { path: 'admin/blog/edit/:id', component: BlogEditComponent },
+  { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent }
 ];
