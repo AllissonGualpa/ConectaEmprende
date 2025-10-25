@@ -1,0 +1,14 @@
+<div class="w-full flex flex-col items-center justify-center p-6 text-center">
+  <div class="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center mb-4">
+    <svg class="w-12 h-12 text-emerald-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <h2 class="text-lg font-semibold text-gray-900 mb-2">{{ title }}</h2>
+  <p *ngIf="subtitle" class="text-sm text-gray-600 mb-4">{{ subtitle }}</p>
+
+  <div class="w-full flex justify-center">
+    <button (click)="close()" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-md shadow-sm hover:bg-gray-50">Cerrar</button>
+  </div>
+</div>

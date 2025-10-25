@@ -14,6 +14,7 @@ import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
 import { EventoDeleteComponent } from '../evento-delete/evento-delete.component';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 
 interface Evento {
@@ -288,10 +289,34 @@ export class AdminEventoComponent {
   }
   
   abrirCrearEvento(): void {
-    this.dialog.open(EventoCreateComponent, {
+    const ref = this.dialog.open(EventoCreateComponent, {
       width: '820px',
       maxWidth: '95vw',
       panelClass: 'evento-create-dialog'
+    });
+
+    ref.afterClosed().subscribe((result: any) => {
+      if (result) {
+        // The API response might include the created event with id and other fields.
+        // Push the new event into the list so it appears in the admin table.
+        // Map fields if needed to match local Evento interface.
+        const newEvento: Evento = {
+          id: result.id ? String(result.id) : `#${Math.floor(Math.random() * 90000) + 10000}`,
+          organizador: result.organizador || 'Admin',
+          organizadorIcono: result.organizadorIcono || '🟢',
+          nombre: result.titulo || result.nombre || 'Nuevo Evento',
+          fecha: result.fechaEvento ? (String(result.fechaEvento).includes('T') ? String(result.fechaEvento).split('T')[0] : String(result.fechaEvento)) : '',
+          hora: result.hora || result.horaInicio || '',
+          estado: result.estado || 'Activo'
+        };
+
+        // Prepend to show newest first
+        this.eventos = [newEvento, ...this.eventos];
+        this.applyFilters();
+
+        // show created dialog (pass subject so text can be customized)
+        this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento' } });
+      }
     });
   }
   

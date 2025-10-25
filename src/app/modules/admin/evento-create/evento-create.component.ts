@@ -140,8 +140,9 @@ export class EventoCreateComponent {
         // idMultimedia: opcional, si el backend espera id en lugar de archivo
       };
 
-      // Si el control imagen tiene un File, lo añadimos al payload para que el servicio lo mande como FormData
-      if (f.imagen instanceof File) payload.imagen = f.imagen;
+  // Backend aún no maneja subida de archivos; usar idMultimedia quemado
+  // No enviar archivo en el payload. El backend espera un idMultimedia (numérico).
+  payload.idMultimedia = 1; // valor fijo según lo indicado
 
       // Try to retrieve token from localStorage if user didn't paste one
       let token = this.form.value.token;
