@@ -268,9 +268,9 @@ export class AdminEventoComponent {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-        // update the event in the array
-        this.eventos = this.eventos.map(e => e.id === result.id ? { ...e, ...result } : e);
-        this.applyFilters();
+        // The backend returned a successful update. Refresh the list from server
+        // to make sure the UI reflects the authoritative data (avoids id/shape mismatches).
+        this.loadEventosFromServer();
       }
     });
   }
@@ -292,7 +292,7 @@ export class AdminEventoComponent {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-        
+
         let rawTipoRes = result.tipoEvento || result.tipo || '';
         const lugarRes = String(result.direccion || result.lugar || '');
         if (!rawTipoRes && lugarRes.toLowerCase().includes('online')) rawTipoRes = 'Online';
