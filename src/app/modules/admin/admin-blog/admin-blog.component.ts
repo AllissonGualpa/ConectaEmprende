@@ -199,10 +199,12 @@ export class AdminBlogComponent implements OnInit {
     this.router.navigate(['/admin/blog/edit', id]);
   }
 
+  /** Archivar o desarchivar un blog según su estado */
+  toggleArchive(blog: any) {
+    if (!blog.idArticulo) return;
 
-  /** Archivar blog */
-  archivarBlog(blog: any) {
-    if (!confirm(`¿Deseas archivar el blog "${blog.titulo}"?`)) return;
+    const accion = blog.estado === 'ARCHIVADO' ? 'desarchivar' : 'archivar';
+    if (!confirm(`¿Deseas ${accion} el blog "${blog.titulo}"?`)) return;
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -211,17 +213,17 @@ export class AdminBlogComponent implements OnInit {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const userId = 1; // Ajustar según tu backend
-    const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.id}/archivar?idUsuario=${userId}`;
+    const userId = 1;
+    const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.idArticulo}/${accion}?idUsuario=${userId}`;
 
-    this.http.put(apiUrl, null, { headers }).subscribe({
-      next: () => {
-        alert('Blog archivado correctamente.');
-        this.loadBlogs(); // Recargar lista
+    this.http.put(apiUrl, null, { headers, responseType: 'text' }).subscribe({
+      next: (res) => {
+        alert(res);
+        this.loadBlogs(); // recarga la lista actualizada
       },
       error: (err) => {
-        console.error('Error al archivar blog:', err);
-        alert('Error al archivar blog.');
+        console.error(`Error al ${accion} blog:`, err);
+        alert(`Error al ${accion} blog.`);
       }
     });
   }
