@@ -49,10 +49,10 @@ export class EventoService {
           body.append(key, String(value));
         }
       });
-      // Si tenemos idMultimedia, lo añadimos también
+      //si tenemos idMultimedia, lo añadimos
       if (options?.idMultimedia) body.append('idMultimedia', String(options.idMultimedia));
     } else {
-      // Enviar JSON normal (la API de ejemplo espera JSON segun el payload)
+      //envia el json (la api espera json segun el payload)
       if (data.fechaEvento instanceof Date) data.fechaEvento = data.fechaEvento.toISOString();
       if (options?.idMultimedia) data.idMultimedia = options.idMultimedia;
       body = data;
@@ -60,5 +60,18 @@ export class EventoService {
     }
 
     return this.http.post(url, body, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Obtener lista de eventos desde la API
+   */
+  getEvents(options?: { token?: string }): Observable<any> {
+  const url = `${this.baseUrl}/v1/eventos/filtrar`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(url, { headers }).pipe(catchError((err) => throwError(() => err)));
   }
 }
