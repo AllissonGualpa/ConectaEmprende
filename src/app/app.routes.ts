@@ -12,21 +12,30 @@ import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.com
 import { BlogDetailComponent } from './modules/landing/blog-detail/blog-detail.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.component';
-
+import { BlogEditComponent } from './modules/admin/blog-edit/blog-edit.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+
+  // Autenticación
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+
+  // Landing pública
   { path: 'inicio', component: InicioComponent },
   { path: 'emprendimientos', component: EmprendimientosComponent },
-  { path: 'startups', component: StartupsComponent},
+  { path: 'startups', component: StartupsComponent },
   { path: 'blog', component: BlogComponent },
-  { path: 'admin', component: AdminDashboardComponent },
-  { path: 'eventos', component: EventosComponent },
-  { path: 'admin/blog', component: AdminBlogComponent },
-  { path: 'admin/evento', component: AdminEventoComponent },
-  { path: 'admin/blog/create', component: BlogCreateComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
-  { path: 'emprendedor/gestion', component: GestionEmprendedor}
+  { path: 'eventos', component: EventosComponent },
+
+  // Emprendedor
+  { path: 'emprendedor/gestion', component: GestionEmprendedor },
+
+  // Administración
+  { path: 'admin', component: AdminDashboardComponent },
+  { path: 'admin/evento', component: AdminEventoComponent },
+  { path: 'admin/blog', component: AdminBlogComponent },
+  { path: 'admin/blog/create', component: BlogCreateComponent },
+  { path: 'admin/blog/edit/:id', component: BlogEditComponent }
 ];
