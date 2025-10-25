@@ -63,6 +63,21 @@ export class EventoService {
   }
 
   /**
+   * Inactiva (cambia estado) un evento en la API.
+   * Endpoint: /v1/eventos/inactivar/:idEvento
+   */
+  inactivateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/v1/eventos/inactivar/${idEvento}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Use PUT with empty body (backend expected to toggle estado a 'cancelado' o similar)
+    return this.http.put(url, {}, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
    * Edita un evento existente en la API.
    * Endpoint: /v1/eventos/editar/:idEvento/:idEmprendimiento
    */

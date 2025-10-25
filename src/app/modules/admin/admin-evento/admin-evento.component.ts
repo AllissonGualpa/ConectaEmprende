@@ -245,16 +245,28 @@ export class AdminEventoComponent {
     const ref = this.dialog.open(EventoDeleteComponent, {
       width: '520px',
       data: {
-        title: '¿Estás seguro de eliminar el evento seleccionado?',
-        message: `Esta acción eliminará permanentemente toda la información asociada al evento '${evento.nombre}'. Por favor, confirma que deseas proceder con la eliminación.`
+        title: '¿Estás seguro de cancelar el evento seleccionado?',
+        message: `Esta acción cancelará el evento ${evento.nombre}. Por favor, confirma que deseas proceder con la cancelación.`
       }
     });
 
     ref.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        // eliminar del array
-        this.eventos = this.eventos.filter(e => e.id !== evento.id);
-        this.applyFilters();
+        
+        const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
+        this.eventoService.inactivateEvent(evento.id, { token }).subscribe({
+          next: (res: any) => {
+            // Refresh the list from server so UI matches backend
+            this.loadEventosFromServer();
+            // Show confirmation dialog
+            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
+          },
+          error: (err: any) => {
+            console.warn('Error inactivando evento', err);
+            // Optionally show an error dialog
+            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
+          }
+        });
       }
     });
   }
