@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { SeccionPersonalComponent } from './seccion-personal/seccion-personal.component';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FormsModule } from '@angular/forms';
+import { SeccionEventoComponent } from './seccion-evento/seccion-evento.component'; 
 
 @Component({
   selector: 'app-gestion-emprendedor',
   standalone: true,
-  imports: [MatTabsModule, MatTabGroup, MatTab,CommonModule, SeccionPersonalComponent,NavbarComponent,FormsModule],
+  imports: [MatTabsModule, MatTabGroup, MatTab,CommonModule, SeccionPersonalComponent,NavbarComponent,FormsModule, SeccionEventoComponent],
   templateUrl: './gestion-emprendedor.component.html',
 })
 export class GestionEmprendedor {
