@@ -4,6 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
+import { MatDialog } from '@angular/material/dialog';
+import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
 
 @Component({
   selector: 'app-admin-blog',
@@ -31,15 +33,15 @@ export class AdminBlogComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit() {
-    this.loadTags(); // Cargar tags
-    this.loadBlogs(); // Cargar blogs
+    this.loadTags();
+    this.loadBlogs();
   }
 
-  /** Carga los tags desde la API */
   loadTags() {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -47,16 +49,11 @@ export class AdminBlogComponent implements OnInit {
     const headers = { Authorization: `Bearer ${token}` };
 
     this.http.get<any[]>(this.tagsApiUrl, { headers }).subscribe({
-      next: (tags) => {
-        this.availableTags = tags;
-      },
-      error: (err) => {
-        console.error('Error al cargar tags:', err);
-      }
+      next: (tags) => { this.availableTags = tags; },
+      error: (err) => { console.error('Error al cargar tags:', err); }
     });
   }
 
-  /** Construye la URL de la API con los filtros */
   buildApiUrl(): string {
     let url = this.baseApiUrl;
     const params: string[] = [];
@@ -67,31 +64,23 @@ export class AdminBlogComponent implements OnInit {
     if (this.fechaFin) {
       params.push(`fechaFin=${encodeURIComponent(new Date(this.fechaFin + 'T23:59:59').toISOString())}`);
     }
-
     if (this.selectedTag) {
       params.push(`tag=${this.selectedTag}`);
     }
-
     if (this.selectedEstado) {
       params.push(`estado=${this.selectedEstado}`);
     }
-
-    if (params.length > 0) {
-      url += '?' + params.join('&');
-    }
+    if (params.length > 0) url += '?' + params.join('&');
 
     console.log('URL de la API:', url);
     return url;
   }
 
-  /** Carga los artículos desde la API */
   loadBlogs() {
     this.loading = true;
-
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('No se encontró token en el almacenamiento local.');
-      alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
+      alert('No estás autenticado. Por favor, inicia sesión.');
       this.router.navigate(['/login']);
       return;
     }
@@ -101,7 +90,6 @@ export class AdminBlogComponent implements OnInit {
 
     this.http.get<any[]>(apiUrl, { headers }).subscribe({
       next: (response) => {
-        console.log('Blogs cargados:', response);
         this.blogs = response;
         this.applyFilters();
         this.loading = false;
@@ -109,7 +97,6 @@ export class AdminBlogComponent implements OnInit {
       error: (error) => {
         console.error('Error al cargar blogs:', error);
         this.loading = false;
-
         if (error.status === 401) {
           alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
           this.router.navigate(['/login']);
@@ -118,11 +105,9 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
-  /** Aplica filtros */
   applyFilters() {
     let filtered = this.blogs;
 
-    // Filtro de búsqueda
     if (this.searchTerm) {
       filtered = filtered.filter(blog =>
         blog.titulo?.toLowerCase().includes(this.searchTerm) ||
@@ -131,14 +116,12 @@ export class AdminBlogComponent implements OnInit {
       );
     }
 
-    // Filtro por tag
     if (this.selectedTag) {
       filtered = filtered.filter(blog =>
         blog.tags?.some((tag: any) => tag.idTag == this.selectedTag)
       );
     }
 
-    // Filtro por estado
     if (this.selectedEstado) {
       filtered = filtered.filter(blog => blog.estado === this.selectedEstado);
     }
@@ -146,18 +129,13 @@ export class AdminBlogComponent implements OnInit {
     this.filteredBlogs = filtered;
   }
 
-  /** Maneja cambios en filtros */
-  onFilterChange() {
-    this.loadBlogs();
-  }
+  onFilterChange() { this.loadBlogs(); }
 
-  /** Maneja búsqueda */
   onSearch(event: any) {
     this.searchTerm = event.target.value.toLowerCase();
     this.applyFilters();
   }
 
-  /** Limpia todos los filtros */
   clearFilters() {
     this.selectedTag = '';
     this.selectedEstado = '';
@@ -167,64 +145,57 @@ export class AdminBlogComponent implements OnInit {
     this.loadBlogs();
   }
 
-  /** Clase CSS para estado */
   getEstadoClass(estado: string): string {
     switch (estado) {
-      case 'PUBLICADO':
-        return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs';
-      case 'BORRADOR':
-        return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs';
-      case 'ARCHIVADO':
-        return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
-      default:
-        return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
+      case 'PUBLICADO': return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs';
+      case 'BORRADOR': return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs';
+      case 'ARCHIVADO': return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
+      default: return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
     }
   }
 
-  /** Crear nuevo blog */
-  crearBlog() {
-    this.router.navigate(['/admin/blog/create']);
-  }
+  crearBlog() { this.router.navigate(['/admin/blog/create']); }
 
-  /** Editar blog */
   editarBlog(blog: any) {
-    const id = blog.idArticulo;
-
-    if (!id) {
-      console.error('El blog no tiene un ID válido:', blog);
-      alert('No se pudo editar este artículo porque no tiene un ID válido.');
+    if (!blog.idArticulo) {
+      alert('No se pudo editar este artículo.');
       return;
     }
-
-    this.router.navigate(['/admin/blog/edit', id]);
+    this.router.navigate(['/admin/blog/edit', blog.idArticulo]);
   }
 
-  /** Archivar o desarchivar un blog según su estado */
   toggleArchive(blog: any) {
     if (!blog.idArticulo) return;
-
     const accion = blog.estado === 'ARCHIVADO' ? 'desarchivar' : 'archivar';
-    if (!confirm(`¿Deseas ${accion} el blog "${blog.titulo}"?`)) return;
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('No estás autenticado.');
-      return;
-    }
+    const dialogRef = this.dialog.open(BlogDeleteComponent, {
+      width: '450px',
+      data: {
+        title: `¿Estás seguro que deseas ${accion} el blog "${blog.titulo}"?`,
+        message: blog.estado === 'ARCHIVADO'
+          ? 'Esta acción desarchivará el artículo y volverá a estar visible.'
+          : 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.'
+      }
+    });
 
-    const headers = { Authorization: `Bearer ${token}` };
-    const userId = 1;
-    const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.idArticulo}/${accion}?idUsuario=${userId}`;
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('No estás autenticado.');
+          return;
+        }
 
-    this.http.put(apiUrl, null, { headers, responseType: 'text' }).subscribe({
-      next: (res) => {
-        alert(res);
-        this.loadBlogs(); // recarga la lista actualizada
-      },
-      error: (err) => {
-        console.error(`Error al ${accion} blog:`, err);
-        alert(`Error al ${accion} blog.`);
+        const headers = { Authorization: `Bearer ${token}` };
+        const userId = 1;
+        const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.idArticulo}/${accion}?idUsuario=${userId}`;
+
+        this.http.put(apiUrl, null, { headers, responseType: 'text' }).subscribe({
+          next: (res) => { alert(res); this.loadBlogs(); },
+          error: (err) => { console.error(`Error al ${accion} blog:`, err); alert(`Error al ${accion} blog.`); }
+        });
       }
     });
   }
+
 }

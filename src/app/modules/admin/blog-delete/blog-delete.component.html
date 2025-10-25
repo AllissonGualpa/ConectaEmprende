@@ -1,23 +1,21 @@
-<div class="p-6 text-center">
-  <h2 class="text-xl font-semibold mb-4">
-    {{ data?.title || '¿Estás seguro de archivar el artículo?' }}
-  </h2>
-  <p class="text-gray-600 mb-6">
-    {{ data?.message || 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.' }}
-  </p>
+<div class="p-6">
+  <div class="flex items-start gap-4">
+    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-700">!</div>
 
-  <div class="flex justify-center gap-4">
-    <button
-      class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition"
-      (click)="cancelar()"
-    >
-      Cancelar
-    </button>
-    <button
-      class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-      (click)="confirmar()"
-    >
-      Archivar
+    <div>
+      <h3 class="text-lg font-semibold">
+        {{ data?.title || '¿Estás seguro de archivar este blog?' }}
+      </h3>
+      <p class="text-sm text-gray-600 mt-2">
+        {{ data?.message || 'Esta acción archivará o desarchivará el artículo según corresponda. Podrás revertirlo más tarde si lo deseas.' }}
+      </p>
+    </div>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-3">
+    <button class="bg-gray-200 px-4 py-2 rounded" (click)="cancelar()">Cancelar</button>
+    <button class="bg-orange-500 text-white px-4 py-2 rounded" (click)="confirmar()">
+      {{ data?.title?.includes('desarchivar') ? 'Desarchivar' : 'Archivar' }}
     </button>
   </div>
 </div>
