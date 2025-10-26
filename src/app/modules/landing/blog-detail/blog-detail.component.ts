@@ -22,11 +22,23 @@ export class BlogDetailComponent implements OnInit {
     const data = this.route.snapshot.queryParamMap.get('data');
     if (data) {
       this.articulo = JSON.parse(decodeURIComponent(data));
+      // Formatear la fecha a texto legible
+      this.articulo.fechaPublicacion = this.formatearFecha(this.articulo.fechaCreacion);
       this.cargando = false;
     } else {
       this.error = 'Artículo no encontrado';
       this.cargando = false;
     }
+  }
+
+  formatearFecha(fechaISO: string): string {
+    const fecha = new Date(fechaISO);
+    const opciones: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return fecha.toLocaleDateString('es-ES', opciones);
   }
 
   volverAlBlog() {

@@ -34,21 +34,28 @@ interface BlogArticulo {
   styleUrls: ['./blog.component.css']
 })
 export class BlogComponent implements OnInit {
+  blogCardsArrayOriginal: any[] = [];
   blogCardsArray: any[] = [];
+  articulosOriginales: BlogArticulo[] = [];
   cargando = true;
   error: string | null = null;
   tagsArray: string[] = [];
 
-  constructor(private router: Router, private http: HttpClient) { }
+  constructor(private router: Router, private http: HttpClient) {}
 
   ngOnInit(): void {
     this.cargarTags();
     this.cargarArticulos();
   }
 
+  // Cargar tags desde API
   cargarTags() {
     const url = 'https://eureka-emprende.onrender.com/v1/blog/tags';
-    this.http.get<{ nombre: string }[]>(url).subscribe({
+    const token = localStorage.getItem('token');
+
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
+
+    this.http.get<{ idTag: number; nombre: string }[]>(url, { headers }).subscribe({
       next: (data) => {
         this.tagsArray = data.map(tag => tag.nombre);
       },
@@ -59,36 +66,38 @@ export class BlogComponent implements OnInit {
     });
   }
 
+  // Cargar artículos del blog
   cargarArticulos() {
     const url =
       'https://eureka-emprende.onrender.com/v1/blog/articulos?fechaInicio=2025-10-01T00:00:00&fechaFin=2025-10-31T23:59:59';
 
     const token = localStorage.getItem('token');
-    let options: any = { responseType: 'json', observe: 'body' as const };
-    if (token) {
-      options.headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    }
+    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
 
-    this.http.get<BlogArticulo[]>(url, options).subscribe({
+    this.http.get<BlogArticulo[]>(url, { headers }).subscribe({
       next: (data) => {
         if (Array.isArray(data)) {
-          // filtrar solo publicados y no archivados
-          this.blogCardsArray = data
-            .filter(item => item.estado.toUpperCase() === 'PUBLICADO' && !item.archivado)
-            .map((item) => ({
-              id: item.idArticulo,
-              title: item.titulo,
-              description: item.descripcionCorta,
-              image: item.urlImagen || '/assets/img/blog/default.jpg',
-              tags: item.tags?.map((t: { idTag: number; nombre: string }) => t.nombre) || [],
-              date: new Date(item.fechaCreacion).toLocaleDateString('es-EC', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }),
-              contenido: item.contenido
-            }));
+          this.articulosOriginales = data.filter(
+            item => item.estado.toUpperCase() === 'PUBLICADO' && !item.archivado
+          );
 
+          // Transformamos para la vista
+          this.blogCardsArrayOriginal = this.articulosOriginales.map(item => ({
+            id: item.idArticulo,
+            title: item.titulo,
+            description: item.descripcionCorta,
+            image: item.urlImagen || '/assets/img/blog/default.jpg',
+            tags: item.tags?.map(t => t.nombre) || [],
+            date: new Date(item.fechaCreacion).toLocaleDateString('es-EC', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }),
+            contenido: item.contenido
+          }));
+
+          // Inicializamos el array visible
+          this.blogCardsArray = [...this.blogCardsArrayOriginal];
         } else {
           console.warn('Formato de respuesta inesperado:', data);
           this.error = 'La respuesta del servidor no es válida.';
@@ -99,7 +108,7 @@ export class BlogComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar artículos:', err);
         if (err.status === 401 && !token) {
-          this.error = null; // usuario no logueado, no mostrar error
+          this.error = null;
         } else {
           this.error =
             err.status === 401
@@ -111,12 +120,47 @@ export class BlogComponent implements OnInit {
     });
   }
 
+
   abrirDetalle(card: any) {
-    const articuloData = encodeURIComponent(JSON.stringify(card));
-    this.router.navigate(['/blog', card.id], { queryParams: { data: articuloData } });
+    // Buscamos el artículo original completo usando el ID
+    const articuloCompleto = this.articulosOriginales.find(
+      art => art.idArticulo === card.id
+    );
+
+    if (articuloCompleto) {
+      const articuloData = encodeURIComponent(JSON.stringify(articuloCompleto));
+      this.router.navigate(['/blog', card.id], { queryParams: { data: articuloData } });
+    } else {
+      console.error('No se encontró el artículo original');
+    }
   }
 
+  // Búsqueda funcional: texto y tags
   onSearch(payload: SearchPayload) {
-    console.log('Búsqueda en Blog:', payload);
+    const { query, filters } = payload;
+    let filtered = [...this.blogCardsArrayOriginal];
+
+    // Filtrar por texto en título
+    if (query) {
+      filtered = filtered.filter(card =>
+        card.title.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // Filtrar por tags seleccionados
+    if (filters) {
+      filters.forEach((filter: { key: string; value: any }) => {
+        if (filter.key === 'tag') {
+          filtered = filtered.filter(card => {
+            const filterValue =
+              typeof filter.value === 'string' ? filter.value : filter.value?.label;
+            return card.tags.includes(filterValue);
+          });
+        }
+      });
+    }
+
+    // Actualizar array visible
+    this.blogCardsArray = filtered;
   }
 }

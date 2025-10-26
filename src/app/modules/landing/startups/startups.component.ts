@@ -18,25 +18,44 @@ import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'
     CardsComponent,
   ],
   templateUrl: './startups.component.html',
-  styleUrl: './startups.component.css',
+  styleUrls: ['./startups.component.css'],
 })
 export class StartupsComponent implements OnInit {
+  // Declarar la propiedad antes de usarla en el template
+  categories: string[] = [];
+
   cardsArray: CardItem[] = [];
   allStartups: any[] = [];
   loading = true;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
+    this.fetchCategories();
     this.fetchStartups();
   }
 
+  // Cargar categorías desde el endpoint
+  fetchCategories() {
+    const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
+    this.http.get<any[]>(endpoint).subscribe({
+      next: (data) => {
+        // Mapea los nombres correctamente
+        this.categories = data.map((c) => c.nombre || 'Sin nombre');
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías:', err);
+        this.categories = [];
+      },
+    });
+  }
+
+  // Cargar startups
   fetchStartups() {
     const endpoint = 'https://eureka-emprende.onrender.com/api/emprendimientos/filtrar?tipo=Startup';
 
     this.http.get<any[]>(endpoint).subscribe({
       next: (data) => {
-        // Mapear los resultados al formato usado por las tarjetas
         this.cardsArray = data.map((s) => ({
           id: s.id,
           title: s.nombreComercial || 'Startup sin nombre',
@@ -44,7 +63,7 @@ export class StartupsComponent implements OnInit {
             s.estadoEmprendimiento === 'APROBADO'
               ? `Startup aprobada ubicada en ${s.nombreCiudad}`
               : 'Emprendimiento en proceso.',
-          image: '/assets/img/inicio/foto5.png', // temporal mientras no haya imagen real
+          image: '/assets/img/inicio/foto5.png',
           category: s.nombreTipoEmprendimiento?.trim() || 'Startup',
           location: s.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
@@ -60,19 +79,20 @@ export class StartupsComponent implements OnInit {
     });
   }
 
-
-  // Búsqueda (filtro por nombre o tipo)
-  onSearch(payload: { query: string;[key: string]: any }) {
+  // Filtro de búsqueda
+  onSearch(payload: { query: string; [key: string]: any }) {
     const query = payload.query?.toLowerCase() || '';
-
-    this.cardsArray = this.allStartups.filter(
-      (s) =>
-        s.title.toLowerCase().includes(query) ||
-        s.category.toLowerCase().includes(query)
-    );
+    const selectedCategory = payload['category'] || '';
+    this.cardsArray = this.allStartups.filter((s) => {
+      const matchesQuery =
+        s.title.toLowerCase().includes(query) || s.category.toLowerCase().includes(query);
+      const matchesCategory =
+        !selectedCategory || s.category === selectedCategory;
+      return matchesQuery && matchesCategory;
+    });
   }
 
-  // Acciones emitidas desde las tarjetas
+  // Acciones
   onDiscover(item: CardItem) {
     console.log('Descubrir startup:', item);
   }

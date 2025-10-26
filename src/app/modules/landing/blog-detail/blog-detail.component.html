@@ -1,30 +1,46 @@
-<app-navbar></app-navbar>
+<app-navbar></app-navbar> 
 
 <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
   <div *ngIf="cargando" class="text-center text-gray-500 py-10">Cargando artículo...</div>
   <div *ngIf="error" class="text-center text-red-500 py-10">{{ error }}</div>
 
   <ng-container *ngIf="!cargando && articulo">
-    <img [src]="articulo.image" [alt]="articulo.title" class="w-full h-72 object-cover rounded-lg shadow-md mb-6" />
+    <!-- Fecha de publicación -->
+    <p class="text-sm text-gray-400 mb-3 text-center">Publicado el {{ articulo.fechaPublicacion }}</p>
 
-    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-3 font-poppins">{{ articulo.title }}</h1>
-    <p class="text-sm text-gray-500 mb-4">{{ articulo.date }}</p>
+    <!-- Título en color naranja -->
+    <h1 class="text-3xl sm:text-4xl font-bold mb-4 font-poppins text-center" style="color: #ED6C1C;">
+      {{ articulo.titulo }}
+    </h1>
 
-    <div class="flex flex-wrap gap-2 mb-5">
+    <!-- Descripción corta -->
+    <p class="text-gray-600 text-base sm:text-lg leading-relaxed mb-5 text-center max-w-3xl mx-auto">
+      {{ articulo.descripcionCorta }}
+    </p>
+
+    <!-- Tags -->
+    <div class="flex flex-wrap justify-center gap-2 mb-6">
       <span *ngFor="let tag of articulo.tags"
-        class="text-xs font-medium px-2 py-1 rounded-full border"
+        class="text-xs font-medium px-3 py-1 rounded-full border"
         [style.borderColor]="'#C0A537'"
         [style.color]="'#C0A537'">
-        {{ tag }}
+        {{ tag.nombre }}
       </span>
     </div>
 
-    <p class="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
-      {{ articulo.contenido }}
-    </p>
+    <!-- Imagen -->
+    <img [src]="articulo.urlImagen" [alt]="articulo.titulo" 
+         class="w-full h-72 object-cover rounded-lg shadow-md mb-8" />
 
+    <!-- Contenido completo -->
+    <div class="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line prose max-w-none">
+      {{ articulo.contenido }}
+    </div>
+
+    <!-- Botón volver -->
     <div class="mt-10 text-center">
-      <button (click)="volverAlBlog()" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow">
+      <button (click)="volverAlBlog()" 
+              class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow transition-colors">
         ← Volver al blog
       </button>
     </div>
