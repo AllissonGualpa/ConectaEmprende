@@ -12,18 +12,34 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { EventoService } from '../evento.service';
 import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
 import { EventoDeleteComponent } from '../evento-delete/evento-delete.component';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 
 interface Evento {
   id: string;
   organizador: string;
-  organizadorIcono: string;
+  //organizadorIcono: string;
   nombre: string;
   fecha: string;
   hora: string;
-  estado: 'Activo' | 'En proceso' | 'Inactivo';
+  estado: 'Activo' | 'En proceso' | 'Inactivo' | string;
+  // additional fields from API
+  descripcion?: string;
+  horaInicio?: string;
+  horaFin?: string;
+  direccion?: string;
+  linkInscripcion?: string;
+  tipoEvento?: string;
+  lugar?: string;
+  idEmprendimiento?: number;
+  nombreEmprendimiento?: string;
+  idMultimedia?: number;
+  activo?: boolean;
+  fechaCreacion?: string;
+  fechaModificacion?: string | null;
 }
 
 @Component({
@@ -48,9 +64,9 @@ interface Evento {
   styleUrls: ['./admin-evento.component.css']
 })
 export class AdminEventoComponent {
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private eventoService: EventoService) {}
   ngOnInit(): void {
-    this.applyFilters();
+    this.loadEventosFromServer();
   }
   searchText: string = '';
   fechaInicio: Date | null = null;
@@ -62,101 +78,81 @@ export class AdminEventoComponent {
   displayedColumns: string[] = ['id', 'organizador', 'nombre', 'fecha', 'hora' ,'action'];
 
   eventos: Evento[] = [
-    {
-      id: '#20462',
-      organizador: 'Hat',
-      organizadorIcono: '🎩',
-      nombre: 'Matt Dickerson',
-      fecha: '13/05/2022',
-      hora: '9:30 AM',
-      estado: 'Activo'
-    },
-    {
-      id: '#18933',
-      organizador: 'Laptop',
-      organizadorIcono: '💻',
-      nombre: 'Wiktoria',
-      fecha: '22/05/2022',
-      hora: '11:00 AM',
-      estado: 'Activo'
-    },
-    {
-      id: '#45169',
-      organizador: 'Phone',
-      organizadorIcono: '📱',
-      nombre: 'Trixie Byrd',
-      fecha: '15/06/2022',
-      hora: '6:15 PM',
-      estado: 'En proceso'
-    },
-    {
-      id: '#44304',
-      organizador: 'Bag',
-      organizadorIcono: '👜',
-      nombre: 'Brad Mason',
-      fecha: '06/09/2022',
-      hora: '10:00 AM',
-      estado: 'En proceso'
-    },
-    {
-      id: '#17188',
-      organizador: 'Headset',
-      organizadorIcono: '🎧',
-      nombre: 'Sanderson',
-      fecha: '25/09/2022',
-      hora: '3:45 PM',
-      estado: 'Inactivo'
-    },
-    {
-      id: '#73003',
-      organizador: 'Mouse',
-      organizadorIcono: '🖱️',
-      nombre: 'Jun Redfern',
-      fecha: '04/10/2022',
-      hora: '12:30 PM',
-      estado: 'Activo'
-    },
-    {
-      id: '#58825',
-      organizador: 'Clock',
-      organizadorIcono: '⏰',
-      nombre: 'Miriam Kidd',
-      fecha: '17/10/2022',
-      hora: '8:00 AM',
-      estado: 'Activo'
-    },
-    {
-      id: '#44122',
-      organizador: 'T-shirt',
-      organizadorIcono: '👕',
-      nombre: 'Dominic',
-      fecha: '24/10/2022',
-      hora: '4:20 PM',
-      estado: 'Activo'
-    },
-    {
-      id: '#89094',
-      organizador: 'Monitor',
-      organizadorIcono: '🖥️',
-      nombre: 'Shanice',
-      fecha: '01/11/2022',
-      hora: '2:10 PM',
-      estado: 'Inactivo'
-    },
-    {
-      id: '#80252',
-      organizador: 'Keyboard',
-      organizadorIcono: '⌨️',
-      nombre: 'Poppy-Rose',
-      fecha: '22/11/2022',
-      hora: '5:55 PM',
-      estado: 'En proceso'
-    }
+   
   ];
 
   constructorInit() {
     // initialize filtered list
     this.filteredEventos = this.eventos.slice();
+  }
+
+  private loadEventosFromServer(): void {
+    // try to fetch from API; requires that EventoService.getEvents points to the correct endpoint
+    this.eventoService.getEvents().subscribe({
+      next: (res: any) => {
+        try {
+          // If the API returns an array directly
+          const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
+          if (Array.isArray(items) && items.length > 0) {
+            // Map the API items to our local Evento shape conservatively
+            this.eventos = items.map((it: any) => {
+              const fechaEvento = it.fechaEvento ? String(it.fechaEvento) : (it.fecha || '');
+              // try to extract time part if present
+              let horaStr = '';
+              try {
+                if (fechaEvento.includes('T')) {
+                  horaStr = fechaEvento.split('T')[1].split(':').slice(0,2).join(':');
+                } else if (it.horaInicio) {
+                  horaStr = it.horaInicio;
+                }
+              } catch (e) { horaStr = it.hora || ''; }
+
+              // derive and normalize tipoEvento: prefer explicit field, otherwise derive from direccion/lugar
+              let rawTipo = it.tipoEvento || it.tipo || '';
+              const lugarStr = String(it.direccion || it.lugar || '');
+              if (!rawTipo && lugarStr.toLowerCase().includes('online')) rawTipo = 'Online';
+              let tipoNorm = '';
+              if (rawTipo) {
+                const lt = String(rawTipo).toLowerCase();
+                if (lt.includes('pres')) tipoNorm = 'Presencial';
+                else if (lt.includes('onl') || lt.includes('vir')) tipoNorm = 'Online';
+                else tipoNorm = String(rawTipo).charAt(0).toUpperCase() + String(rawTipo).slice(1);
+              }
+
+              return {
+                id: it.idEvento ? String(it.idEvento) : (it.id ? String(it.id) : (it._id ? String(it._id) : `#${Math.floor(Math.random() * 90000) + 10000}`)),
+                organizador: it.nombreEmprendimiento || it.organizador || it.usuario || 'Admin',
+                organizadorIcono: it.organizadorIcono || 'person',
+                nombre: it.titulo || it.nombre || 'Evento',
+                fecha: fechaEvento.includes('T') ? fechaEvento.split('T')[0] : fechaEvento,
+                hora: horaStr,
+                estado: it.estadoEvento || it.estado || (it.activo ? 'Activo' : 'Inactivo') || 'Activo',
+                descripcion: it.descripcion || '',
+                horaInicio: it.horaInicio || (fechaEvento.includes('T') ? fechaEvento.split('T')[1] : undefined),
+                horaFin: it.horaFin || undefined,
+                direccion: it.direccion || it.lugar || '',
+                linkInscripcion: it.linkInscripcion || it.link || '',
+                tipoEvento: tipoNorm,
+                lugar: it.lugar || it.direccion || '',
+                idEmprendimiento: it.idEmprendimiento || undefined,
+                nombreEmprendimiento: it.nombreEmprendimiento || undefined,
+                idMultimedia: it.idMultimedia || undefined,
+                activo: typeof it.activo === 'boolean' ? it.activo : undefined,
+                fechaCreacion: it.fechaCreacion || undefined,
+                fechaModificacion: it.fechaModificacion || undefined
+              } as Evento;
+            });
+          }
+        } catch (e) {
+          console.warn('Error mapeando eventos', e);
+        }
+        this.applyFilters();
+      },
+      error: (err: any) => {
+        console.warn('No se pudieron cargar eventos desde el servidor, usando datos locales.', err);
+        this.applyFilters();
+      }
+    });
   }
 
   private parseEventDate(dateStr: string): Date | null {
@@ -226,11 +222,11 @@ export class AdminEventoComponent {
 
   getEstadoClass(estado: string): string {
     switch(estado) {
-      case 'Activo':
+      case 'programado':
         return 'bg-green-100 text-green-700';
-      case 'En proceso':
+      case 'terminado':
         return 'bg-yellow-100 text-yellow-700';
-      case 'Inactivo':
+      case 'cancelado':
         return 'bg-red-100 text-red-700';
       default:
         return '';
@@ -249,16 +245,28 @@ export class AdminEventoComponent {
     const ref = this.dialog.open(EventoDeleteComponent, {
       width: '520px',
       data: {
-        title: '¿Estás seguro de eliminar el evento seleccionado?',
-        message: `Esta acción eliminará permanentemente toda la información asociada al evento '${evento.nombre}'. Por favor, confirma que deseas proceder con la eliminación.`
+        title: '¿Estás seguro de cancelar el evento seleccionado?',
+        message: `Esta acción cancelará el evento ${evento.nombre}. Por favor, confirma que deseas proceder con la cancelación.`
       }
     });
 
     ref.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        // eliminar del array
-        this.eventos = this.eventos.filter(e => e.id !== evento.id);
-        this.applyFilters();
+        
+        const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
+        this.eventoService.inactivateEvent(evento.id, { token }).subscribe({
+          next: (res: any) => {
+            // Refresh the list from server so UI matches backend
+            this.loadEventosFromServer();
+            // Show confirmation dialog
+            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
+          },
+          error: (err: any) => {
+            console.warn('Error inactivando evento', err);
+            // Optionally show an error dialog
+            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
+          }
+        });
       }
     });
   }
@@ -272,9 +280,9 @@ export class AdminEventoComponent {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-        // update the event in the array
-        this.eventos = this.eventos.map(e => e.id === result.id ? { ...e, ...result } : e);
-        this.applyFilters();
+        // The backend returned a successful update. Refresh the list from server
+        // to make sure the UI reflects the authoritative data (avoids id/shape mismatches).
+        this.loadEventosFromServer();
       }
     });
   }
@@ -288,10 +296,56 @@ export class AdminEventoComponent {
   }
   
   abrirCrearEvento(): void {
-    this.dialog.open(EventoCreateComponent, {
+    const ref = this.dialog.open(EventoCreateComponent, {
       width: '820px',
       maxWidth: '95vw',
       panelClass: 'evento-create-dialog'
+    });
+
+    ref.afterClosed().subscribe((result: any) => {
+      if (result) {
+
+        let rawTipoRes = result.tipoEvento || result.tipo || '';
+        const lugarRes = String(result.direccion || result.lugar || '');
+        if (!rawTipoRes && lugarRes.toLowerCase().includes('online')) rawTipoRes = 'Online';
+        let tipoNormRes = '';
+        if (rawTipoRes) {
+          const ltr = String(rawTipoRes).toLowerCase();
+          if (ltr.includes('pres')) tipoNormRes = 'Presencial';
+          else if (ltr.includes('onl') || ltr.includes('vir')) tipoNormRes = 'Online';
+          else tipoNormRes = String(rawTipoRes).charAt(0).toUpperCase() + String(rawTipoRes).slice(1);
+        }
+
+        const newEvento: Evento = {
+          id: result.idEvento ? String(result.idEvento) : (result.id ? String(result.id) : `#${Math.floor(Math.random() * 90000) + 10000}`),
+          organizador: result.nombreEmprendimiento || result.organizador || 'Admin',
+          //organizadorIcono: result.organizadorIcono || 'person',
+          nombre: result.titulo || result.nombre || 'Nuevo Evento',
+          fecha: result.fechaEvento ? (String(result.fechaEvento).includes('T') ? String(result.fechaEvento).split('T')[0] : String(result.fechaEvento)) : '',
+          hora: result.hora || result.horaInicio || (result.fechaEvento && String(result.fechaEvento).includes('T') ? String(result.fechaEvento).split('T')[1].slice(0,5) : ''),
+          estado: result.estadoEvento || result.estado || (result.activo ? 'Activo' : 'Inactivo') || 'Activo',
+          descripcion: result.descripcion || '',
+          horaInicio: result.horaInicio || undefined,
+          horaFin: result.horaFin || undefined,
+          direccion: result.direccion || result.lugar || '',
+          linkInscripcion: result.linkInscripcion || result.link || '',
+          tipoEvento: tipoNormRes,
+          lugar: result.lugar || '',
+          idEmprendimiento: result.idEmprendimiento || undefined,
+          nombreEmprendimiento: result.nombreEmprendimiento || undefined,
+          idMultimedia: result.idMultimedia || undefined,
+          activo: typeof result.activo === 'boolean' ? result.activo : undefined,
+          fechaCreacion: result.fechaCreacion || undefined,
+          fechaModificacion: result.fechaModificacion || undefined
+        };
+
+        // Prepend to show newest first
+        this.eventos = [newEvento, ...this.eventos];
+        this.applyFilters();
+
+        // show created dialog (pass subject so text can be customized)
+        this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento' } });
+      }
     });
   }
   

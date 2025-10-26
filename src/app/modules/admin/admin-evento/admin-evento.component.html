@@ -87,21 +87,21 @@
   <table mat-table [dataSource]="filteredEventos" class="w-full">
           <!--id -->
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">ID</th>
-            <td mat-cell *matCellDef="let evento" class="text-gray-800 font-medium">{{evento.id}}</td>
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">ID</th>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800 font-medium px-6 py-3">{{evento.id}}</td>
           </ng-container>
 
           <!-- Organizador Column -->
           <ng-container matColumnDef="organizador">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">
               Organizador
               <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
             </th>
-            <td mat-cell *matCellDef="let evento">
+            <td mat-cell *matCellDef="let evento" class="px-6 py-3">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-lg">
-                  {{evento.organizadorIcono}}
-                </div>
+               <!--  <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-lg">
+                  <mat-icon class="text-gray-600">{{evento.organizadorIcono}}</mat-icon>
+                </div>-->
                 <span class="text-gray-800">{{evento.organizador}}</span>
               </div>
             </td>
@@ -109,30 +109,34 @@
 
           <!--Nombre-->
           <ng-container matColumnDef="nombre">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">
               Nombre
               <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
             </th>
-            <td mat-cell *matCellDef="let evento" class="text-gray-800">{{evento.nombre}}</td>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800 px-6 py-3">{{evento.nombre}}</td>
           </ng-container>
 
           <!--Fecha-->
           <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">
               Fecha
               <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
             </th>
-            <td mat-cell *matCellDef="let evento" class="text-gray-800">{{evento.fecha}}</td>
+            <td mat-cell *matCellDef="let evento" class="text-gray-800 px-6 py-3">
+              <div class="flex items-center gap-3">
+                <span class="text-gray-800">{{evento.fecha}}</span>
+              </div>
+            </td>
           </ng-container>
 
           <!-- Hora/Precio Column -->
           <ng-container matColumnDef="hora">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">
               Hora
               <mat-icon class="text-sm align-middle ml-1">unfold_more</mat-icon>
             </th>
-            <td mat-cell *matCellDef="let evento">
-              <div class="flex items-center justify-between">
+            <td mat-cell *matCellDef="let evento" class="px-6 py-3">
+              <div class="flex items-center gap-3">
                 <span class="text-gray-800 font-medium">{{evento.hora}}</span>
                 <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getEstadoClass(evento.estado)">
                   {{evento.estado}}
@@ -143,8 +147,8 @@
 
           <!-- Action Column -->
           <ng-container matColumnDef="action">
-            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50">Action</th>
-            <td mat-cell *matCellDef="let evento">
+            <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">Accion</th>
+            <td mat-cell *matCellDef="let evento" class="px-6 py-3">
               <div class="flex gap-2">
                 <button mat-icon-button color="primary" (click)="editarEvento(evento)">
                   <mat-icon>edit</mat-icon>

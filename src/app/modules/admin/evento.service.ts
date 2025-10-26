@@ -49,10 +49,10 @@ export class EventoService {
           body.append(key, String(value));
         }
       });
-      // Si tenemos idMultimedia, lo añadimos también
+      //si tenemos idMultimedia, lo añadimos
       if (options?.idMultimedia) body.append('idMultimedia', String(options.idMultimedia));
     } else {
-      // Enviar JSON normal (la API de ejemplo espera JSON segun el payload)
+      //envia el json (la api espera json segun el payload)
       if (data.fechaEvento instanceof Date) data.fechaEvento = data.fechaEvento.toISOString();
       if (options?.idMultimedia) data.idMultimedia = options.idMultimedia;
       body = data;
@@ -60,5 +60,74 @@ export class EventoService {
     }
 
     return this.http.post(url, body, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Inactiva (cambia estado) un evento en la API.
+   * Endpoint: /v1/eventos/inactivar/:idEvento
+   */
+  inactivateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/v1/eventos/inactivar/${idEvento}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Use PUT with empty body (backend expected to toggle estado a 'cancelado' o similar)
+    return this.http.put(url, {}, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Edita un evento existente en la API.
+   * Endpoint: /v1/eventos/editar/:idEvento/:idEmprendimiento
+   */
+  editEvent(idEvento: string | number, idEmprendimiento?: number, data?: any, options?: { idMultimedia?: number; token?: string }): Observable<any> {
+    const idEmp = idEmprendimiento ?? 4; // por defecto 4 si no se provee
+    const url = `${this.baseUrl}/v1/eventos/editar/${idEvento}/${idEmp}`;
+
+    let body: any;
+    let headers = new HttpHeaders();
+
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (data?.imagen instanceof File) {
+      body = new FormData();
+      const fileField = 'file';
+      Object.keys(data).forEach((key) => {
+        const value = data[key];
+        if (value == null) return;
+        if (key === 'imagen') {
+          body.append(fileField, value, value.name);
+        } else if (value instanceof Date) {
+          body.append(key, value.toISOString());
+        } else {
+          body.append(key, String(value));
+        }
+      });
+      if (options?.idMultimedia) body.append('idMultimedia', String(options.idMultimedia));
+    } else {
+      if (data && data.fechaEvento instanceof Date) data.fechaEvento = data.fechaEvento.toISOString();
+      if (options?.idMultimedia) data.idMultimedia = options.idMultimedia;
+      body = data || {};
+      headers = headers.set('Content-Type', 'application/json');
+    }
+
+    return this.http.put(url, body, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Obtener lista de eventos desde la API
+   */
+  getEvents(options?: { token?: string }): Observable<any> {
+  const url = `${this.baseUrl}/v1/eventos/filtrar`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get(url, { headers }).pipe(catchError((err) => throwError(() => err)));
   }
 }

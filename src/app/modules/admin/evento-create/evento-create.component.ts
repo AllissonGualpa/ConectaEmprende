@@ -140,8 +140,9 @@ export class EventoCreateComponent {
         // idMultimedia: opcional, si el backend espera id en lugar de archivo
       };
 
-      // Si el control imagen tiene un File, lo añadimos al payload para que el servicio lo mande como FormData
-      if (f.imagen instanceof File) payload.imagen = f.imagen;
+  // Backend aún no maneja subida de archivos; usar idMultimedia quemado
+  // No enviar archivo en el payload. El backend espera un idMultimedia (numérico).
+  payload.idMultimedia = 1; // valor fijo según lo indicado
 
       // Try to retrieve token from localStorage if user didn't paste one
       let token = this.form.value.token;
@@ -151,10 +152,25 @@ export class EventoCreateComponent {
 
       console.log('Enviar payload a createEvent:', payload);
 
-      // If dialog is used in edit mode, close with the form value and let caller handle update
+      // If dialog is used in edit mode, call the API to update the event
       if (this.dialogData && this.dialogData.mode === 'edit') {
-        this.loading = false;
-        this.dialogRef.close({ ...payload, id: this.dialogData.event?.id });
+        this.error = null;
+        const idEvento = this.dialogData.event?.id || this.dialogData.event?.idEvento;
+        const idEmprendimiento = this.dialogData.event?.idEmprendimiento || 4;
+
+        this.eventoService.editEvent(idEvento, idEmprendimiento, payload, { idMultimedia: 1, token: token || undefined }).subscribe({
+          next: (res: any) => {
+            this.loading = false;
+            // Ensure we return an object that contains an `id` field so the caller can match the event
+            const resId = res?.idEvento ? String(res.idEvento) : (res?.id ? String(res.id) : String(idEvento));
+            const closeObj = { ...payload, ...res, id: resId };
+            this.dialogRef.close(closeObj);
+          },
+          error: (err: any) => {
+            this.loading = false;
+            this.error = err?.message || 'Error actualizando evento';
+          }
+        });
         return;
       }
 
