@@ -28,7 +28,7 @@ export class StartupsComponent implements OnInit {
   allStartups: any[] = [];
   loading = true;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.fetchCategories();
@@ -37,18 +37,34 @@ export class StartupsComponent implements OnInit {
 
   // Cargar categorías desde el endpoint
   fetchCategories() {
-    const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
-    this.http.get<any[]>(endpoint).subscribe({
-      next: (data) => {
-        // Mapea los nombres correctamente
-        this.categories = data.map((c) => c.nombre || 'Sin nombre');
-      },
-      error: (err) => {
-        console.error('Error al cargar categorías:', err);
-        this.categories = [];
-      },
-    });
+  const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
+  const token = localStorage.getItem('token');
+
+  // Si no hay token, salimos directamente
+  if (!token) {
+    console.warn('No se encontró token. No se pueden cargar las categorías.');
+    this.categories = [];
+    return;
   }
+
+  // Cabeceras correctamente tipadas
+  const headers = { Authorization: `Bearer ${token}` };
+
+  this.http.get<any[]>(endpoint, { headers }).subscribe({
+    next: (data) => {
+      if (Array.isArray(data)) {
+        this.categories = data.map((c: any) => c.nombre || 'Sin nombre');
+      } else {
+        console.warn('Formato inesperado de categorías:', data);
+        this.categories = [];
+      }
+    },
+    error: (err) => {
+      console.error('Error al cargar categorías:', err);
+      this.categories = [];
+    },
+  });
+}
 
   // Cargar startups
   fetchStartups() {
@@ -80,7 +96,7 @@ export class StartupsComponent implements OnInit {
   }
 
   // Filtro de búsqueda
-  onSearch(payload: { query: string; [key: string]: any }) {
+  onSearch(payload: { query: string;[key: string]: any }) {
     const query = payload.query?.toLowerCase() || '';
     const selectedCategory = payload['category'] || '';
     this.cardsArray = this.allStartups.filter((s) => {
