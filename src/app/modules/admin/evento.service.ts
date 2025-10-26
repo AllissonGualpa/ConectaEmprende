@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 
 @Injectable({ providedIn: 'root' })
@@ -129,5 +129,23 @@ export class EventoService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(url, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Obtener un evento por id. Si la API no ofrece un endpoint directo,
+   * hacemos GET a /v1/eventos/filtrar y buscamos el elemento por id.
+   */
+  getEventById(id: string | number, options?: { token?: string }): Observable<any> {
+    return this.getEvents(options).pipe(
+      map((res: any) => {
+        const items = Array.isArray(res) ? res : (res?.data || res?.result || res?.items || []);
+        const found = (items || []).find((it: any) => {
+          const mid = it.idEvento ?? it.id ?? it._id ?? it.codigo ?? null;
+          return String(mid) === String(id);
+        });
+        return found || null;
+      }),
+      catchError((err) => throwError(() => err))
+    );
   }
 }
