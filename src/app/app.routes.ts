@@ -7,6 +7,7 @@ import { StartupsComponent } from './modules/landing/startups/startups.component
 import { BlogComponent } from './modules/landing/blog/blog.component';
 import { AdminDashboardComponent } from './modules/admin/admin-dashboard/admin-dashboard.component';
 import { EventosComponent } from './modules/landing/eventos/eventos.component';
+import { EventoDetailComponent } from './modules/landing/evento-detail/evento-detail.component';
 import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.component';
 import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
 import { BlogDetailComponent } from './modules/landing/blog-detail/blog-detail.component';
@@ -24,6 +25,7 @@ export const routes: Routes = [
   { path: 'blog', component: BlogComponent },
   { path: 'admin', component: AdminDashboardComponent },
   { path: 'eventos', component: EventosComponent },
+  { path: 'eventos/:id', component: EventoDetailComponent },
   { path: 'admin/blog', component: AdminBlogComponent },
   { path: 'admin/evento', component: AdminEventoComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },

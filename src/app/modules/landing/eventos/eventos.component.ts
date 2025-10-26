@@ -4,6 +4,9 @@ import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'; 
+import { EventoService } from '../../admin/evento.service';
+import { OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -13,16 +16,12 @@ import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.css'
 })
-export class EventosComponent {
+export class EventosComponent implements OnInit {
 
   //SEARCH BAR
    onSearch(payload: { query: string; [key: string]: any }) {
     console.log('Búsqueda en Emprendimientos:', payload);
-    // Aquí puedes:
-    // - llamar a un servicio para filtrar resultados
-    // - navegar a una página de resultados con query params
-    // - aplicar los filtros en el estado del componente
-    // Build filtered result from cardsArray
+
     let result = this.cardsArray.slice();
 
     // Query text filter
@@ -55,30 +54,27 @@ export class EventosComponent {
 
     // assign
     this.filtered = result;
-    
-    
   }
 
-  //CARDS
-  cardsArray: CardItem[] = [
-    { id: 1, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-04-12' },
-    { id: 2, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-05-03' },
-    { id: 3, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-06-21' },
-    { id: 4, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-07-08' },
-    { id: 5, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-08-16' },
-    { id: 6, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-09-05' },
-    { id: 7, title: 'WORKSHOP: INTELIGENCIA ARTIFICIAL PARA STARTUPS', description: 'Esto es un texto para que vaya  pequeña descripción del evento', image: '/assets/img/eventos/foto1.png', date: '2025-09-05' },
-    // ...mas items EJEMPLOS son 6 por pagina 
-  ];
+  // cards populated from backend
+  cardsArray: CardItem[] = [];
 
   // filtered list (initially all items)
-  filtered: CardItem[] = this.cardsArray.slice(); // copia inicial de items
+  filtered: CardItem[] = [];
+
+  constructor(private eventoService: EventoService, private router: Router) {}
+
+  ngOnInit(): void {
+    this.loadEventosFromServer();
+  }
 
   // manejadores emitidos por <app-cards>
   onDiscover(item: CardItem) {
     console.log('Descubrir item:', item);
-    // por ejemplo: navegar a detalle
-    // this.router.navigate(['/emprendimiento', item.id]);
+    // navegar a la página de detalle del evento
+    if (item && item.id != null) {
+      this.router.navigate(['/eventos', item.id]);
+    }
   }
 
   onToggleFavorite(item: CardItem) {
@@ -90,5 +86,32 @@ export class EventosComponent {
     onRegister(item: CardItem) {
       console.log('Registrarse en evento:', item);
       // implementar lógica de registro (abrir modal, navegar, llamar API, etc.)
+    }
+
+    private loadEventosFromServer(): void {
+      this.eventoService.getEvents().subscribe({
+        next: (res: any) => {
+          const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
+          this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
+          this.filtered = this.cardsArray.slice();
+        },
+        error: (err: any) => {
+          console.warn('Error cargando eventos desde backend, usando muestras locales', err);
+          // keep filtered empty or fallback to existing hardcoded set if desired
+          this.cardsArray = [];
+          this.filtered = this.cardsArray.slice();
+        }
+      });
+    }
+
+    private mapToCard(it: any): CardItem {
+      const id = it.idEvento ?? it.id ?? it._id ?? 0;
+      const title = it.titulo || it.nombre || 'Evento';
+      const description = it.descripcion || '';
+      const image = it.imagenUrl || it.imagen || '/assets/img/eventos/foto1.png';
+      const dateRaw = it.fechaEvento || it.fecha || undefined;
+      const date = dateRaw && String(dateRaw).includes('T') ? String(dateRaw).split('T')[0] : dateRaw;
+      const location = it.lugar || it.direccion || '';
+      return { id: Number(id), title, description, image, date, location } as CardItem;
     }
 }
