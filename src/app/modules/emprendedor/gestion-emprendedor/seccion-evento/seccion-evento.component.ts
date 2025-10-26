@@ -20,10 +20,7 @@ export class SeccionEventoComponent {
   fechaFin: string | null = null;
   estadoSeleccionado: string = '';
 
-  onSearch(payload: any) {
-    // por ahora sólo logueamos; conectar con tu servicio de eventos para filtrar
-    console.log('Search payload recibido en SeccionEventoComponent:', payload);
-  }
+
 
   consultar() {
     const payload = {
@@ -77,6 +74,8 @@ export class SeccionEventoComponent {
 
   // events list for cards
   eventos: CardItem[] = [];
+  // keep raw items returned by server for filtering
+  private allRawItems: any[] = [];
   // keep original raw items by id so we can open edit dialog with full data
   private rawMap: Record<string, any> = {};
 
@@ -91,7 +90,8 @@ export class SeccionEventoComponent {
       next: (res: any) => {
         const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
         this.rawMap = {};
-        this.eventos = (items || []).map((it: any) => {
+        this.allRawItems = (items || []).slice();
+        this.eventos = (this.allRawItems || []).map((it: any) => {
           const card = this.mapToCard(it);
           this.rawMap[String(card.id)] = it;
           return card;
@@ -101,6 +101,68 @@ export class SeccionEventoComponent {
         console.warn('No se pudieron cargar eventos en SeccionEvento:', err);
         this.eventos = [];
       }
+    });
+  }
+
+  // Client-side filtering so SearchBar can filter by name, date or type without changing shared component
+  onSearch(payload: any) {
+    console.log('SeccionEvento.onSearch payload:', payload);
+    const q = String(payload?.query || '').toLowerCase().trim();
+    const dateKey = payload?.date || payload?.fechaInicio || '';
+    const typeKey = payload?.type || payload?.tipo || payload?.tipoEvento || '';
+
+    const hasQ = q.length > 0;
+    const hasDate = !!dateKey;
+    const hasType = !!typeKey;
+
+    const normalizeType = (raw: string) => {
+      const s = String(raw || '').toLowerCase();
+      if (!s) return '';
+      if (s.includes('onl') || s.includes('vir')) return 'Online';
+      if (s.includes('pres')) return 'Presencial';
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    };
+
+    const wantedType = normalizeType(typeKey);
+
+    const filtered = (this.allRawItems || []).filter((it: any) => {
+      // text search against titulo/nombre
+      if (hasQ) {
+        const title = String(it.titulo || it.nombre || '').toLowerCase();
+        if (!title.includes(q)) return false;
+      }
+
+      // date filter: compare only date part YYYY-MM-DD
+      if (hasDate) {
+        const rawDate = it.fechaEvento || it.fecha || it.fechaEventoString || '';
+        const d = String(rawDate || '');
+        const datePart = d.includes('T') ? d.split('T')[0] : (d.includes('/') ? (() => {
+          // try to convert dd/mm/yyyy to yyyy-mm-dd
+          const parts = d.split('/');
+          if (parts.length===3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+          return d;
+        })() : d);
+        if (!datePart) return false;
+        if (datePart !== String(dateKey)) return false;
+      }
+
+      // type filter: check tipoEvento, tipo or derive from lugar/direccion
+      if (hasType) {
+        const rawTipo = it.tipoEvento || it.tipo || '';
+        const tipoNorm = normalizeType(rawTipo || it.direccion || it.lugar || '');
+        if (!tipoNorm) return false;
+        if (tipoNorm !== wantedType) return false;
+      }
+
+      return true;
+    });
+
+    // map to cards
+    this.rawMap = {};
+    this.eventos = (filtered || []).map((it: any) => {
+      const card = this.mapToCard(it);
+      this.rawMap[String(card.id)] = it;
+      return card;
     });
   }
 
