@@ -1,74 +1,104 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
-import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'; 
+import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
 
 @Component({
   selector: 'app-emprendimientos',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, SearchBarComponent, CardsComponent],
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    NavbarComponent,
+    FooterComponent,
+    SearchBarComponent,
+    CardsComponent,
+  ],
   templateUrl: './emprendimientos.component.html',
-  styleUrl: './emprendimientos.component.css'
+  styleUrl: './emprendimientos.component.css',
 })
-export class EmprendimientosComponent {
+export class EmprendimientosComponent implements OnInit {
+  cardsArray: CardItem[] = [];
+  filteredCards: CardItem[] = [];
+  loading = true;
 
-  //SEARCH BAR
-   onSearch(payload: { query: string; [key: string]: any }) {
-    // payload puede contener: { query, category, location, type }
+  constructor(private http: HttpClient) { }
+
+  ngOnInit() {
+    this.fetchEmprendimientos();
+  }
+
+  // Obtener los emprendimientos
+  fetchEmprendimientos() {
+    const endpoint = 'https://eureka-emprende.onrender.com/api/emprendimientos/filtrar?tipo=Emprendimiento';
+
+    this.http.get<any[]>(endpoint).subscribe({
+      next: (data) => {
+        // Mapeamos los resultados al formato de las tarjetas
+        this.cardsArray = data.map((e) => ({
+          id: e.id,
+          title: e.nombreComercial || 'Emprendimiento sin nombre',
+          description:
+            e.estadoEmprendimiento === 'APROBADO'
+              ? `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad}`
+              : 'Emprendimiento en proceso.',
+          image: '/assets/img/inicio/foto5.png', // imagen temporal
+          category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
+          location: e.nombreCiudad || 'Sin ubicación',
+          views: Math.floor(Math.random() * 20000) + 1000,
+        }));
+
+        // Inicializamos la lista filtrada
+        this.filteredCards = this.cardsArray;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar emprendimientos:', err);
+        this.loading = false;
+      },
+    });
+  }
+
+  // Filtros de búsqueda (nombre, categoría, ubicación, tipo)
+  onSearch(payload: { query: string;[key: string]: any }) {
     const q = (payload.query || '').toLowerCase().trim();
-  const category = ((payload as any)['category'] || '').toLowerCase();
-  const location = ((payload as any)['location'] || '').toLowerCase();
-  const type = ((payload as any)['type'] || '').toLowerCase();
+    const category = ((payload as any)['category'] || '').toLowerCase();
+    const location = ((payload as any)['location'] || '').toLowerCase();
+    const type = ((payload as any)['type'] || '').toLowerCase();
 
     this.filteredCards = this.cardsArray.filter(c => {
-      const matchQuery = !q || (
-        (c.title || '').toLowerCase().includes(q) ||
-        (c.description || '').toLowerCase().includes(q) ||
-        (c.category || '').toLowerCase().includes(q) ||
-        String(c.id).toLowerCase().includes(q)
-      );
+      const matchQuery =
+        !q ||
+        (c.title?.toLowerCase().includes(q)) ||
+        (c.description?.toLowerCase().includes(q)) ||
+        (c.category?.toLowerCase().includes(q)) ||
+        String(c.id).toLowerCase().includes(q);
 
-      const matchCategory = !category || (c.category || '').toLowerCase().includes(category);
-      const matchLocation = !location || (c.location || '').toLowerCase().includes(location);
-      // Note: 'type' isn't a field on CardItem by default; if you store it in description or category, adjust accordingly
-      const matchType = !type || (c.description || '').toLowerCase().includes(type) || (c.category || '').toLowerCase().includes(type);
+      const matchCategory =
+        !category || (c.category?.toLowerCase().includes(category));
+
+      const matchLocation =
+        !location || (c.location?.toLowerCase().includes(location));
+
+      const matchType =
+        !type ||
+        (c.description?.toLowerCase().includes(type)) ||
+        (c.category?.toLowerCase().includes(type));
 
       return matchQuery && matchCategory && matchLocation && matchType;
     });
-    // reset pagination in cards component if needed
-    
   }
 
-  //CARDS
-  cardsArray: CardItem[] = [
-    { id: 1, title: 'Abuela Churros', description: 'Churros artesanales...', image: '/assets/img/inicio/foto5.png', category: 'Alimentos y Bebidas', location: 'Guayaquil', views: 20000 },
-    { id: 2, title: 'Taller Creativo', description: 'Taller de cerámica...', image: '/assets/img/inicio/foto5.png', category: 'Arte y cultura', location: 'Quito', views: 12000 },
-    { id: 3, title: 'Tech Solutions', description: 'Servicios de desarrollo...', image: '/assets/img/inicio/foto5.png', category: 'Tecnología', location: 'Cuenca', views: 15000 },
-    { id: 4, title: 'Yoga Vida', description: 'Clases de yoga y bienestar...', image: '/assets/img/inicio/foto5.png', category: 'Salud y Bienestar', location: 'Quito', views: 8000 },
-    { id: 5, title: 'EcoMarket', description: 'Productos ecológicos...', image: '/assets/img/inicio/foto5.png', category: 'Alimentos y Bebidas', location: 'Guayaquil', views: 9500 },
-    { id: 6, title: 'Arte Urbano', description: 'Galería de arte contemporáneo...', image: '/assets/img/inicio/foto5.png', category: 'Arte y cultura', location: 'Cuenca', views: 11000 },
-    // ...mas items EJEMPLOS
-  ];
 
-  filteredCards: CardItem[] = [];
-
-  // manejadores emitidos por <app-cards>
+  // Acciones desde las tarjetas
   onDiscover(item: CardItem) {
-    console.log('Descubrir item:', item);
-    // por ejemplo: navegar a detalle
-    // this.router.navigate(['/emprendimiento', item.id]);
+    console.log('Descubrir emprendimiento:', item);
   }
 
   onToggleFavorite(item: CardItem) {
-    console.log('Toggle favorito:', item);
-    // lógica para marcar favorito (llamar API o cambiar estado local)
+    console.log('Favorito cambiado:', item);
   }
-
-  ngOnInit(): void {
-    // initialize filtered list
-    this.filteredCards = this.cardsArray.slice();
-  }
-
 }
