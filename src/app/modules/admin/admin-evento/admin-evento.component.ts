@@ -73,7 +73,10 @@ export class AdminEventoComponent {
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
   filteredEventos: Evento[] = [];
-
+  // pagination
+  pageSize: number = 10; // show 10 eventos per page
+  pageIndex: number = 0; // current page index (0-based)
+  pagedEventos: Evento[] = []; // slice of filteredEventos shown in table
 
   displayedColumns: string[] = ['id', 'organizador', 'nombre', 'fecha', 'hora' ,'action'];
 
@@ -223,7 +226,43 @@ export class AdminEventoComponent {
 
       return true;
     });
+    //paginacion (revisar)
+    // reset to first page on new filter and compute paged results
+    this.pageIndex = 0;
+    this.updatePagedEventos();
   }
+  private updatePagedEventos(): void {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+    this.pagedEventos = (this.filteredEventos || []).slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil((this.filteredEventos?.length || 0) / this.pageSize));
+  }
+
+  goToPage(index: number): void {
+    if (index < 0) index = 0;
+    if (index >= this.totalPages) index = this.totalPages - 1;
+    this.pageIndex = index;
+    this.updatePagedEventos();
+  }
+
+  nextPage(): void {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.updatePagedEventos();
+    }
+  }
+
+  prevPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.updatePagedEventos();
+    }
+  }
+
+  //limpiar filtro
 
   clearFilters(): void {
     this.searchText = '';

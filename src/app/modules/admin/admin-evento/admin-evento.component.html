@@ -84,7 +84,7 @@
 
       <!--tabla -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-  <table mat-table [dataSource]="filteredEventos" class="w-full">
+  <table mat-table [dataSource]="pagedEventos" class="w-full">
           <!--id -->
           <ng-container matColumnDef="id">
             <th mat-header-cell *matHeaderCellDef class="font-semibold text-gray-700 bg-gray-50 px-6 py-3">ID</th>
@@ -166,11 +166,11 @@
 
         <!-- Paginación -->
         <div class="flex justify-center items-center gap-2 p-4 border-t">
-          <button mat-button class="text-gray-600">Regresar</button>
-          <button mat-mini-fab color="warn" class="w-8 h-8 text-sm">1</button>
-          <button mat-button>2</button>
-          <button mat-button>3</button>
-          <button mat-button class="text-gray-600">Siguiente</button>
+          <button mat-button (click)="prevPage()" [disabled]="pageIndex===0">Anterior</button>
+          <ng-container *ngFor="let i of [].constructor(totalPages); let idx = index">
+            <button mat-button [class.font-bold]="idx===pageIndex" (click)="goToPage(idx)">{{ idx + 1 }}</button>
+          </ng-container>
+          <button mat-button (click)="nextPage()" [disabled]="pageIndex >= totalPages -1">Siguiente</button>
         </div>
       </div>
     </div>
