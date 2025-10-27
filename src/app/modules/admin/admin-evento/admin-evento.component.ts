@@ -126,7 +126,20 @@ export class AdminEventoComponent {
                 nombre: it.titulo || it.nombre || 'Evento',
                 fecha: fechaEvento.includes('T') ? fechaEvento.split('T')[0] : fechaEvento,
                 hora: horaStr,
-                estado: it.estadoEvento || it.estado || (it.activo ? 'Activo' : 'Inactivo') || 'Activo',
+                // derive normalized estado: if activo is explicitly false prefer 'Cancelado', otherwise consider raw estado
+                estado: ((): string => {
+                  if (typeof it.activo === 'boolean' && it.activo === false) return 'Cancelado';
+                  const rawEstado = it.estadoEvento || it.estado;
+                  if (typeof rawEstado === 'string' && rawEstado.trim()) {
+                    const r = rawEstado.toLowerCase();
+                    if (r.includes('term') || r.includes('finish') || r.includes('completed')) return 'Terminado';
+                    if (r.includes('cancel')) return 'Cancelado';
+                    // default when explicit but unknown -> Programado
+                    return 'Programado';
+                  }
+                  // fallback to activo boolean (true => Programado)
+                  return (it.activo === true) ? 'Programado' : 'Cancelado';
+                })(),
                 descripcion: it.descripcion || '',
                 horaInicio: it.horaInicio || (fechaEvento.includes('T') ? fechaEvento.split('T')[1] : undefined),
                 horaFin: it.horaFin || undefined,
@@ -221,7 +234,8 @@ export class AdminEventoComponent {
   }
 
   getEstadoClass(estado: string): string {
-    switch(estado) {
+    const s = String(estado || '').toLowerCase();
+    switch(s) {
       case 'programado':
         return 'bg-green-100 text-green-700';
       case 'terminado':
@@ -254,18 +268,23 @@ export class AdminEventoComponent {
       if (confirmed) {
         
         const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
-        this.eventoService.inactivateEvent(evento.id, { token }).subscribe({
-          next: (res: any) => {
-            // Refresh the list from server so UI matches backend
-            this.loadEventosFromServer();
-            // Show confirmation dialog
-            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
-          },
-          error: (err: any) => {
-            console.warn('Error inactivando evento', err);
-            // Optionally show an error dialog
-            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
-          }
+        // strip leading '#' from id if present before sending to backend
+        const rawId = String(evento.id || '');
+        const idToSend = rawId.startsWith('#') ? rawId.slice(1) : rawId;
+        this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+           next: (res: any) => {
+             // update local object so UI reflects cancellation immediately
+             evento.activo = false;
+             evento.estado = 'Cancelado';
+             this.applyFilters();
+             // Show confirmation dialog
+             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
+           },
+           error: (err: any) => {
+             console.warn('Error inactivando evento', err);
+             // Optionally show an error dialog
+             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
+           }
         });
       }
     });

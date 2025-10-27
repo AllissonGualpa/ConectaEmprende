@@ -73,8 +73,17 @@ export class EventoService {
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    // Use PUT with empty body (backend expected to toggle estado a 'cancelado' o similar)
-    return this.http.put(url, {}, { headers }).pipe(catchError((err) => throwError(() => err)));
+    //put
+    return this.http.put(url, {}, { headers, responseType: 'text' }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * cancelar evento event (alias of inactivate) - admin
+   * endpoint: /v1/eventos/inactivar/:idEvento
+   */
+  cancelEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    // Reuse same endpoint as inactivateEvent
+    return this.inactivateEvent(idEvento, options);
   }
 
   /**
