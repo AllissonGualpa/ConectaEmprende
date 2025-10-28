@@ -87,6 +87,21 @@ export class EventoService {
   }
 
   /**
+   * Activa (reactiva) un evento en la API.
+   * Endpoint: /v1/eventos/activar/:idEvento
+   */
+  activateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/v1/eventos/activar/${idEvento}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Use PUT with empty body; expect plain text response
+    return this.http.put(url, {}, { headers, responseType: 'text' }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
    * Edita un evento existente en la API.
    * Endpoint: /v1/eventos/editar/:idEvento/:idEmprendimiento
    */

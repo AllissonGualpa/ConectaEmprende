@@ -40,6 +40,7 @@ export class EventoCreateComponent {
       link: [''],
       direccion: ['Online'],
       imagen: [null],
+      activarEvento: [false],
       token: ['']
     });
   }
@@ -99,6 +100,11 @@ export class EventoCreateComponent {
       } else if (e.hora) {
         const match = String(e.hora).match(/(\d{1,2}:\d{2})/);
         if (match) this.form.patchValue({ horaInicio: match[1] });
+      }
+
+      // if event is inactive, expose activarEvento checkbox in form
+      if (typeof e.activo === 'boolean' && e.activo === false) {
+        this.form.patchValue({ activarEvento: false });
       }
     }
   }
@@ -181,6 +187,21 @@ export class EventoCreateComponent {
             // Ensure we return an object that contains an `id` field so the caller can match the event
             const resId = res?.idEvento ? String(res.idEvento) : (res?.id ? String(res.id) : String(idEvento));
             const closeObj = { ...payload, ...res, id: resId };
+            // If user checked activarEvento and the original event was inactive, call activate endpoint
+            const activar = this.form.value.activarEvento === true;
+            if (activar && this.dialogData.event && (this.dialogData.event.activo === false || this.dialogData.event.activo === 0)) {
+              this.eventoService.activateEvent(idEvento, { token: token || undefined }).subscribe({
+                next: () => {
+                  // return combined result to caller
+                  this.dialogRef.close({ ...closeObj, activo: true });
+                },
+                error: (err: any) => {
+                  // still close and surface edit result; activation failed
+                  this.dialogRef.close(closeObj);
+                }
+              });
+              return; // we've handled close in activate callback
+            }
             this.dialogRef.close(closeObj);
           },
           error: (err: any) => {
