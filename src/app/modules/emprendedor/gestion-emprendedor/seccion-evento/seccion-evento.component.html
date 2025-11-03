@@ -3,12 +3,49 @@
     <h2 class="text-2xl font-bold mb-4">Gestión de eventos</h2>
 
     <div class="flex items-center gap-4">
-        <div class="flex-1">
-            <app-search-bar (search)="onSearch($event)" [labelQuery]="'Buscar por nombre o tipo'" [filters]="[
+        <div class="flex-1 flex items-center gap-3">
+            <app-search-bar class="flex-1" (search)="onSearch($event)" [labelQuery]="'Buscar por nombre o tipo'" [filters]="[
                         { key: 'date', label: 'Fecha' },
-                        { key: 'location', label: 'Ubicación', options: ['Quito','Guayaquil','Cuenca'] },
                         { key: 'type', label: 'Tipo', options: ['Online','Presencial'] }]">
             </app-search-bar>
+
+            <button (click)="abrirCrear()" class="ml-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded shadow">
+                Crear Evento
+            </button>
         </div>
     </div>
+
+        <!-- Cards section -->
+        <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- badge template and action template similar to eventos.component.html -->
+            <ng-template #eventBadge let-item>
+                <div class="absolute top-3 right-3">
+                    <div class="bg-blue-600 text-white px-3 py-1 rounded-xl text-sm shadow">
+                        {{ item.date ? (item.date | date:'d MMM') : '02 Abr' }}
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template #eventActions let-item>
+                <div class="flex items-center gap-3">
+                    <button (click)="eliminarEvento(item)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Inactivar Evento</button>
+                    <button (click)="editarEvento(item)" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">Editar Evento</button>
+                </div>
+            </ng-template>
+
+            <ng-template #emptyOverlay></ng-template>
+
+            <app-cards
+                [items]="eventos"
+                    [pageSize]="3"
+                    [singleColumn]="true"
+                [badgeTemplate]="eventBadge"
+                [actionTemplate]="eventActions"
+                [overlayTemplate]="emptyOverlay"
+                (discover)="onDiscover($event)"
+                (toggleFavorite)="onToggleFavorite($event)"
+                ctaLabel="Ver Detalle">
+            </app-cards>
+        </section>
 </div>

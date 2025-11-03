@@ -1,6 +1,6 @@
 <div class="w-full">
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <article *ngFor="let item of pagedItems" class="bg-white rounded-xl shadow-sm overflow-hidden group">
+  <div [ngClass]="singleColumn ? 'grid grid-cols-1 gap-6' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'">
+    <article *ngFor="let item of pagedItems" class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition overflow-hidden group">
       <!-- imagen con overlay -->
       <div class="relative">
         <img [src]="item.image" alt="{{item.title}}" class="w-full h-44 object-cover" />

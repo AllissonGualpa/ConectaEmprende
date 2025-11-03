@@ -24,6 +24,8 @@ export interface CardItem {
 export class CardsComponent {
   @Input() items: CardItem[] = [];
   @Input() pageSize = 6;
+  // when true cards are displayed in a single column (one per row)
+  @Input() singleColumn: boolean = false;
   // TemplateRefs for customizable slots
   @Input() badgeTemplate?: TemplateRef<any>;
   @Input() actionTemplate?: TemplateRef<any>;

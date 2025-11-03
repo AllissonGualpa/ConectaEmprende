@@ -73,7 +73,10 @@ export class AdminEventoComponent {
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
   filteredEventos: Evento[] = [];
-
+  // pagination
+  pageSize: number = 10; // show 10 eventos per page
+  pageIndex: number = 0; // current page index (0-based)
+  pagedEventos: Evento[] = []; // slice of filteredEventos shown in table
 
   displayedColumns: string[] = ['id', 'organizador', 'nombre', 'fecha', 'hora' ,'action'];
 
@@ -126,7 +129,20 @@ export class AdminEventoComponent {
                 nombre: it.titulo || it.nombre || 'Evento',
                 fecha: fechaEvento.includes('T') ? fechaEvento.split('T')[0] : fechaEvento,
                 hora: horaStr,
-                estado: it.estadoEvento || it.estado || (it.activo ? 'Activo' : 'Inactivo') || 'Activo',
+                // derive normalized estado: if activo is explicitly false prefer 'Cancelado', otherwise consider raw estado
+                estado: ((): string => {
+                  if (typeof it.activo === 'boolean' && it.activo === false) return 'Cancelado';
+                  const rawEstado = it.estadoEvento || it.estado;
+                  if (typeof rawEstado === 'string' && rawEstado.trim()) {
+                    const r = rawEstado.toLowerCase();
+                    if (r.includes('term') || r.includes('finish') || r.includes('completed')) return 'Terminado';
+                    if (r.includes('cancel')) return 'Cancelado';
+                    // default when explicit but unknown -> Programado
+                    return 'Programado';
+                  }
+                  // fallback to activo boolean (true => Programado)
+                  return (it.activo === true) ? 'Programado' : 'Cancelado';
+                })(),
                 descripcion: it.descripcion || '',
                 horaInicio: it.horaInicio || (fechaEvento.includes('T') ? fechaEvento.split('T')[1] : undefined),
                 horaFin: it.horaFin || undefined,
@@ -210,7 +226,43 @@ export class AdminEventoComponent {
 
       return true;
     });
+    //paginacion (revisar)
+    // reset to first page on new filter and compute paged results
+    this.pageIndex = 0;
+    this.updatePagedEventos();
   }
+  private updatePagedEventos(): void {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+    this.pagedEventos = (this.filteredEventos || []).slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil((this.filteredEventos?.length || 0) / this.pageSize));
+  }
+
+  goToPage(index: number): void {
+    if (index < 0) index = 0;
+    if (index >= this.totalPages) index = this.totalPages - 1;
+    this.pageIndex = index;
+    this.updatePagedEventos();
+  }
+
+  nextPage(): void {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.updatePagedEventos();
+    }
+  }
+
+  prevPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.updatePagedEventos();
+    }
+  }
+
+  //limpiar filtro
 
   clearFilters(): void {
     this.searchText = '';
@@ -221,7 +273,8 @@ export class AdminEventoComponent {
   }
 
   getEstadoClass(estado: string): string {
-    switch(estado) {
+    const s = String(estado || '').toLowerCase();
+    switch(s) {
       case 'programado':
         return 'bg-green-100 text-green-700';
       case 'terminado':
@@ -254,18 +307,23 @@ export class AdminEventoComponent {
       if (confirmed) {
         
         const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
-        this.eventoService.inactivateEvent(evento.id, { token }).subscribe({
-          next: (res: any) => {
-            // Refresh the list from server so UI matches backend
-            this.loadEventosFromServer();
-            // Show confirmation dialog
-            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
-          },
-          error: (err: any) => {
-            console.warn('Error inactivando evento', err);
-            // Optionally show an error dialog
-            this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
-          }
+        // strip leading '#' from id if present before sending to backend
+        const rawId = String(evento.id || '');
+        const idToSend = rawId.startsWith('#') ? rawId.slice(1) : rawId;
+        this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+           next: (res: any) => {
+             // update local object so UI reflects cancellation immediately
+             evento.activo = false;
+             evento.estado = 'Cancelado';
+             this.applyFilters();
+             // Show confirmation dialog
+             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
+           },
+           error: (err: any) => {
+             console.warn('Error inactivando evento', err);
+             // Optionally show an error dialog
+             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
+           }
         });
       }
     });

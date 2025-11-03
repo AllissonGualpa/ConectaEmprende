@@ -40,6 +40,7 @@ export class EventoCreateComponent {
       link: [''],
       direccion: ['Online'],
       imagen: [null],
+      activarEvento: [false],
       token: ['']
     });
   }
@@ -53,35 +54,57 @@ export class EventoCreateComponent {
     const data = this.dialogData;
     if (data && data.mode === 'edit' && data.event) {
       const e = data.event;
-      // Map fields from existing event to the form where possible
-      this.form.patchValue({
-        nombre: e.nombre || '',
-        descripcion: e.descripcion || '',
-        link: e.linkInscripcion || '',
-        direccion: e.direccion || (e.lugar || ''),
-        tipo: (e.tipoEvento || e.tipo) || 'VIRTUAL'
-      });
+      // Prefer backend field names: titulo, fechaEvento, horaInicio, tipoEvento
+      const nombre = e.titulo || e.nombre || '';
+      const descripcion = e.descripcion || '';
+      const link = e.linkInscripcion || e.link || '';
+      const direccion = e.direccion || e.lugar || '';
 
-      //set fecha and horaInicio if available ('DD/MM/YYYY' or ISO)
-      if (e.fecha) {
-        // if format is DD/MM/YYYY convert to YYYY-MM-DD for date input
-        const parts = String(e.fecha).split('/');
-        if (parts.length === 3) {
-          const d = parts[0].padStart(2, '0');
-          const m = parts[1].padStart(2, '0');
-          const y = parts[2];
-          this.form.patchValue({ fecha: `${y}-${m}-${d}` });
-        } else if (String(e.fecha).includes('T')) {
-          this.form.patchValue({ fecha: String(e.fecha).split('T')[0] });
+      // Normalize tipo to form values
+      let tipoVal = 'VIRTUAL';
+      const tipoRaw = (e.tipoEvento || e.tipo || '').toString().toLowerCase();
+      if (tipoRaw.includes('pres')) tipoVal = 'PRESENCIAL';
+      else if (tipoRaw.includes('onl') || tipoRaw.includes('vir') || tipoRaw.includes('virtual')) tipoVal = 'VIRTUAL';
+
+      this.form.patchValue({ nombre, descripcion, link, direccion, tipo: tipoVal });
+
+      // fecha and hora: prefer fechaEvento (ISO)
+      const fechaEventoRaw = e.fechaEvento || e.fecha || '';
+      if (fechaEventoRaw) {
+        const s = String(fechaEventoRaw);
+        if (s.includes('T')) {
+          const [datePart, timePart] = s.split('T');
+          this.form.patchValue({ fecha: datePart });
+          if (timePart) {
+            const hhmm = timePart.split(':').slice(0, 2).join(':');
+            this.form.patchValue({ horaInicio: hhmm });
+          }
+        } else if (s.includes('/')) {
+          const parts = s.split('/');
+          if (parts.length === 3) {
+            const d = parts[0].padStart(2, '0');
+            const m = parts[1].padStart(2, '0');
+            const y = parts[2];
+            this.form.patchValue({ fecha: `${y}-${m}-${d}` });
+          } else {
+            this.form.patchValue({ fecha: s });
+          }
         } else {
-          this.form.patchValue({ fecha: e.fecha });
+          this.form.patchValue({ fecha: s });
         }
       }
 
-      if (e.hora) {
-        // try to extract HH:mm from '9:30 AM' style
+      // horaInicio explicit fallback
+      if (e.horaInicio) {
+        this.form.patchValue({ horaInicio: e.horaInicio });
+      } else if (e.hora) {
         const match = String(e.hora).match(/(\d{1,2}:\d{2})/);
         if (match) this.form.patchValue({ horaInicio: match[1] });
+      }
+
+      // if event is inactive, expose activarEvento checkbox in form
+      if (typeof e.activo === 'boolean' && e.activo === false) {
+        this.form.patchValue({ activarEvento: false });
       }
     }
   }
@@ -164,6 +187,21 @@ export class EventoCreateComponent {
             // Ensure we return an object that contains an `id` field so the caller can match the event
             const resId = res?.idEvento ? String(res.idEvento) : (res?.id ? String(res.id) : String(idEvento));
             const closeObj = { ...payload, ...res, id: resId };
+            // If user checked activarEvento and the original event was inactive, call activate endpoint
+            const activar = this.form.value.activarEvento === true;
+            if (activar && this.dialogData.event && (this.dialogData.event.activo === false || this.dialogData.event.activo === 0)) {
+              this.eventoService.activateEvent(idEvento, { token: token || undefined }).subscribe({
+                next: () => {
+                  // return combined result to caller
+                  this.dialogRef.close({ ...closeObj, activo: true });
+                },
+                error: (err: any) => {
+                  // still close and surface edit result; activation failed
+                  this.dialogRef.close(closeObj);
+                }
+              });
+              return; // we've handled close in activate callback
+            }
             this.dialogRef.close(closeObj);
           },
           error: (err: any) => {

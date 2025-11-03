@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 
 @Injectable({ providedIn: 'root' })
@@ -73,8 +73,32 @@ export class EventoService {
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    // Use PUT with empty body (backend expected to toggle estado a 'cancelado' o similar)
-    return this.http.put(url, {}, { headers }).pipe(catchError((err) => throwError(() => err)));
+    //put
+    return this.http.put(url, {}, { headers, responseType: 'text' }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * cancelar evento event (alias of inactivate) - admin
+   * endpoint: /v1/eventos/inactivar/:idEvento
+   */
+  cancelEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    // Reuse same endpoint as inactivateEvent
+    return this.inactivateEvent(idEvento, options);
+  }
+
+  /**
+   * Activa (reactiva) un evento en la API.
+   * Endpoint: /v1/eventos/activar/:idEvento
+   */
+  activateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/v1/eventos/activar/${idEvento}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Use PUT with empty body; expect plain text response
+    return this.http.put(url, {}, { headers, responseType: 'text' }).pipe(catchError((err) => throwError(() => err)));
   }
 
   /**
@@ -129,5 +153,23 @@ export class EventoService {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return this.http.get(url, { headers }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Obtener un evento por id. Si la API no ofrece un endpoint directo,
+   * hacemos GET a /v1/eventos/filtrar y buscamos el elemento por id.
+   */
+  getEventById(id: string | number, options?: { token?: string }): Observable<any> {
+    return this.getEvents(options).pipe(
+      map((res: any) => {
+        const items = Array.isArray(res) ? res : (res?.data || res?.result || res?.items || []);
+        const found = (items || []).find((it: any) => {
+          const mid = it.idEvento ?? it.id ?? it._id ?? it.codigo ?? null;
+          return String(mid) === String(id);
+        });
+        return found || null;
+      }),
+      catchError((err) => throwError(() => err))
+    );
   }
 }
