@@ -5,6 +5,7 @@ import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-startups',
@@ -28,7 +29,7 @@ export class StartupsComponent implements OnInit {
   allStartups: any[] = [];
   loading = true;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   ngOnInit() {
     this.fetchCategories();
@@ -37,48 +38,58 @@ export class StartupsComponent implements OnInit {
 
   // Cargar categorías desde el endpoint
   fetchCategories() {
-  const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
-  const token = localStorage.getItem('token');
+    const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
+    const token = localStorage.getItem('token');
 
-  // Si no hay token, salimos directamente
-  if (!token) {
-    console.warn('No se encontró token. No se pueden cargar las categorías.');
-    this.categories = [];
-    return;
-  }
-
-  // Cabeceras correctamente tipadas
-  const headers = { Authorization: `Bearer ${token}` };
-
-  this.http.get<any[]>(endpoint, { headers }).subscribe({
-    next: (data) => {
-      if (Array.isArray(data)) {
-        this.categories = data.map((c: any) => c.nombre || 'Sin nombre');
-      } else {
-        console.warn('Formato inesperado de categorías:', data);
-        this.categories = [];
-      }
-    },
-    error: (err) => {
-      console.error('Error al cargar categorías:', err);
+    // Si no hay token, salimos directamente
+    if (!token) {
+      console.warn('No se encontró token. No se pueden cargar las categorías.');
       this.categories = [];
-    },
-  });
-}
+      return;
+    }
+
+    // Cabeceras correctamente tipadas
+    const headers = { Authorization: `Bearer ${token}` };
+
+    this.http.get<any[]>(endpoint, { headers }).subscribe({
+      next: (data) => {
+        if (Array.isArray(data)) {
+          this.categories = data.map((c: any) => c.nombre || 'Sin nombre');
+        } else {
+          console.warn('Formato inesperado de categorías:', data);
+          this.categories = [];
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar categorías:', err);
+        this.categories = [];
+      },
+    });
+  }
 
   // Cargar startups
   fetchStartups() {
-    const endpoint = 'https://eureka-emprende.onrender.com/api/emprendimientos/filtrar?tipo=Startup';
+    const endpoint = 'https://eureka-emprende.onrender.com/v1/emprendimientos/filtrar';
 
     this.http.get<any[]>(endpoint).subscribe({
       next: (data) => {
-        this.cardsArray = data.map((s) => ({
+        if (!Array.isArray(data)) {
+          console.warn('Formato inesperado de datos:', data);
+          this.cardsArray = [];
+          this.loading = false;
+          return;
+        }
+
+        // Filtramos solo las startups
+        const startups = data.filter(
+          (s) => s.tipoEmprendimientoId === 1 && s.estadoEmprendimiento === 'APROBADO'
+        );
+
+        // Mapeamos al formato de las tarjetas
+        this.cardsArray = startups.map((s) => ({
           id: s.id,
           title: s.nombreComercial || 'Startup sin nombre',
-          description:
-            s.estadoEmprendimiento === 'APROBADO'
-              ? `Startup aprobada ubicada en ${s.nombreCiudad}`
-              : 'Emprendimiento en proceso.',
+          description: `Startup aprobada ubicada en ${s.nombreCiudad || 'sin ciudad'}`,
           image: '/assets/img/inicio/foto5.png',
           category: s.nombreTipoEmprendimiento?.trim() || 'Startup',
           location: s.nombreCiudad || 'Sin ubicación',
@@ -95,6 +106,7 @@ export class StartupsComponent implements OnInit {
     });
   }
 
+
   // Filtro de búsqueda
   onSearch(payload: { query: string;[key: string]: any }) {
     const query = payload.query?.toLowerCase() || '';
@@ -110,7 +122,12 @@ export class StartupsComponent implements OnInit {
 
   // Acciones
   onDiscover(item: CardItem) {
-    console.log('Descubrir startup:', item);
+    // Navegar al detalle de la startup con su id
+    if (item && item.id) {
+      this.router.navigate(['/startups', item.id]);
+    } else {
+      console.warn('Item sin id, no se puede navegar al detalle:', item);
+    }
   }
 
   onToggleFavorite(item: CardItem) {

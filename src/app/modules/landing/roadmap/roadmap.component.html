@@ -1,0 +1,95 @@
+<app-navbar></app-navbar>
+
+<section class="roadmap-container">
+  <h2 class="roadmap-title">Conoce a Luci, tu guía inteligente para emprender</h2>
+  
+  <div class="timeline-wrapper">
+    <!-- SVG Background Wave -->
+    <svg class="wave-background" viewBox="0 0 1200 300" preserveAspectRatio="none">
+      <path
+        d="M 50,150 Q 150,80 250,150 T 450,150 Q 550,80 650,150 T 850,150 Q 950,80 1050,150"
+        class="wave-path"
+      />
+    </svg>
+
+    <!-- Steps -->
+    <div class="steps-container">
+      <div 
+        *ngFor="let step of steps; let i = index" 
+        class="step-item"
+        [class.visible]="visibleSteps.includes(i)"
+        [class.even]="i % 2 === 0"
+        [style.animation-delay]="i * 0.1 + 's'"
+        (click)="openStepDetails(step)"
+      >
+        <!-- Concentric Circles -->
+        <div class="circle-container" [class.offset-up]="i % 2 === 0">
+          <!-- Outer Circle (pulse) -->
+          <div 
+            class="circle outer-circle" 
+            [style.background-color]="step.color + '40'"
+            [style.animation-delay]="i * 0.2 + 's'"
+          ></div>
+          
+          <!-- Middle Circle (ripple) -->
+          <div 
+            class="circle middle-circle" 
+            [style.background-color]="step.color + '70'"
+            [style.animation-delay]="i * 0.2 + 's'"
+          ></div>
+          
+          <!-- Inner Circle (main) -->
+          <div 
+            class="circle inner-circle" 
+            [style.background-color]="step.color"
+            [style.animation-delay]="i * 0.2 + 's'"
+          >
+            {{ step.id }}
+          </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content">
+          <h3 [style.color]="step.color">{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()" *ngIf="selectedStep">
+    <!-- Modal Header -->
+    <div class="modal-header" [style.background]="'linear-gradient(135deg, ' + selectedStep.color + ' 0%, ' + selectedStep.color + 'CC 100%)'">
+      <div class="modal-badge" [style.background-color]="selectedStep.color">
+        {{ selectedStep.id }}
+      </div>
+      <h2 class="modal-title">{{ selectedStep.details.title }}</h2>
+      <button class="modal-close" (click)="closeModal()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-content">
+      <div class="tips-grid">
+        <div 
+          *ngFor="let tip of selectedStep.details.tips; let i = index" 
+          class="tip-card"
+          [style.animation-delay]="i * 0.1 + 's'"
+        >
+          <div class="tip-number" [style.background-color]="selectedStep.color + '20'" [style.color]="selectedStep.color">
+            {{ i + 1 }}
+          </div>
+          <p class="tip-text">{{ tip }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -18,40 +18,53 @@ import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'
     CardsComponent,
   ],
   templateUrl: './emprendimientos.component.html',
-  styleUrl: './emprendimientos.component.css',
+  styleUrls: ['./emprendimientos.component.css'],
 })
 export class EmprendimientosComponent implements OnInit {
   cardsArray: CardItem[] = [];
   filteredCards: CardItem[] = [];
   loading = true;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.fetchEmprendimientos();
   }
 
-  // Obtener los emprendimientos
+  /**
+   * Cargar los emprendimientos desde el nuevo endpoint.
+   * Filtra solo los de tipoEmprendimientoId = 2 o 4 (Servicios y Productos)
+   */
   fetchEmprendimientos() {
-    const endpoint = 'https://eureka-emprende.onrender.com/api/emprendimientos/filtrar?tipo=Emprendimiento';
+    const endpoint = 'https://eureka-emprende.onrender.com/v1/emprendimientos/filtrar';
 
     this.http.get<any[]>(endpoint).subscribe({
       next: (data) => {
-        // Mapeamos los resultados al formato de las tarjetas
-        this.cardsArray = data.map((e) => ({
+        if (!Array.isArray(data)) {
+          console.warn('Formato inesperado de datos:', data);
+          this.cardsArray = [];
+          this.loading = false;
+          return;
+        }
+
+        // Filtrar los emprendimientos (id 2 y 4)
+        const emprendimientos = data.filter(
+          (e) =>
+            (e.tipoEmprendimientoId === 2 || e.tipoEmprendimientoId === 4) &&
+            e.estadoEmprendimiento === 'APROBADO'
+        );
+
+        // Mapear a formato de tarjetas
+        this.cardsArray = emprendimientos.map((e) => ({
           id: e.id,
           title: e.nombreComercial || 'Emprendimiento sin nombre',
-          description:
-            e.estadoEmprendimiento === 'APROBADO'
-              ? `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad}`
-              : 'Emprendimiento en proceso.',
-          image: '/assets/img/inicio/foto5.png', // imagen temporal
+          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad || 'sin ciudad'}`,
+          image: '/assets/img/inicio/foto5.png',
           category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
           location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
         }));
 
-        // Inicializamos la lista filtrada
         this.filteredCards = this.cardsArray;
         this.loading = false;
       },
@@ -62,38 +75,32 @@ export class EmprendimientosComponent implements OnInit {
     });
   }
 
-  // Filtros de búsqueda (nombre, categoría, ubicación, tipo)
-  onSearch(payload: { query: string;[key: string]: any }) {
+  // Filtro de búsqueda
+  onSearch(payload: { query: string; [key: string]: any }) {
     const q = (payload.query || '').toLowerCase().trim();
     const category = ((payload as any)['category'] || '').toLowerCase();
     const location = ((payload as any)['location'] || '').toLowerCase();
     const type = ((payload as any)['type'] || '').toLowerCase();
 
-    this.filteredCards = this.cardsArray.filter(c => {
+    this.filteredCards = this.cardsArray.filter((c) => {
+      const cat = (c.category || '').toLowerCase();
+      const loc = (c.location || '').toLowerCase();
+
       const matchQuery =
         !q ||
-        (c.title?.toLowerCase().includes(q)) ||
-        (c.description?.toLowerCase().includes(q)) ||
-        (c.category?.toLowerCase().includes(q)) ||
-        String(c.id).toLowerCase().includes(q);
+        c.title.toLowerCase().includes(q) ||
+        (c.description ?? '').toLowerCase().includes(q) ||
+        cat.includes(q);
 
-      const matchCategory =
-        !category || (c.category?.toLowerCase().includes(category));
-
-      const matchLocation =
-        !location || (c.location?.toLowerCase().includes(location));
-
-      const matchType =
-        !type ||
-        (c.description?.toLowerCase().includes(type)) ||
-        (c.category?.toLowerCase().includes(type));
+      const matchCategory = !category || cat.includes(category);
+      const matchLocation = !location || loc.includes(location);
+      const matchType = !type || cat.includes(type);
 
       return matchQuery && matchCategory && matchLocation && matchType;
     });
   }
 
-
-  // Acciones desde las tarjetas
+  // ⚙️ Acciones
   onDiscover(item: CardItem) {
     console.log('Descubrir emprendimiento:', item);
   }
