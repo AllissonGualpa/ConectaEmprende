@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
+import { forkJoin } from 'rxjs';
 
 interface Tag {
   idTag: number;
@@ -35,6 +36,9 @@ export class BlogCreateComponent implements OnInit {
   // Nuevas propiedades para crear tags
   mostrarFormularioTag = false;
   nuevoTagNombre = '';
+  
+  // Estado de carga
+  publicando = false;
 
   private apiUrl = 'https://eureka-emprende.onrender.com/v1';
 
@@ -64,7 +68,7 @@ export class BlogCreateComponent implements OnInit {
       return;
     }
 
-    this.http.get<Tag[]>(`${this.apiUrl}/blog/tags`, {
+    this.http.get<Tag[]>(`${this.apiUrl}/blog/publico/tags`, {
       headers: this.getAuthHeaders()
     }).subscribe({
       next: (tags) => {
@@ -230,7 +234,6 @@ export class BlogCreateComponent implements OnInit {
     this.tagSeleccionado = '';
   }
 
-
   removerTag(tag: Tag) {
     this.blog.tags = this.blog.tags.filter(t => t.idTag !== tag.idTag);
   }
@@ -250,7 +253,21 @@ export class BlogCreateComponent implements OnInit {
     this.blog.imagenDestacada = null;
   }
 
+  /**
+   * Método para subir la imagen al servidor
+   */
+  private subirImagen(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    /**
+    return this.http.post<any>(`${this.apiUrl}/blog/imagenes/subir`, formData, {
+      headers: this.getAuthHeaders().delete('Content-Type') // Dejar que el navegador establezca el Content-Type con boundary
+    });*/
+  }
+
   publicarBlog() {
+    // Validaciones
     if (!this.blog.titulo.trim()) {
       alert('El título es obligatorio');
       return;
@@ -261,6 +278,15 @@ export class BlogCreateComponent implements OnInit {
       return;
     }
 
+    if (!this.blog.imagenDestacada) {
+      alert('La imagen destacada es obligatoria');
+      return;
+    }
+
+    if (this.publicando) {
+      return; // Evitar múltiples envíos
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
@@ -268,40 +294,64 @@ export class BlogCreateComponent implements OnInit {
       return;
     }
 
-    // Construir el JSON del artículo
-    const nuevoArticulo = {
-      titulo: this.blog.titulo,
-      descripcionCorta: this.blog.resumen,
-      contenido: this.blog.contenido,
-      idImagen: 1,
-      estado: 'BORRADOR',
-      idsTags: this.blog.tags.map(t => t.idTag)
-    };
+    // Indicar que se está publicando
+    this.publicando = true;
 
-    console.log('Datos a enviar:', nuevoArticulo);
+    // Paso 1: Subir la imagen
+    this.subirImagen(this.blog.imagenDestacada).subscribe({
+      next: (imagenResponse) => {
+        console.log('Imagen subida exitosamente:', imagenResponse);
+        
+        const nuevoArticulo = {
+          titulo: this.blog.titulo,
+          descripcionCorta: this.blog.resumen,
+          contenido: this.blog.contenido,
+          imagenId: imagenResponse.id || imagenResponse.idImagen,
+          estado: 'BORRADOR',
+          tagIds: this.blog.tags.map(t => t.idTag)
+        };
 
-    this.http.post(`${this.apiUrl}/blog/articulos/crear`, nuevoArticulo, {
-      headers: this.getAuthHeaders().set('Content-Type', 'application/json')
-    }).subscribe({
-      next: (response) => {
-        console.log('Artículo creado exitosamente:', response);
-        alert('El artículo fue creado exitosamente');
-        this.router.navigate(['/admin/blog']);
+        console.log('Datos del artículo a enviar:', nuevoArticulo);
+
+        this.http.post(`${this.apiUrl}/blog/articulos/crear`, nuevoArticulo, {
+          headers: this.getAuthHeaders().set('Content-Type', 'application/json')
+        }).subscribe({
+          next: (response) => {
+            console.log('Artículo creado exitosamente:', response);
+            this.publicando = false;
+            alert('El artículo fue creado exitosamente');
+            this.router.navigate(['/admin/blog']);
+          },
+          error: (error) => {
+            console.error('Error al crear el artículo:', error);
+            this.publicando = false;
+            
+            if (error.status === 401 || error.status === 403) {
+              alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+              this.router.navigate(['/login']);
+            } else if (error.error?.message) {
+              alert(`Error: ${error.error.message}`);
+            } else {
+              alert('Error al crear el artículo. Por favor, intenta nuevamente.');
+            }
+          }
+        });
       },
       error: (error) => {
-        console.error('Error al crear el artículo:', error);
+        console.error('Error al subir la imagen:', error);
+        this.publicando = false;
+        
         if (error.status === 401 || error.status === 403) {
           alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
           this.router.navigate(['/login']);
         } else if (error.error?.message) {
-          alert(`Error: ${error.error.message}`);
+          alert(`Error al subir la imagen: ${error.error.message}`);
         } else {
-          alert('Error al crear el artículo. Por favor, intenta nuevamente.');
+          alert('Error al subir la imagen. Por favor, intenta nuevamente.');
         }
       }
     });
   }
-
 
   cancelar() {
     if (confirm('¿Estás seguro de que quieres cancelar? Los cambios no guardados se perderán.')) {
@@ -320,5 +370,4 @@ export class BlogCreateComponent implements OnInit {
       alert('Artículo archivado (simulado)');
     }
   }
-
 }

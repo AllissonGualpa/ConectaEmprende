@@ -33,6 +33,7 @@ export const routes: Routes = [
   { path: 'blog', component: BlogComponent },
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: 'eventos', component: EventosComponent },
+  { path: 'eventos/:id', component: EventoDetailComponent },
 
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor },

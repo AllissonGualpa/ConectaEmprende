@@ -22,7 +22,7 @@ export class AdminEmprendimientosComponent implements OnInit {
   selectedDate = '';
   loading = false;
 
-  private apiEmprendimientos = 'https://eureka-emprende.onrender.com/api/emprendimientos';
+  private apiEmprendimientos = 'https://eureka-emprende.onrender.com/v1/emprendimientos';
   private apiTipos = 'https://eureka-emprende.onrender.com/v1/tipos-emprendimiento';
   private apiCategorias = 'https://eureka-emprende.onrender.com/v1/categorias';
 
