@@ -61,6 +61,10 @@ export class EventosComponent implements OnInit {
 
   // filtered list (initially all items)
   filtered: CardItem[] = [];
+  // paging info from public API
+  pageSize: number = 10;
+  currentPage: number = 0;
+  totalPages: number = 1;
 
   constructor(private eventoService: EventoService, private router: Router) {}
 
@@ -92,7 +96,7 @@ export class EventosComponent implements OnInit {
         // Use public paginated API. Defaults: current month, page 0, size 10
         const currentMonth = new Date().getMonth() + 1; // JS months are 0-based
         const page = 0;
-        const size = 10;
+        const size = this.pageSize;
         this.eventoService.getPublicEvents({ mes: currentMonth, page, size }).subscribe({
           next: (res: any) => {
             // Response can be an array or a paginated object (content/data/result)
@@ -111,6 +115,13 @@ export class EventosComponent implements OnInit {
 
             this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
             this.filtered = this.cardsArray.slice();
+            // If server returns pagination metadata, adapt pageSize/currentPage/totalPages
+            if (typeof res?.size === 'number') this.pageSize = Number(res.size);
+            else if (res?.pageable?.pageSize) this.pageSize = Number(res.pageable.pageSize);
+            if (typeof res?.number === 'number') this.currentPage = Number(res.number);
+            else if (res?.pageable?.pageNumber) this.currentPage = Number(res.pageable.pageNumber || 0);
+            const totalElements = (typeof res?.totalElements === 'number') ? Number(res.totalElements) : ((typeof res?.total === 'number') ? Number(res.total) : this.cardsArray.length);
+            this.totalPages = Math.max(1, Math.ceil(totalElements / this.pageSize));
           },
           error: (err: any) => {
             console.warn('Error cargando eventos públicos desde backend', err);

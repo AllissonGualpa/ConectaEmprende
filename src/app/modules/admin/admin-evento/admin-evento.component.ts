@@ -348,9 +348,10 @@ export class AdminEventoComponent {
 
   abrirEditarEvento(evento: Evento): void {
     const ref = this.dialog.open(EventoCreateComponent, {
-      width: '820px',
+      width: '1000px',
       maxWidth: '95vw',
-      data: { mode: 'edit', event: evento }
+      data: { mode: 'edit', event: evento },
+      panelClass: 'evento-create-dialog'
     });
 
     ref.afterClosed().subscribe((result: any) => {
@@ -372,7 +373,7 @@ export class AdminEventoComponent {
   
   abrirCrearEvento(): void {
     const ref = this.dialog.open(EventoCreateComponent, {
-      width: '820px',
+      width: '1000px',
       maxWidth: '95vw',
       panelClass: 'evento-create-dialog'
     });
