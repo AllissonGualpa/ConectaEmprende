@@ -73,10 +73,11 @@ export class AdminEventoComponent {
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
   filteredEventos: Evento[] = [];
-  // pagination
-  pageSize: number = 10; // show 10 eventos per page
+  // pagination (server-side aware)
+  pageSize: number = 15; // default page size for admin API
   pageIndex: number = 0; // current page index (0-based)
   pagedEventos: Evento[] = []; // slice of filteredEventos shown in table
+  totalCount: number = 0; // total elements reported by server (if available)
 
   displayedColumns: string[] = ['id', 'organizador', 'nombre', 'fecha', 'hora' ,'action'];
 
@@ -90,15 +91,26 @@ export class AdminEventoComponent {
   }
 
   private loadEventosFromServer(): void {
-    // try to fetch from API; requires that EventoService.getEvents points to the correct endpoint
-    this.eventoService.getEvents().subscribe({
+    // call the new admin paginated endpoint. Pass tipoEvento and date range if provided.
+    const tipoEventoParam = (this.estadoSeleccionado || '').toLowerCase().includes('pres') ? 'presencial' : ((this.estadoSeleccionado || '').toLowerCase().includes('onl') ? 'online' : undefined);
+    const fechaInicioISO = this.fechaInicio ? new Date(this.startOfDay(this.fechaInicio)).toISOString() : undefined;
+    const fechaFinISO = this.fechaFin ? new Date(this.endOfDay(this.fechaFin)).toISOString() : undefined;
+
+    const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
+
+    this.eventoService.getAdminEvents({ tipoEvento: tipoEventoParam, fechaInicio: fechaInicioISO, fechaFin: fechaFinISO, page: this.pageIndex, size: this.pageSize, token }).subscribe({
       next: (res: any) => {
         try {
-          // If the API returns an array directly
-          const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
-          if (Array.isArray(items) && items.length > 0) {
-            // Map the API items to our local Evento shape conservatively
-            this.eventos = items.map((it: any) => {
+          // Support paginated shapes: { content: [], totalElements, number, size } or legacy shapes
+          let items: any[] = [];
+          if (Array.isArray(res)) items = res;
+          else if (res?.content && Array.isArray(res.content)) items = res.content;
+          else if (res?.data && Array.isArray(res.data)) items = res.data;
+          else if (res?.result && Array.isArray(res.result)) items = res.result;
+          else if (res?.items && Array.isArray(res.items)) items = res.items;
+
+          // map to local Evento shape
+          this.eventos = (items || []).map((it: any) => {
               const fechaEvento = it.fechaEvento ? String(it.fechaEvento) : (it.fecha || '');
               // try to extract time part if present
               let horaStr = '';
@@ -157,18 +169,23 @@ export class AdminEventoComponent {
                 fechaCreacion: it.fechaCreacion || undefined,
                 fechaModificacion: it.fechaModificacion || undefined
               } as Evento;
-            });
+              });
+
+            // server reported total items
+            if (typeof res?.totalElements === 'number') this.totalCount = Number(res.totalElements);
+            else if (typeof res?.total === 'number') this.totalCount = Number(res.total);
+            else this.totalCount = this.eventos.length;
+          } catch (e) {
+            console.warn('Error mapeando eventos', e);
           }
-        } catch (e) {
-          console.warn('Error mapeando eventos', e);
+          this.applyFilters();
+        },
+        error: (err: any) => {
+          console.warn('No se pudieron cargar eventos desde el servidor, usando datos locales.', err);
+          this.applyFilters();
         }
-        this.applyFilters();
-      },
-      error: (err: any) => {
-        console.warn('No se pudieron cargar eventos desde el servidor, usando datos locales.', err);
-        this.applyFilters();
-      }
-    });
+      });
+    
   }
 
   private parseEventDate(dateStr: string): Date | null {

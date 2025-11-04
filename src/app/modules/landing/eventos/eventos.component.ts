@@ -89,19 +89,35 @@ export class EventosComponent implements OnInit {
     }
 
     private loadEventosFromServer(): void {
-      this.eventoService.getEvents().subscribe({
-        next: (res: any) => {
-          const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
-          this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
-          this.filtered = this.cardsArray.slice();
-        },
-        error: (err: any) => {
-          console.warn('Error cargando eventos desde backend, usando muestras locales', err);
-          // keep filtered empty or fallback to existing hardcoded set if desired
-          this.cardsArray = [];
-          this.filtered = this.cardsArray.slice();
-        }
-      });
+        // Use public paginated API. Defaults: current month, page 0, size 10
+        const currentMonth = new Date().getMonth() + 1; // JS months are 0-based
+        const page = 0;
+        const size = 10;
+        this.eventoService.getPublicEvents({ mes: currentMonth, page, size }).subscribe({
+          next: (res: any) => {
+            // Response can be an array or a paginated object (content/data/result)
+            let items: any[] = [];
+            if (Array.isArray(res)) {
+              items = res;
+            } else if (res?.content && Array.isArray(res.content)) {
+              items = res.content;
+            } else if (res?.data && Array.isArray(res.data)) {
+              items = res.data;
+            } else if (res?.result && Array.isArray(res.result)) {
+              items = res.result;
+            } else if (res?.items && Array.isArray(res.items)) {
+              items = res.items;
+            }
+
+            this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
+            this.filtered = this.cardsArray.slice();
+          },
+          error: (err: any) => {
+            console.warn('Error cargando eventos públicos desde backend', err);
+            this.cardsArray = [];
+            this.filtered = this.cardsArray.slice();
+          }
+        });
     }
 
     private mapToCard(it: any): CardItem {
