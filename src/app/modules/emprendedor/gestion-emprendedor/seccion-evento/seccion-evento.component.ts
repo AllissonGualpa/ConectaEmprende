@@ -86,9 +86,18 @@ export class SeccionEventoComponent {
   }
 
   private loadEventos(): void {
-    this.eventoService.getEvents().subscribe({
+    const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
+    // New emprendedor endpoint is paginated; request first page with size 5
+    this.eventoService.getEmprendedorEvents({ page: 0, size: 5, token }).subscribe({
       next: (res: any) => {
-        const items = Array.isArray(res) ? res : (res?.data || res?.result || []);
+        // Support various paginated shapes: { content: [], data: [], result: [], items: [] }
+        let items: any[] = [];
+        if (Array.isArray(res)) items = res;
+        else if (res?.content && Array.isArray(res.content)) items = res.content;
+        else if (res?.data && Array.isArray(res.data)) items = res.data;
+        else if (res?.result && Array.isArray(res.result)) items = res.result;
+        else if (res?.items && Array.isArray(res.items)) items = res.items;
+
         this.rawMap = {};
         this.allRawItems = (items || []).slice();
         this.eventos = (this.allRawItems || []).map((it: any) => {

@@ -176,6 +176,25 @@ export class EventoService {
   }
 
   /**
+   * Obtener eventos asociados al emprendedor (paginado).
+   * Endpoint: /v1/eventos/emprendedor?page=0&size=5
+   */
+  getEmprendedorEvents(options?: { page?: number; size?: number; token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/v1/eventos/emprendedor`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    let params = new HttpParams();
+    if (options?.page != null) params = params.set('page', String(options.page));
+    if (options?.size != null) params = params.set('size', String(options.size));
+
+    return this.http.get(url, { headers, params }).pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
    * Obtener eventos para el administrador con filtros y paginación.
    * Ejemplo: /v1/eventos/admin?tipoEvento=presencial&fechaInicio=2024-11-01T00:00:00&fechaFin=2025-12-31T23:59:59&page=0&size=15
    */
