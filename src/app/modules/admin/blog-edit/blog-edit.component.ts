@@ -26,17 +26,17 @@ export class BlogEditComponent implements OnInit {
   mostrarFormularioTag = false;
   nuevoTagNombre = '';
   loading = true;
+  imagenOriginal: string | null = null;
 
   private apiUrl = 'https://eureka-emprende.onrender.com/v1/blog';
   private adminApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/admin';
-  private publicApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/publico';
+  private publicApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/tags';
 
-  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient) { }
+  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient) {}
 
   ngOnInit() {
     const blogId = this.route.snapshot.paramMap.get('id');
     if (!blogId) return;
-
     this.cargarTags();
     this.loadBlog(blogId);
   }
@@ -47,17 +47,13 @@ export class BlogEditComponent implements OnInit {
   }
 
   loadBlog(id: string) {
-    // Usar el endpoint de admin para obtener el artículo
     this.http.get<any>(`${this.adminApiUrl}/articulos/${id}`, {
       headers: this.getAuthHeaders()
     }).subscribe({
       next: (data) => {
         this.blog = data;
-        // Asegurar que tags sea un array
-        if (!this.blog.tags) {
-          this.blog.tags = [];
-        }
-        console.log('Blog cargado:', this.blog);
+        if (!this.blog.tags) this.blog.tags = [];
+        this.imagenOriginal = this.blog.urlImagen || null;
         this.loading = false;
       },
       error: (err) => {
@@ -69,17 +65,11 @@ export class BlogEditComponent implements OnInit {
   }
 
   cargarTags() {
-    // Usar el endpoint público para obtener tags (requiere autenticación)
-    this.http.get<Tag[]>(`${this.publicApiUrl}/tags`, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: (tags) => {
-        this.tags = tags;
-        console.log('Tags cargados:', tags);
-      },
+    this.http.get<Tag[]>(this.publicApiUrl).subscribe({
+      next: (tags) => this.tags = tags,
       error: (err) => {
-        console.error('Error al cargar tags:', err);
-        alert('Error al cargar los tags disponibles');
+        console.error('Error al cargar los tags:', err);
+        alert('Error al cargar los tags.');
       }
     });
   }
@@ -94,7 +84,6 @@ export class BlogEditComponent implements OnInit {
       alert('Por favor ingresa un nombre para el tag');
       return;
     }
-
     const idUsuario = localStorage.getItem('idUsuario') || '1';
     this.http.post(`${this.apiUrl}/tags/crear?idUsuario=${idUsuario}`,
       { nombre: this.nuevoTagNombre },
@@ -118,7 +107,6 @@ export class BlogEditComponent implements OnInit {
       alert('Por favor selecciona un tag');
       return;
     }
-
     const tag = this.tags.find(t => t.nombre === this.tagSeleccionado);
     if (tag && !this.blog.tags.some((t: Tag) => t.idTag === tag.idTag)) {
       this.blog.tags.push(tag);
@@ -150,11 +138,9 @@ export class BlogEditComponent implements OnInit {
     const textarea = this.editor.nativeElement;
     const start = textarea.selectionStart, end = textarea.selectionEnd;
     let text = textarea.value.substring(start, end);
-
     if (tipo === 'bold') text = `**${text}**`;
     else if (tipo === 'italic') text = `*${text}*`;
     else if (tipo === 'list') text = text.split('\n').map(l => `• ${l}`).join('\n');
-
     this.blog.contenido = textarea.value.substring(0, start) + text + textarea.value.substring(end);
     setTimeout(() => {
       textarea.focus();
@@ -174,46 +160,34 @@ export class BlogEditComponent implements OnInit {
   }
 
   actualizarBlog() {
-    // Validaciones
-    if (!this.blog.titulo || !this.blog.titulo.trim()) {
-      alert('Por favor ingresa un título para el blog');
+    if (!this.blog.titulo?.trim() || !this.blog.descripcionCorta?.trim() || !this.blog.contenido?.trim()) {
+      alert('Completa todos los campos obligatorios');
       return;
     }
-
-    if (!this.blog.descripcionCorta || !this.blog.descripcionCorta.trim()) {
-      alert('Por favor ingresa un resumen para el blog');
-      return;
-    }
-
-    if (!this.blog.contenido || !this.blog.contenido.trim()) {
-      alert('Por favor ingresa el contenido del blog');
-      return;
-    }
-
     if (!this.blog.tags || this.blog.tags.length === 0) {
       alert('Por favor agrega al menos un tag al blog');
       return;
     }
 
-    if (!this.blog.idImagen) {
-      alert('El blog debe tener una imagen destacada');
-      return;
-    }
-
     const blogId = this.blog.idArticulo;
     const idUsuario = this.blog.idUsuario || localStorage.getItem('idUsuario') || 1;
+    const formData = new FormData();
+    formData.append('titulo', this.blog.titulo);
+    formData.append('descripcionCorta', this.blog.descripcionCorta);
+    formData.append('contenido', this.blog.contenido);
+    formData.append('estado', this.blog.estado);
 
-    const payload = {
-      titulo: this.blog.titulo,
-      descripcionCorta: this.blog.descripcionCorta,
-      contenido: this.blog.contenido,
-      estado: this.blog.estado,
-      imagen: this.blog.idImagen,
-      idsTags: this.blog.tags.map((t: Tag) => t.idTag)
-    };
+    if (this.blog.imagenDestacada instanceof File) {
+      formData.append('imagen', this.blog.imagenDestacada);
+    }
 
-    this.http.put(`${this.apiUrl}/articulos/${blogId}?idUsuario=${idUsuario}`, payload, {
-      headers: this.getAuthHeaders()
+    const idsTags = this.blog.tags.map((t: Tag) => t.idTag);
+    idsTags.forEach((id: number) => {
+      formData.append('idsTags', id.toString());
+    });
+
+    this.http.put(`${this.apiUrl}/articulos/${blogId}?idUsuario=${idUsuario}`, formData, {
+      headers: this.getAuthHeaders().delete('Content-Type')
     }).subscribe({
       next: () => {
         alert('Blog actualizado exitosamente');
@@ -221,7 +195,7 @@ export class BlogEditComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al actualizar blog:', err);
-        alert('Error al actualizar el blog. Por favor verifica los datos e intenta nuevamente.');
+        alert('Error al actualizar el blog. Verifica los datos e intenta nuevamente.');
       }
     });
   }
@@ -232,5 +206,5 @@ export class BlogEditComponent implements OnInit {
     }
   }
 
-  onContentChange() { }
+  onContentChange() {}
 }

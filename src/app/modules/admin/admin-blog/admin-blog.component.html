@@ -1,4 +1,4 @@
-<div class="flex min-h-screen bg-gray-50">
+<div class="flex min-h-screen bg-white">
   <app-navbar-admin></app-navbar-admin>
 
   <main class="flex-1 p-8 overflow-y-auto">
@@ -99,60 +99,91 @@
           </thead>
 
           <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let blog of filteredBlogs" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-3 text-sm text-gray-900">{{ blog.titulo }}</td>
-              <td class="px-6 py-3 text-sm text-gray-600">
-                {{ blog.descripcionCorta?.length > 80 ? (blog.descripcionCorta | slice:0:80) + '...' : blog.descripcionCorta }}
+            <!-- Fila de blogs -->
+            <tr *ngFor="let blog of filteredBlogs" class="transition-colors hover:bg-gray-50 even:bg-[#F7F6FE]">
+              <td class="px-6 py-3 text-sm text-gray-900">
+                {{ blog.titulo }}
               </td>
-              <td class="px-6 py-3 text-sm text-gray-600">{{ blog.nombreUsuario }}</td>
+
+              <td class="px-6 py-3 text-sm text-gray-600">
+                {{ blog.descripcionCorta?.length > 80 ? (blog.descripcionCorta | slice:0:80) + '...' :
+                blog.descripcionCorta }}
+              </td>
+
+              <td class="px-6 py-3 text-sm text-gray-600">
+                {{ blog.nombreUsuario }}
+              </td>
+
               <td class="px-6 py-3 text-sm">
                 <span [class]="getEstadoClass(blog.estado)">
                   {{ blog.estado }}
                 </span>
               </td>
+
               <td class="px-6 py-3 text-sm text-gray-600">
                 <span *ngFor="let tag of blog.tags"
                   class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs mr-1">
                   {{ tag.nombre }}
                 </span>
               </td>
+
               <td class="px-6 py-3 text-sm text-gray-600">
-                {{ blog.fechaCreacion | date: 'short' }}
+                {{ blog.fechaCreacion | date:'short' }}
               </td>
+
               <td class="px-6 py-3">
                 <div class="flex gap-2 justify-center">
-                  <!-- Editar -->
-                  <button (click)="editarBlog(blog)" class="text-purple-600 hover:text-purple-800 transition-colors p-1"
-                    title="Editar">
+                  <!-- Botón Editar -->
+                  <button (click)="editarBlog(blog)" title="Editar"
+                    class="text-purple-600 hover:text-purple-800 transition-colors p-1">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                       stroke="currentColor" class="w-5 h-5">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 
+              4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 
+              4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 
+              0L19.5 7.125M18 14v4.75A2.25 2.25 
+              0 0 1 15.75 21H5.25A2.25 2.25 
+              0 0 1 3 18.75V8.25A2.25 2.25 
+              0 0 1 5.25 6H10" />
                     </svg>
                   </button>
 
-                  <!-- Archivar / Desarchivar -->
+                  <!-- Botón Archivar / Desarchivar -->
                   <button (click)="toggleArchive(blog)"
-                    [title]="blog.estado === 'ARCHIVADO' ? 'Desarchivar' : 'Archivar'"
-                    [ngClass]="blog.estado === 'ARCHIVADO' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'"
-                    class="transition-colors p-1">
+                    [title]="blog.estado === 'ARCHIVADO' ? 'Desarchivar' : 'Archivar'" [ngClass]="blog.estado === 'ARCHIVADO'
+            ? 'text-green-600 hover:text-green-800'
+            : 'text-red-600 hover:text-red-800'" class="transition-colors p-1">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                       stroke="currentColor" class="w-5 h-5">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 
+              9m9.968-3.21c.342.052.682.107 
+              1.022.166m-1.022-.165L18.16 
+              19.673a2.25 2.25 0 0 1-2.244 
+              2.077H8.084a2.25 2.25 0 0 
+              1-2.244-2.077L4.772 
+              5.79m14.456 0a48.108 48.108 
+              0 0 0-3.478-.397m-12 
+              .562c.34-.059.68-.114 
+              1.022-.165m0 0a48.11 48.11 
+              0 0 1 3.478-.397m7.5 
+              0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 
+              51.964 0 0 0-3.32 0c-1.18.037-2.09 
+              1.022-2.09 2.201v.916m7.5 
+              0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
                   </button>
-
                 </div>
               </td>
             </tr>
 
+            <!-- Mensaje si no hay blogs -->
             <tr *ngIf="filteredBlogs.length === 0 && !loading">
               <td colspan="7" class="px-6 py-6 text-center text-gray-500 text-sm">
                 No se encontraron blogs
               </td>
             </tr>
 
+            <!-- Indicador de carga -->
             <tr *ngIf="loading">
               <td colspan="7" class="px-6 py-6 text-center">
                 <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i>
@@ -160,36 +191,47 @@
               </td>
             </tr>
           </tbody>
+
+
         </table>
       </div>
 
-      <!-- Paginación -->
-      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between" *ngIf="!loading && filteredBlogs.length > 0">
-        <div class="text-sm text-gray-700">
-          Mostrando <span class="font-medium">{{ currentPage * pageSize + 1 }}</span> a 
-          <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span> de 
-          <span class="font-medium">{{ totalElements }}</span> resultados
-        </div>
-
-        <div class="flex gap-2">
-          <button (click)="previousPage()" [disabled]="currentPage === 0"
-            class="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors">
-            <i class="fa-solid fa-chevron-left"></i>
-          </button>
-
-          <div class="flex gap-1">
-            <button *ngFor="let page of [].constructor(totalPages); let i = index"
-              (click)="goToPage(i)"
-              [class]="i === currentPage ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'"
-              class="px-3 py-1 text-sm border border-gray-300 rounded-lg transition-colors">
-              {{ i + 1 }}
-            </button>
+      <!-- Paginación centrada -->
+      <div class="px-6 py-6 bg-gray-50 border-t border-gray-200 text-center"
+        *ngIf="!loading && filteredBlogs.length > 0">
+        <div class="flex flex-col items-center gap-3">
+          <!-- Texto informativo -->
+          <div class="text-sm text-gray-700">
+            Mostrando <span class="font-semibold">{{ startIndex }}</span> a
+            <span class="font-semibold">{{ endIndex }}</span> de
+            <span class="font-semibold">{{ totalElements }}</span> resultados
           </div>
 
-          <button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
-            class="px-3 py-1 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors">
-            <i class="fa-solid fa-chevron-right"></i>
-          </button>
+          <!-- Botones de paginación -->
+          <div class="flex items-center gap-4">
+            <button (click)="previousPage()" [disabled]="currentPage === 0"
+              class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
+              <i class="fa-solid fa-chevron-left"></i>
+              <span>Regresar</span>
+            </button>
+
+            <!-- Números estilo círculos -->
+            <div class="flex gap-2 items-center">
+              <button *ngFor="let _ of pages; let i = index" (click)="goToPage(i)" [ngClass]="{
+                  'bg-orange-500 text-white border-orange-500': i === currentPage,
+                  'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': i !== currentPage
+                }"
+                class="w-8 h-8 rounded-full border text-sm font-medium flex items-center justify-center transition-colors">
+                {{ i + 1 }}
+              </button>
+            </div>
+
+            <button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
+              class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
+              <span>Siguiente</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>

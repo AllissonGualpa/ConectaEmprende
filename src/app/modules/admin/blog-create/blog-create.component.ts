@@ -36,7 +36,7 @@ export class BlogCreateComponent implements OnInit {
   // Nuevas propiedades para crear tags
   mostrarFormularioTag = false;
   nuevoTagNombre = '';
-  
+
   // Estado de carga
   publicando = false;
 
@@ -60,33 +60,18 @@ export class BlogCreateComponent implements OnInit {
   }
 
   cargarTags() {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      alert('No estás autenticado. Por favor, inicia sesión.');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.http.get<Tag[]>(`${this.apiUrl}/blog/publico/tags`, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
+    this.http.get<Tag[]>(`${this.apiUrl}/blog/tags`).subscribe({
       next: (tags) => {
         this.tags = tags;
         console.log('Tags cargados exitosamente:', tags);
       },
       error: (error) => {
         console.error('Error al cargar los tags:', error);
-
-        if (error.status === 401 || error.status === 403) {
-          alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
-          this.router.navigate(['/login']);
-        } else {
-          alert('Error al cargar los tags. Por favor, intenta nuevamente.');
-        }
+        alert('Error al cargar los tags. Por favor, intenta nuevamente.');
       }
     });
   }
+
 
   // Método para crear un nuevo tag
   crearNuevoTag() {
@@ -260,14 +245,12 @@ export class BlogCreateComponent implements OnInit {
     const formData = new FormData();
     formData.append('file', file);
 
-    /**
     return this.http.post<any>(`${this.apiUrl}/blog/imagenes/subir`, formData, {
       headers: this.getAuthHeaders().delete('Content-Type') // Dejar que el navegador establezca el Content-Type con boundary
-    });*/
+    });
   }
 
   publicarBlog() {
-    // Validaciones
     if (!this.blog.titulo.trim()) {
       alert('El título es obligatorio');
       return;
@@ -283,72 +266,47 @@ export class BlogCreateComponent implements OnInit {
       return;
     }
 
-    if (this.publicando) {
-      return; // Evitar múltiples envíos
-    }
+    if (this.publicando) return;
 
     const token = localStorage.getItem('token');
+    const idUsuario = localStorage.getItem('idUsuario') || '1';
+
     if (!token) {
       alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
       this.router.navigate(['/login']);
       return;
     }
 
-    // Indicar que se está publicando
     this.publicando = true;
 
-    // Paso 1: Subir la imagen
-    this.subirImagen(this.blog.imagenDestacada).subscribe({
-      next: (imagenResponse) => {
-        console.log('Imagen subida exitosamente:', imagenResponse);
-        
-        const nuevoArticulo = {
-          titulo: this.blog.titulo,
-          descripcionCorta: this.blog.resumen,
-          contenido: this.blog.contenido,
-          imagenId: imagenResponse.id || imagenResponse.idImagen,
-          estado: 'BORRADOR',
-          tagIds: this.blog.tags.map(t => t.idTag)
-        };
+    const formData = new FormData();
+    formData.append('titulo', this.blog.titulo);
+    formData.append('descripcionCorta', this.blog.resumen);
+    formData.append('contenido', this.blog.contenido);
+    formData.append('estado', 'BORRADOR');
 
-        console.log('Datos del artículo a enviar:', nuevoArticulo);
+    const nombresTags = this.blog.tags.map(t => t.nombre).join(',');
+    const idsTags = this.blog.tags.map(t => t.idTag).join(',');
 
-        this.http.post(`${this.apiUrl}/blog/articulos/crear`, nuevoArticulo, {
-          headers: this.getAuthHeaders().set('Content-Type', 'application/json')
-        }).subscribe({
-          next: (response) => {
-            console.log('Artículo creado exitosamente:', response);
-            this.publicando = false;
-            alert('El artículo fue creado exitosamente');
-            this.router.navigate(['/admin/blog']);
-          },
-          error: (error) => {
-            console.error('Error al crear el artículo:', error);
-            this.publicando = false;
-            
-            if (error.status === 401 || error.status === 403) {
-              alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
-              this.router.navigate(['/login']);
-            } else if (error.error?.message) {
-              alert(`Error: ${error.error.message}`);
-            } else {
-              alert('Error al crear el artículo. Por favor, intenta nuevamente.');
-            }
-          }
-        });
+    formData.append('nombresTags', nombresTags || 'sin-tag');
+    formData.append('idsTags', idsTags || '');
+    formData.append('imagen', this.blog.imagenDestacada);
+
+    this.http.post(`${this.apiUrl}/blog/articulos/crear?idUsuario=${idUsuario}`, formData, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).subscribe({
+      next: (response) => {
+        console.log('Artículo creado exitosamente:', response);
+        this.publicando = false;
+        alert('El artículo fue creado exitosamente');
+        this.router.navigate(['/admin/blog']);
       },
       error: (error) => {
-        console.error('Error al subir la imagen:', error);
+        console.error('Error al crear el artículo:', error);
         this.publicando = false;
-        
-        if (error.status === 401 || error.status === 403) {
-          alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
-          this.router.navigate(['/login']);
-        } else if (error.error?.message) {
-          alert(`Error al subir la imagen: ${error.error.message}`);
-        } else {
-          alert('Error al subir la imagen. Por favor, intenta nuevamente.');
-        }
+        alert('Error al crear el artículo. Ver consola para más detalles.');
       }
     });
   }

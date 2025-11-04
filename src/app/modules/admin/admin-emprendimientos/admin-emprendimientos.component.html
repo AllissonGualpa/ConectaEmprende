@@ -8,74 +8,49 @@
     </h1>
 
     <!-- Filtros -->
-<div
-  class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8"
->
-  <!-- Contenedor de todos los filtros -->
-  <div class="flex flex-col md:flex-row items-center gap-4 w-full">
-    <!-- Buscador -->
-    <div class="relative flex-1">
-      <input
-        type="text"
-        placeholder="Buscar..."
-        [(ngModel)]="searchTerm"
-        (input)="applyFilters()"
-        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-      />
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-        />
-      </svg>
-    </div>
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+      <!-- Contenedor de todos los filtros -->
+      <div class="flex flex-col md:flex-row items-center gap-4 w-full">
+        <!-- Buscador -->
+        <div class="relative flex-1">
+          <input type="text" placeholder="Buscar..." [(ngModel)]="searchTerm" (input)="applyFilters()"
+            class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+            stroke="currentColor" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+        </div>
 
-    <!-- Fecha -->
-    <div class="flex flex-col">
-      <label class="text-xs text-gray-500 mb-1">Fecha</label>
-      <input
-        type="date"
-        [(ngModel)]="selectedDate"
-        (change)="applyFilters()"
-        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-      />
-    </div>
+        <!-- Fecha -->
+        <div class="flex flex-col">
+          <label class="text-xs text-gray-500 mb-1">Fecha</label>
+          <input type="date" [(ngModel)]="selectedDate" (change)="applyFilters()"
+            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+        </div>
 
-    <!-- Categoría -->
-    <div class="flex flex-col">
-      <label class="text-xs text-gray-500 mb-1">Categoría</label>
-      <select
-        [(ngModel)]="selectedCategory"
-        (change)="applyFilters()"
-        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-      >
-        <option value="">Todas</option>
-        <option *ngFor="let cat of categorias" [value]="cat.id">
-          {{ cat.nombre }}
-        </option>
-      </select>
-    </div>
+        <!-- Categoría -->
+        <div class="flex flex-col">
+          <label class="text-xs text-gray-500 mb-1">Categoría</label>
+          <select [(ngModel)]="selectedCategory" (change)="applyFilters()"
+            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="">Todas</option>
+            <option *ngFor="let cat of categorias" [value]="cat.id">
+              {{ cat.nombre }}
+            </option>
+          </select>
+        </div>
 
-    <!-- Botón Consultar -->
-    <div class="flex flex-col md:justify-end">
-      <button
-        (click)="reload()"
-        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 mt-4 md:mt-0"
-      >
-        Consultar
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </button>
+        <!-- Botón Consultar -->
+        <div class="flex flex-col md:justify-end">
+          <button (click)="reload()"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 mt-4 md:mt-0">
+            Consultar
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
 
     <!-- Tabla -->
@@ -90,43 +65,36 @@
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Tipo</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Subtipo</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Fecha</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Hora</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Hora</th>
               <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600 text-center">Acción</th>
             </tr>
           </thead>
 
           <tbody class="divide-y divide-gray-200">
-            <tr
-              *ngFor="let emp of filteredEmprendimientos; let i = index"
-              class="hover:bg-gray-50 transition-colors"
-            >
+            <tr *ngFor="let emp of filteredEmprendimientos; let i = index" [ngClass]="{
+                'bg-[#F7F6FE]': i % 2 !== 0,
+                'bg-white': i % 2 === 0
+              }" class="hover:bg-gray-50 transition-colors">
+
               <td class="px-6 py-3 text-sm text-gray-900">#{{ emp.id }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ emp.nombreComercial }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ emp.estadoEmprendimiento }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ emp.tipoInfo.tipo }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ emp.tipoInfo.subTipo }}</td>
               <td class="px-6 py-3 text-sm text-gray-600">{{ formatFecha(emp.fechaCreacion) }}</td>
-              <td class="px-6 py-3 text-sm">
-                <span
-                  class="px-3 py-1 rounded-full font-medium text-center block w-fit mx-auto text-sm"
-                  [ngClass]="getHoraColor(i)"
-                >
+              <td class="px-6 py-3 text-sm text-center">
+                <span class="px-3 py-1 rounded-full font-medium inline-block text-sm" [ngClass]="getHoraColor(i)">
                   {{ formatHora(emp.anioCreacion) }}
                 </span>
               </td>
+
               <td class="px-6 py-3 text-center flex gap-3 justify-center">
-                <button
-                  (click)="editarEmprendimiento(emp)"
-                  class="text-purple-600 hover:text-purple-800 transition-colors p-1"
-                  title="Editar"
-                >
+                <button (click)="editarEmprendimiento(emp)"
+                  class="text-purple-600 hover:text-purple-800 transition-colors p-1" title="Editar">
                   <i class="fa-solid fa-pen"></i>
                 </button>
-                <button
-                  (click)="eliminarEmprendimiento(emp)"
-                  class="text-red-600 hover:text-red-800 transition-colors p-1"
-                  title="Eliminar"
-                >
+                <button (click)="eliminarEmprendimiento(emp)"
+                  class="text-red-600 hover:text-red-800 transition-colors p-1" title="Eliminar">
                   <i class="fa-solid fa-trash"></i>
                 </button>
               </td>

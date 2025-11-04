@@ -1,4 +1,4 @@
-<app-navbar></app-navbar> 
+<app-navbar></app-navbar>
 
 <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
   <div *ngIf="cargando" class="text-center text-gray-500 py-10">Cargando artículo...</div>
@@ -14,23 +14,21 @@
     </h1>
 
     <!-- Descripción corta -->
-    <p class="text-gray-600 text-base sm:text-lg leading-relaxed mb-5 text-center max-w-3xl mx-auto">
+    <p class="text-sm text-gray-400 mb-6 text-center max-w-3xl mx-auto">
       {{ articulo.descripcionCorta }}
     </p>
 
     <!-- Tags -->
     <div class="flex flex-wrap justify-center gap-2 mb-6">
-      <span *ngFor="let tag of articulo.tags"
-        class="text-xs font-medium px-3 py-1 rounded-full border"
-        [style.borderColor]="'#C0A537'"
-        [style.color]="'#C0A537'">
+      <span *ngFor="let tag of articulo.tags" class="text-xs font-medium px-3 py-1 rounded-full border"
+        [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
         {{ tag.nombre }}
       </span>
     </div>
 
     <!-- Imagen -->
-    <img [src]="articulo.urlImagen" [alt]="articulo.titulo" 
-         class="w-full h-72 object-cover rounded-lg shadow-md mb-8" />
+    <img [src]="articulo.urlImagen" [alt]="articulo.titulo"
+      class="w-full h-72 object-cover rounded-lg shadow-md mb-8" />
 
     <!-- Contenido completo -->
     <div class="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line prose max-w-none">
@@ -39,8 +37,8 @@
 
     <!-- Botón volver -->
     <div class="mt-10 text-center">
-      <button (click)="volverAlBlog()" 
-              class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow transition-colors">
+      <button (click)="volverAlBlog()"
+        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow transition-colors">
         ← Volver al blog
       </button>
     </div>

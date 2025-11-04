@@ -11,12 +11,9 @@ interface BlogArticulo {
   idArticulo: number;
   titulo: string;
   descripcionCorta: string;
-  contenido: string;
   urlImagen?: string;
   tags?: { idTag: number; nombre: string }[];
   fechaCreacion: string;
-  estado: string;
-  archivado?: boolean;
 }
 
 @Component({
@@ -41,7 +38,7 @@ export class BlogComponent implements OnInit {
   error: string | null = null;
   tagsArray: string[] = [];
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient) { }
 
   ngOnInit(): void {
     this.cargarTags();
@@ -51,11 +48,8 @@ export class BlogComponent implements OnInit {
   // Cargar tags desde API
   cargarTags() {
     const url = 'https://eureka-emprende.onrender.com/v1/blog/tags';
-    const token = localStorage.getItem('token');
 
-    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
-
-    this.http.get<{ idTag: number; nombre: string }[]>(url, { headers }).subscribe({
+    this.http.get<{ idTag: number; nombre: string }[]>(url).subscribe({
       next: (data) => {
         this.tagsArray = data.map(tag => tag.nombre);
       },
@@ -66,40 +60,43 @@ export class BlogComponent implements OnInit {
     });
   }
 
-  // Cargar artículos del blog
+  
+  // Cargar artículos del blog 
   cargarArticulos() {
     const url =
-      'https://eureka-emprende.onrender.com/v1/blog/articulos?fechaInicio=2025-10-01T00:00:00&fechaFin=2025-10-31T23:59:59';
+      'https://eureka-emprende.onrender.com/v1/blog/publico/articulos?fechaInicio=2024-06-01T00:00:00&page=0&size=10';
 
     const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders().set('Authorization', `Bearer ${token}`) : undefined;
+    let headers = new HttpHeaders();
 
-    this.http.get<BlogArticulo[]>(url, { headers }).subscribe({
-      next: (data) => {
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    this.http.get<{ content: BlogArticulo[] }>(url, { headers }).subscribe({
+      next: (response) => {
+        const data = response.content;
+
         if (Array.isArray(data)) {
-          this.articulosOriginales = data.filter(
-            item => item.estado.toUpperCase() === 'PUBLICADO' && !item.archivado
-          );
+          this.articulosOriginales = data;
 
-          // Transformamos para la vista
-          this.blogCardsArrayOriginal = this.articulosOriginales.map(item => ({
+          this.blogCardsArrayOriginal = data.map((item: BlogArticulo) => ({
             id: item.idArticulo,
             title: item.titulo,
             description: item.descripcionCorta,
             image: item.urlImagen || '/assets/img/blog/default.jpg',
-            tags: item.tags?.map(t => t.nombre) || [],
+            tags: item.tags?.map((t: { idTag: number; nombre: string }) => t.nombre) || [],
             date: new Date(item.fechaCreacion).toLocaleDateString('es-EC', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
-            }),
-            contenido: item.contenido
+            })
           }));
 
-          // Inicializamos el array visible
           this.blogCardsArray = [...this.blogCardsArrayOriginal];
+          this.error = null;
         } else {
-          console.warn('Formato de respuesta inesperado:', data);
+          console.warn('Formato de respuesta inesperado:', response);
           this.error = 'La respuesta del servidor no es válida.';
         }
 
@@ -107,22 +104,23 @@ export class BlogComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar artículos:', err);
-        if (err.status === 401 && !token) {
-          this.error = null;
+
+        if (err.status === 401) {
+          this.error = token
+            ? 'Tu sesión ha expirado o el token no es válido.'
+            : 'Se requiere autenticación para ver los artículos (por ahora).';
         } else {
-          this.error =
-            err.status === 401
-              ? 'No tienes autorización para ver los artículos. Inicia sesión primero.'
-              : 'No se pudieron cargar los artículos. Inténtalo más tarde.';
+          this.error = 'No se pudieron cargar los artículos. Inténtalo más tarde.';
         }
+
         this.cargando = false;
       }
     });
   }
 
 
+
   abrirDetalle(card: any) {
-    // Buscamos el artículo original completo usando el ID
     const articuloCompleto = this.articulosOriginales.find(
       art => art.idArticulo === card.id
     );
@@ -135,19 +133,17 @@ export class BlogComponent implements OnInit {
     }
   }
 
-  // Búsqueda funcional: texto y tags
+  // Filtrar artículos por búsqueda y tag
   onSearch(payload: SearchPayload) {
     const { query, filters } = payload;
     let filtered = [...this.blogCardsArrayOriginal];
 
-    // Filtrar por texto en título
     if (query) {
       filtered = filtered.filter(card =>
         card.title.toLowerCase().includes(query.toLowerCase())
       );
     }
 
-    // Filtrar por tags seleccionados
     if (filters) {
       filters.forEach((filter: { key: string; value: any }) => {
         if (filter.key === 'tag') {
@@ -160,7 +156,6 @@ export class BlogComponent implements OnInit {
       });
     }
 
-    // Actualizar array visible
     this.blogCardsArray = filtered;
   }
 }
