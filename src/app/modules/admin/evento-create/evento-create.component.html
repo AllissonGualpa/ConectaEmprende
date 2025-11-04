@@ -1,9 +1,9 @@
-<form [formGroup]="form" (ngSubmit)="crear()" class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col" style="max-height:80vh;">
+<form [formGroup]="form" (ngSubmit)="crear()" class="w-full mx-auto bg-white rounded-lg shadow-lg p-6 flex flex-col" style="max-height:80vh;">
   <!-- Scrollable content area -->
   <div class="flex-1 overflow-auto pr-2">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <div>
+  <div class="md:col-span-1">
       <!-- Nombre -->
       <label class="block font-semibold text-gray-700 mb-1">Nombre del evento:</label>
       <input
@@ -59,13 +59,27 @@
       <input formControlName="direccion" type="text" placeholder="Ej: Auditorio X / Online" class="w-full border border-gray-300 rounded-md px-3 py-2 mb-3" />
     </div>
 
-  <!--img-->
-    <div class="flex items-center justify-center">
-      <div class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors duration-200">
-        <p class="text-sm text-gray-500 mb-3">
-          <span class="text-orange-500 font-medium">Subir imagen</span> (SVG, PNG, JPG o GIF — recomendado 800x400px)
-        </p>
-        <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+    <!--img uploader on the right column -->
+    <div class="md:col-span-1 flex items-start justify-center">
+      <div class="w-full">
+        <label class="block font-semibold text-gray-700 mb-2">Imagen del evento:</label>
+        <div class="border-2 border-dashed rounded-lg p-6 text-center hover:border-orange-400 transition-colors duration-200">
+          <div class="flex flex-col items-center justify-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16v-4a4 4 0 014-4h2a4 4 0 014 4v4m-5-4v8m0 0l-3-3m3 3l3-3" />
+            </svg>
+            <div>
+              <button type="button" class="text-purple-600 font-medium">Click to upload</button>
+            </div>
+            <div class="text-sm text-gray-500">SVG, PNG, JPG or GIF (max. 800x400px)</div>
+            <div class="mt-3">
+              <label class="inline-block bg-white border rounded px-3 py-1 text-sm cursor-pointer">
+                <input type="file" class="hidden" (change)="onFileSelected($event)" accept="image/*" />
+                Elegir archivo
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     </div>
