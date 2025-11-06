@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { MatDialog } from '@angular/material/dialog';
 import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
+import { BlogService } from '../blog.service';
 
 @Component({
   selector: 'app-admin-blog',
@@ -40,12 +40,10 @@ export class AdminBlogComponent implements OnInit {
 
   // Exponer Math para el template
   Math = Math;
-
-  private baseApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/admin/articulos';
-  private tagsApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/tags';
+  baseApiUrl: any;
 
   constructor(
-    private http: HttpClient,
+    private blogService: BlogService,
     private router: Router,
     private dialog: MatDialog
   ) { }
@@ -56,12 +54,7 @@ export class AdminBlogComponent implements OnInit {
   }
 
   loadTags() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const headers = { Authorization: `Bearer ${token}` };
-
-    this.http.get<any[]>(this.tagsApiUrl, { headers }).subscribe({
+    this.blogService.getAllTags().subscribe({
       next: (tags) => { this.availableTags = tags; },
       error: (err) => { console.error('Error al cargar tags:', err); }
     });
@@ -115,23 +108,19 @@ export class AdminBlogComponent implements OnInit {
       return;
     }
 
-    const headers = { Authorization: `Bearer ${token}` };
-    const apiUrl = this.buildApiUrl();
-
-    this.http.get<any>(apiUrl, { headers }).subscribe({
+    this.blogService.getBlogs({
+      page: this.currentPage,
+      size: this.pageSize,
+      tag: this.selectedTag,
+      estado: this.selectedEstado,
+      fechaInicio: this.fechaInicio,
+      fechaFin: this.fechaFin
+    }).subscribe({
       next: (response) => {
         if (response.content) {
           this.blogs = response.content;
-
-          // Normalizar totalElements aceptando diferentes nombres que pueda devolver la API
-          const totalElems = response.totalElements ?? response.total ?? response.totalItems ?? response.total_count ?? (Array.isArray(this.blogs) ? this.blogs.length : 0);
-          this.totalElements = Number(totalElems) || 0;
-
-          // Normalizar totalPages (si no viene, calcularlo)
-          const totalPgs = response.totalPages ?? (this.totalElements ? Math.ceil(this.totalElements / (response.size ?? this.pageSize)) : 0);
-          this.totalPages = Number(totalPgs) || 0;
-
-          // sincronizar pagina y tamaño con lo que devuelve la API (si están)
+          this.totalElements = Number(response.totalElements) || 0;
+          this.totalPages = Number(response.totalPages) || 0;
           if (typeof response.number === 'number') {
             this.currentPage = response.number;
           }
@@ -139,13 +128,12 @@ export class AdminBlogComponent implements OnInit {
             this.pageSize = response.size;
           }
         } else {
-          // Si la respuesta es un array directo
           this.blogs = Array.isArray(response) ? response : [];
           this.totalElements = this.blogs.length;
           this.totalPages = Math.ceil(this.totalElements / this.pageSize);
         }
         this.applyFilters();
-        this.computePaginationInfo(); // actualizar datos de paginación
+        this.computePaginationInfo();
         this.loading = false;
       },
       error: (error) => {
@@ -270,20 +258,12 @@ export class AdminBlogComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('No estás autenticado.');
-          return;
-        }
-
-        const headers = { Authorization: `Bearer ${token}` };
         const userId = 1;
-        const apiUrl = `https://eureka-emprende.onrender.com/v1/blog/articulos/${blog.idArticulo}/${accion}?idUsuario=${userId}`;
-
-        this.http.put(apiUrl, {}, { headers, responseType: 'text' }).subscribe({
-          next: (res) => { alert(res); this.loadBlogs(); },
-          error: (err) => { console.error(`Error al ${accion} blog:`, err); alert(`Error al ${accion} blog.`); }
-        });
+        this.blogService.toggleArchiveBlog(blog.idArticulo, accion as 'archivar' | 'desarchivar', userId)
+          .subscribe({
+            next: (res) => { alert(res); this.loadBlogs(); },
+            error: (err) => { console.error(`Error al ${accion} blog:`, err); alert(`Error al ${accion} blog.`); }
+          });
       }
     });
   }

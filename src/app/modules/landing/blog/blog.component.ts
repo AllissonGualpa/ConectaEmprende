@@ -5,7 +5,7 @@ import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent, SearchPayload } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent } from '../../../layout/cards/cards.component';
 import { Router } from '@angular/router';
-import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { BlogService } from '../../admin/blog.service';
 
 interface BlogArticulo {
   idArticulo: number;
@@ -24,8 +24,7 @@ interface BlogArticulo {
     NavbarComponent,
     FooterComponent,
     SearchBarComponent,
-    CardsComponent,
-    HttpClientModule
+    CardsComponent
   ],
   templateUrl: './blog.component.html',
   styleUrls: ['./blog.component.css']
@@ -38,7 +37,7 @@ export class BlogComponent implements OnInit {
   error: string | null = null;
   tagsArray: string[] = [];
 
-  constructor(private router: Router, private http: HttpClient) { }
+  constructor(private router: Router, private blogService: BlogService) { }
 
   ngOnInit(): void {
     this.cargarTags();
@@ -47,11 +46,9 @@ export class BlogComponent implements OnInit {
 
   // Cargar tags desde API
   cargarTags() {
-    const url = 'https://eureka-emprende.onrender.com/v1/blog/tags';
-
-    this.http.get<{ idTag: number; nombre: string }[]>(url).subscribe({
+    this.blogService.getAllTags().subscribe({
       next: (data) => {
-        this.tagsArray = data.map(tag => tag.nombre);
+        this.tagsArray = data.map((tag: { idTag: number; nombre: string }) => tag.nombre);
       },
       error: (err) => {
         console.error('Error al cargar tags:', err);
@@ -60,26 +57,13 @@ export class BlogComponent implements OnInit {
     });
   }
 
-  
-  // Cargar artículos del blog 
+  // Cargar artículos del blog
   cargarArticulos() {
-    const url =
-      'https://eureka-emprende.onrender.com/v1/blog/publico/articulos?fechaInicio=2024-06-01T00:00:00&page=0&size=10';
-
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    this.http.get<{ content: BlogArticulo[] }>(url, { headers }).subscribe({
+    this.blogService.getPublicArticles({ fechaInicio: '2024-06-01T00:00:00', page: 0, size: 10 }).subscribe({
       next: (response) => {
         const data = response.content;
-
         if (Array.isArray(data)) {
           this.articulosOriginales = data;
-
           this.blogCardsArrayOriginal = data.map((item: BlogArticulo) => ({
             id: item.idArticulo,
             title: item.titulo,
@@ -92,33 +76,28 @@ export class BlogComponent implements OnInit {
               day: '2-digit'
             })
           }));
-
           this.blogCardsArray = [...this.blogCardsArrayOriginal];
           this.error = null;
         } else {
           console.warn('Formato de respuesta inesperado:', response);
           this.error = 'La respuesta del servidor no es válida.';
         }
-
         this.cargando = false;
       },
       error: (err) => {
         console.error('Error al cargar artículos:', err);
-
         if (err.status === 401) {
+          const token = localStorage.getItem('token');
           this.error = token
             ? 'Tu sesión ha expirado o el token no es válido.'
             : 'Se requiere autenticación para ver los artículos (por ahora).';
         } else {
           this.error = 'No se pudieron cargar los artículos. Inténtalo más tarde.';
         }
-
         this.cargando = false;
       }
     });
   }
-
-
 
   abrirDetalle(card: any) {
     const articuloCompleto = this.articulosOriginales.find(

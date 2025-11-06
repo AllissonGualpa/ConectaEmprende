@@ -4,12 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { forkJoin } from 'rxjs';
-
-interface Tag {
-  idTag: number;
-  nombre: string;
-}
+import { BlogService, Tag } from '../blog.service';
 
 @Component({
   selector: 'app-blog-create',
@@ -44,7 +39,7 @@ export class BlogCreateComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private blogService: BlogService
   ) { }
 
   ngOnInit() {
@@ -60,7 +55,7 @@ export class BlogCreateComponent implements OnInit {
   }
 
   cargarTags() {
-    this.http.get<Tag[]>(`${this.apiUrl}/blog/tags`).subscribe({
+    this.blogService.getAllTags().subscribe({
       next: (tags) => {
         this.tags = tags;
         console.log('Tags cargados exitosamente:', tags);
@@ -80,21 +75,8 @@ export class BlogCreateComponent implements OnInit {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Obtener el idUsuario del localStorage o del token
-    const idUsuario = localStorage.getItem('idUsuario') || '1';
-
-    this.http.post(`${this.apiUrl}/blog/tags/crear?idUsuario=${idUsuario}`,
-      { nombre: this.nuevoTagNombre },
-      { headers: this.getAuthHeaders() }
-    ).subscribe({
-      next: (response: any) => {
+    this.blogService.createTag(this.nuevoTagNombre).subscribe({
+      next: (response) => {
         console.log('Tag creado exitosamente:', response);
         alert('Tag creado exitosamente');
 
@@ -109,12 +91,10 @@ export class BlogCreateComponent implements OnInit {
         console.error('Error al crear el tag:', error);
 
         if (error.status === 401 || error.status === 403) {
-          alert('No tienes permisos para realizar esta acción. Por favor, inicia sesión nuevamente.');
+          alert('No tienes permisos para realizar esta acción.');
           this.router.navigate(['/login']);
-        } else if (error.error?.message) {
-          alert(`Error: ${error.error.message}`);
         } else {
-          alert('Error al crear el tag. Por favor, intenta nuevamente.');
+          alert(error.error?.message || 'Error al crear el tag.');
         }
       }
     });
@@ -242,61 +222,16 @@ export class BlogCreateComponent implements OnInit {
    * Método para subir la imagen al servidor
    */
   private subirImagen(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post<any>(`${this.apiUrl}/blog/imagenes/subir`, formData, {
-      headers: this.getAuthHeaders().delete('Content-Type') // Dejar que el navegador establezca el Content-Type con boundary
-    });
+    return this.blogService.uploadImage(file);
   }
 
   publicarBlog() {
-    if (!this.blog.titulo.trim()) {
-      alert('El título es obligatorio');
-      return;
-    }
-
-    if (!this.blog.contenido.trim()) {
-      alert('El contenido es obligatorio');
-      return;
-    }
-
-    if (!this.blog.imagenDestacada) {
-      alert('La imagen destacada es obligatoria');
-      return;
-    }
-
+    if (!this.validarBlog()) return;
     if (this.publicando) return;
-
-    const token = localStorage.getItem('token');
-    const idUsuario = localStorage.getItem('idUsuario') || '1';
-
-    if (!token) {
-      alert('No estás autenticado. Por favor, inicia sesión nuevamente.');
-      this.router.navigate(['/login']);
-      return;
-    }
 
     this.publicando = true;
 
-    const formData = new FormData();
-    formData.append('titulo', this.blog.titulo);
-    formData.append('descripcionCorta', this.blog.resumen);
-    formData.append('contenido', this.blog.contenido);
-    formData.append('estado', 'BORRADOR');
-
-    const nombresTags = this.blog.tags.map(t => t.nombre).join(',');
-    const idsTags = this.blog.tags.map(t => t.idTag).join(',');
-
-    formData.append('nombresTags', nombresTags || 'sin-tag');
-    formData.append('idsTags', idsTags || '');
-    formData.append('imagen', this.blog.imagenDestacada);
-
-    this.http.post(`${this.apiUrl}/blog/articulos/crear?idUsuario=${idUsuario}`, formData, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    }).subscribe({
+    this.blogService.createBlog(this.blog).subscribe({
       next: (response) => {
         console.log('Artículo creado exitosamente:', response);
         this.publicando = false;
@@ -309,6 +244,22 @@ export class BlogCreateComponent implements OnInit {
         alert('Error al crear el artículo. Ver consola para más detalles.');
       }
     });
+  }
+
+  private validarBlog(): boolean {
+    if (!this.blog.titulo.trim()) {
+      alert('El título es obligatorio');
+      return false;
+    }
+    if (!this.blog.contenido.trim()) {
+      alert('El contenido es obligatorio');
+      return false;
+    }
+    if (!this.blog.imagenDestacada) {
+      alert('La imagen destacada es obligatoria');
+      return false;
+    }
+    return true;
   }
 
   cancelar() {

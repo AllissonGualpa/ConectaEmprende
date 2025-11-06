@@ -2,13 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-
-interface Tag {
-  idTag: number;
-  nombre: string;
-}
+import { BlogService, Tag } from '../blog.service';
 
 @Component({
   selector: 'app-blog-edit',
@@ -28,11 +23,7 @@ export class BlogEditComponent implements OnInit {
   loading = true;
   imagenOriginal: string | null = null;
 
-  private apiUrl = 'https://eureka-emprende.onrender.com/v1/blog';
-  private adminApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/admin';
-  private publicApiUrl = 'https://eureka-emprende.onrender.com/v1/blog/tags';
-
-  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient) {}
+  constructor(private route: ActivatedRoute, private router: Router, private blogService: BlogService) {}
 
   ngOnInit() {
     const blogId = this.route.snapshot.paramMap.get('id');
@@ -41,15 +32,8 @@ export class BlogEditComponent implements OnInit {
     this.loadBlog(blogId);
   }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') || '';
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
   loadBlog(id: string) {
-    this.http.get<any>(`${this.adminApiUrl}/articulos/${id}`, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
+    this.blogService.getArticleById(Number(id)).subscribe({
       next: (data) => {
         this.blog = data;
         if (!this.blog.tags) this.blog.tags = [];
@@ -65,7 +49,7 @@ export class BlogEditComponent implements OnInit {
   }
 
   cargarTags() {
-    this.http.get<Tag[]>(this.publicApiUrl).subscribe({
+    this.blogService.getAllTags().subscribe({
       next: (tags) => this.tags = tags,
       error: (err) => {
         console.error('Error al cargar los tags:', err);
@@ -84,11 +68,7 @@ export class BlogEditComponent implements OnInit {
       alert('Por favor ingresa un nombre para el tag');
       return;
     }
-    const idUsuario = localStorage.getItem('idUsuario') || '1';
-    this.http.post(`${this.apiUrl}/tags/crear?idUsuario=${idUsuario}`,
-      { nombre: this.nuevoTagNombre },
-      { headers: this.getAuthHeaders() }
-    ).subscribe({
+    this.blogService.createTag(this.nuevoTagNombre).subscribe({
       next: () => {
         alert('Tag creado exitosamente');
         this.cargarTags();
@@ -186,9 +166,7 @@ export class BlogEditComponent implements OnInit {
       formData.append('idsTags', id.toString());
     });
 
-    this.http.put(`${this.apiUrl}/articulos/${blogId}?idUsuario=${idUsuario}`, formData, {
-      headers: this.getAuthHeaders().delete('Content-Type')
-    }).subscribe({
+    this.blogService.updateArticle(blogId, formData, Number(idUsuario)).subscribe({
       next: () => {
         alert('Blog actualizado exitosamente');
         this.router.navigate(['/admin/blog']);
