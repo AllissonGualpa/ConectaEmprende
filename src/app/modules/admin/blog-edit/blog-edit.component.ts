@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { BlogService, Tag } from '../blog.service';
+import { BlogService } from '../blog.service';
+import { Tag, AdminBlog } from '../blog.types';
 
 @Component({
   selector: 'app-blog-edit',

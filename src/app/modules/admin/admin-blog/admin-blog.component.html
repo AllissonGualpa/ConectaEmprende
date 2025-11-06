@@ -106,9 +106,10 @@
               </td>
 
               <td class="px-6 py-3 text-sm text-gray-600">
-                {{ blog.descripcionCorta?.length > 80 ? (blog.descripcionCorta | slice:0:80) + '...' :
-                blog.descripcionCorta }}
-              </td>
+                {{ (blog.descripcionCorta ?? '').length > 80
+                ? ((blog.descripcionCorta ?? '') | slice:0:80) + '...'
+                : (blog.descripcionCorta ?? '') }}
+                </td>
 
               <td class="px-6 py-3 text-sm text-gray-600">
                 {{ blog.nombreUsuario }}

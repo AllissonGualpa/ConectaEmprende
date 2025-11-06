@@ -6,6 +6,7 @@ import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.
 import { MatDialog } from '@angular/material/dialog';
 import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
 import { BlogService } from '../blog.service';
+import { Tag, AdminBlog } from '../blog.types';
 
 @Component({
   selector: 'app-admin-blog',
@@ -15,8 +16,8 @@ import { BlogService } from '../blog.service';
   styleUrls: ['./admin-blog.component.css']
 })
 export class AdminBlogComponent implements OnInit {
-  blogs: any[] = [];
-  filteredBlogs: any[] = [];
+  blogs: AdminBlog[] = [];
+  filteredBlogs: AdminBlog[] = [];
   loading = false;
   searchTerm = '';
 
@@ -32,11 +33,11 @@ export class AdminBlogComponent implements OnInit {
   totalElements = 0;
   totalPages = 0;
 
-  availableTags: any[] = [];
+  availableTags: Tag[] = [];
 
-  pages: number[] = []; 
-  startIndex = 0; 
-  endIndex = 0; 
+  pages: number[] = [];
+  startIndex = 0;
+  endIndex = 0;
 
   // Exponer Math para el template
   Math = Math;
@@ -117,21 +118,21 @@ export class AdminBlogComponent implements OnInit {
       fechaFin: this.fechaFin
     }).subscribe({
       next: (response) => {
-        if (response.content) {
-          this.blogs = response.content;
-          this.totalElements = Number(response.totalElements) || 0;
-          this.totalPages = Number(response.totalPages) || 0;
-          if (typeof response.number === 'number') {
-            this.currentPage = response.number;
-          }
-          if (typeof response.size === 'number') {
-            this.pageSize = response.size;
-          }
-        } else {
-          this.blogs = Array.isArray(response) ? response : [];
+        // ✅ Usamos un type guard para diferenciar el tipo
+        if (Array.isArray(response)) {
+          // Respuesta simple (sin paginación)
+          this.blogs = response;
           this.totalElements = this.blogs.length;
           this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+        } else {
+          // Respuesta paginada
+          this.blogs = response.content ?? [];
+          this.totalElements = Number(response.totalElements) || 0;
+          this.totalPages = Number(response.totalPages) || 0;
+          this.currentPage = typeof response.number === 'number' ? response.number : 0;
+          this.pageSize = typeof response.size === 'number' ? response.size : this.pageSize;
         }
+
         this.applyFilters();
         this.computePaginationInfo();
         this.loading = false;
@@ -146,6 +147,7 @@ export class AdminBlogComponent implements OnInit {
       }
     });
   }
+
 
   applyFilters() {
     let filtered = this.blogs;
@@ -223,18 +225,23 @@ export class AdminBlogComponent implements OnInit {
     this.loadBlogs();
   }
 
-  getEstadoClass(estado: string): string {
+  getEstadoClass(estado?: string): string {
     switch (estado) {
-      case 'PUBLICADO': return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs';
-      case 'BORRADOR': return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs';
-      case 'ARCHIVADO': return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
-      default: return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs';
+      case 'PUBLICADO':
+        return 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+      case 'BORRADOR':
+        return 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium';
+      case 'ARCHIVADO':
+        return 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium';
+      default:
+        return 'bg-gray-50 text-gray-500 px-2 py-1 rounded-full text-xs font-medium';
     }
   }
 
+
   crearBlog() { this.router.navigate(['/admin/blog/create']); }
 
-  editarBlog(blog: any) {
+  editarBlog(blog: AdminBlog) {
     if (!blog.idArticulo) {
       alert('No se pudo editar este artículo.');
       return;
@@ -242,7 +249,7 @@ export class AdminBlogComponent implements OnInit {
     this.router.navigate(['/admin/blog/edit', blog.idArticulo]);
   }
 
-  toggleArchive(blog: any) {
+  toggleArchive(blog: AdminBlog) {
     if (!blog.idArticulo) return;
     const accion = blog.estado === 'ARCHIVADO' ? 'desarchivar' : 'archivar';
 

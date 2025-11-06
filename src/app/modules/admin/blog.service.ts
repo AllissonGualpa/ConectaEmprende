@@ -1,31 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface Tag {
-  idTag: number;
-  nombre: string;
-}
-
-export interface BlogCreate {
-  titulo: string;
-  resumen: string;
-  contenido: string;
-  tags: Tag[];
-  imagenDestacada: File | null;
-}
-
-export interface BlogArticle {
-  id: number;
-  titulo: string;
-  descripcionCorta: string;
-  contenido: string;
-  urlImagen: string;
-  fechaCreacion: string;
-  fechaPublicacion?: string;
-  tags: Tag[];
-  estado: string;
-}
+import { Tag, BlogCreate, BlogArticle, AdminBlog, PaginatedResponse } from './blog.types';
 
 @Injectable({
   providedIn: 'root'
@@ -41,8 +17,8 @@ export class BlogService {
   }
 
   // Obtener todos los tags
-  getAllTags(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseApiUrl}/tags`, { headers: this.getHeaders() });
+  getAllTags(): Observable<Tag[]> {
+    return this.http.get<Tag[]>(`${this.baseApiUrl}/tags`, { headers: this.getHeaders() });
   }
 
   // Obtener artículos con filtros/paginación
@@ -53,7 +29,7 @@ export class BlogService {
     estado?: string;
     fechaInicio?: string;
     fechaFin?: string;
-  }): Observable<any> {
+  }): Observable<PaginatedResponse<AdminBlog> | AdminBlog[]> {
     const { page, size, tag, estado, fechaInicio, fechaFin } = params;
     const inicio = fechaInicio || '2024-01-01';
     const fin = fechaFin || '2025-12-31';
@@ -116,8 +92,9 @@ export class BlogService {
   uploadImage(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
+    // no manipular Content-Type; HttpClient lo asigna con boundary
     return this.http.post(`${this.baseApiUrl}/imagenes/subir`, formData, {
-      headers: this.getHeaders().delete ? this.getHeaders().delete('Content-Type') : this.getHeaders()
+      headers: this.getHeaders()
     });
   }
 
@@ -175,3 +152,5 @@ export class BlogService {
     return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
   }
 }
+
+export { BlogArticle };

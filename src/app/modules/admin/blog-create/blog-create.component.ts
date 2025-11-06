@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { BlogService, Tag } from '../blog.service';
+import { BlogService } from '../blog.service';
+import { Tag, AdminBlog } from '../blog.types';
 
 @Component({
   selector: 'app-blog-create',
