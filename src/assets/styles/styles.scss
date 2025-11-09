@@ -82,3 +82,28 @@ body {
   background-color: #121212;
   color: #f5f5f5;
 }
+
+/* Personalización de Angular Material */
+.mat-mdc-raised-button.mat-primary {
+  background-color: #f97316 !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-ripple {
+  background-color: #f97316 !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-floating-label.mat-accent {
+  color: #f97316 !important;
+}
+
+.mat-mdc-select:focus:not(.mat-mdc-select-disabled).mat-primary .mat-mdc-select-arrow {
+  color: #f97316;
+}
+
+.mat-mdc-select-panel .mat-mdc-option.mat-selected:not(.mat-option-multiple):not(.mat-option-disabled) {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+.mat-mdc-option:hover:not(.mat-option-disabled) {
+  background-color: rgba(249, 115, 22, 0.05);
+}

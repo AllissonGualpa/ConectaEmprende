@@ -38,6 +38,7 @@ export interface AdminBlog {
 
 // Respuesta paginada genérica
 export interface PaginatedResponse<T> {
+  pageable: AdminBlog[];
 	content: T[];
 	totalElements: number;
 	totalPages: number;

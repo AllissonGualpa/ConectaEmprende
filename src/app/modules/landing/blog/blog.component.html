@@ -5,14 +5,14 @@
   <section class="relative bg-center bg-cover bg-no-repeat"
     style="background-image: url('/assets/img/emprendimiento/foto1.png');" aria-label="Sección de bienvenida al blog">
     <div class="absolute inset-0 bg-black/10"></div>
-  
+
     <!-- Contenido -->
     <div class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[520px] md:min-h-[580px]
              flex flex-col items-start justify-center text-left text-white">
       <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
         Blog
       </h1>
-  
+
       <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium leading-relaxed mt-2 
                max-w-5xl lg:max-w-6xl">
         Bienvenido a nuestro blog. <br />
@@ -20,7 +20,7 @@
         encontrarás tips prácticos, guías, tendencias y recursos pensados para
         ayudarte a crecer, mejorar tus ideas y darte el impulso que necesitas.
       </p>
-  
+
       <!-- Buscador -->
       <div class="w-full mt-10">
         <div class="max-w-5xl lg:max-w-6xl">
@@ -137,6 +137,37 @@
         </div>
       </div>
     </ng-container>
+
+    <!-- Controles de paginación con Angular Material + Tailwind -->
+    <div class="flex justify-center mt-10" *ngIf="totalPages > 1 && !cargando && !error">
+      <div class="flex items-center space-x-2">
+
+        <!-- Botón anterior -->
+        <button (click)="paginaAnterior()" [disabled]="currentPage === 0"
+          class="text-gray-500 disabled:text-gray-300 font-medium hover:text-orange-500 transition">
+          Regresar
+        </button>
+
+        <!-- Botones numerados -->
+        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+          <button (click)="cargarArticulos(i)" [ngClass]="{
+          'bg-orange-500 text-white shadow-md': currentPage === i,
+          'bg-gray-100 text-gray-600 hover:bg-gray-200': currentPage !== i
+        }"
+            class="w-8 h-8 rounded-md text-sm font-semibold transition-colors duration-200 flex items-center justify-center">
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+
+        <!-- Botón siguiente -->
+        <button (click)="siguientePagina()" [disabled]="currentPage + 1 >= totalPages"
+          class="text-gray-500 disabled:text-gray-300 font-medium hover:text-orange-500 transition">
+          Siguiente
+        </button>
+      </div>
+    </div>
+
+
 
     <div *ngIf="!cargando && !error && blogCardsArray.length === 0" class="text-center text-gray-500 mt-6">
       No hay artículos disponibles en este momento.

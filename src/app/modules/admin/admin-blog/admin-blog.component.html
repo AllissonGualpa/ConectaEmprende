@@ -1,81 +1,86 @@
 <div class="flex min-h-screen bg-white">
   <app-navbar-admin></app-navbar-admin>
 
-  <main class="flex-1 p-8 overflow-y-auto">
+  <main class="flex-1 p-6 overflow-y-auto">
     <!-- Header -->
     <div class="mb-6">
       <!-- Fila superior -->
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
         <!-- Buscador -->
         <div class="flex items-center w-full md:w-2/3">
-          <div class="relative flex-1">
-            <input type="text" placeholder="Buscar blogs por título, autor o estado..." (input)="onSearch($event)"
-              class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor" class="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-          </div>
+          <mat-form-field appearance="outline"
+            class="w-full text-sm [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-form-field-infix]:!flex [&_.mat-mdc-form-field-infix]:!items-center">
+            <mat-label class="text-sm">Buscar blogs...</mat-label>
+            <input matInput (input)="onSearch($event)" type="text" class="text-sm" />
+            <mat-icon matSuffix class="text-base">search</mat-icon>
+          </mat-form-field>
         </div>
 
         <!-- Botones -->
         <div class="flex gap-2 md:gap-3">
-          <button (click)="loadBlogs()"
-            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 text-sm rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
+          <button mat-raised-button color="primary" class="!text-sm !py-2 !px-4 flex items-center gap-1" (click)="loadBlogs()">
+            <mat-icon class="!text-base">search</mat-icon>
             Consultar
-            <i class="fa-solid fa-rotate-right"></i>
           </button>
 
-          <button (click)="crearBlog()"
-            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 text-sm rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
-            <i class="fa-solid fa-plus"></i>
-            Crear Blog
+          <button mat-raised-button color="primary" class="!text-sm !py-2 !px-4 flex items-center gap-1" (click)="crearBlog()">
+            <mat-icon class="!text-base">add</mat-icon>
+            Crear
           </button>
         </div>
       </div>
 
       <!-- Filtros -->
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6 items-center">
         <!-- Tag -->
-        <div>
-          <select [(ngModel)]="selectedTag" (change)="onFilterChange()"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-            <option value="">Todos los tags</option>
-            <option *ngFor="let tag of availableTags" [value]="tag.idTag">
-              {{ tag.nombre }}
-            </option>
-          </select>
-        </div>
+        <mat-form-field appearance="outline"
+          class="w-full text-sm [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-form-field-infix]:!flex [&_.mat-mdc-form-field-infix]:!items-center">
+          <mat-label class="text-sm">Tags</mat-label>
+          <mat-select [(ngModel)]="selectedTag" (selectionChange)="onFilterChange()" class="text-sm">
+            <mat-option value="" class="text-sm"></mat-option>
+            <mat-option *ngFor="let tag of availableTags" [value]="tag.idTag" class="text-sm">
+              {{tag.nombre}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
         <!-- Estado -->
-        <div>
-          <select [(ngModel)]="selectedEstado" (change)="onFilterChange()"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-            <option value="">Todos los estados</option>
-            <option value="PUBLICADO">Publicado</option>
-            <option value="BORRADOR">Borrador</option>
-            <option value="ARCHIVADO">Archivado</option>
-          </select>
-        </div>
+        <mat-form-field appearance="outline"
+          class="w-full text-sm [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-form-field-infix]:!flex [&_.mat-mdc-form-field-infix]:!items-center">
+          <mat-label class="text-sm">Estado</mat-label>
+          <mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()" class="text-sm">
+            <mat-option value="" class="text-sm"></mat-option>
+            <mat-option value="PUBLICADO" class="text-sm">Publicado</mat-option>
+            <mat-option value="BORRADOR" class="text-sm">Borrador</mat-option>
+            <mat-option value="ARCHIVADO" class="text-sm">Archivado</mat-option>
+          </mat-select>
+        </mat-form-field>
 
         <!-- Fecha Inicio -->
-        <div>
-          <input type="date" [(ngModel)]="fechaInicio" (change)="onFilterChange()" placeholder="Fecha inicio"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-        </div>
+        <mat-form-field appearance="outline"
+          class="w-full text-sm [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-form-field-infix]:!flex [&_.mat-mdc-form-field-infix]:!items-center">
+          <mat-label class="text-sm">Fecha inicio</mat-label>
+          <input matInput [matDatepicker]="pickerInicio" [(ngModel)]="fechaInicio" (dateChange)="onFilterChange()"
+            class="text-sm" />
+          <mat-datepicker-toggle matSuffix [for]="pickerInicio" class="text-base"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicio></mat-datepicker>
+        </mat-form-field>
 
         <!-- Fecha Fin -->
-        <div>
-          <input type="date" [(ngModel)]="fechaFin" (change)="onFilterChange()" placeholder="Fecha fin"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" />
-        </div>
+        <mat-form-field appearance="outline"
+          class="w-full text-sm [&_.mat-mdc-form-field-flex]:!items-center [&_.mat-mdc-form-field-infix]:!flex [&_.mat-mdc-form-field-infix]:!items-center">
+          <mat-label class="text-sm">Fecha fin</mat-label>
+          <input matInput [matDatepicker]="pickerFin" [(ngModel)]="fechaFin" (dateChange)="onFilterChange()"
+            class="text-sm" />
+          <mat-datepicker-toggle matSuffix [for]="pickerFin" class="text-base"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFin></mat-datepicker>
+        </mat-form-field>
 
         <!-- Botón limpiar -->
         <div class="flex items-center justify-end">
-          <button (click)="clearFilters()"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 text-sm rounded-lg shadow flex items-center justify-center gap-2 transition-colors duration-200">
-            <i class="fa-solid fa-eraser text-xs"></i>
+          <button mat-stroked-button color="warn"
+            class="!h-10 !text-sm !px-4 flex items-center gap-1" (click)="clearFilters()">
+            <mat-icon class="text-base">clear_all</mat-icon>
             Limpiar
           </button>
         </div>
@@ -192,8 +197,6 @@
               </td>
             </tr>
           </tbody>
-
-
         </table>
       </div>
 

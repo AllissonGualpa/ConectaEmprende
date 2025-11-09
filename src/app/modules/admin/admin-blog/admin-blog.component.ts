@@ -4,6 +4,13 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
 import { BlogService } from '../blog.service';
 import { Tag, AdminBlog } from '../blog.types';
@@ -11,7 +18,18 @@ import { Tag, AdminBlog } from '../blog.types';
 @Component({
   selector: 'app-admin-blog',
   standalone: true,
-  imports: [CommonModule, NavbarAdminComponent, FormsModule],
+  imports: [
+    CommonModule, 
+    NavbarAdminComponent, 
+    FormsModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule
+  ],
   templateUrl: './admin-blog.component.html',
   styleUrls: ['./admin-blog.component.css']
 })
@@ -39,7 +57,6 @@ export class AdminBlogComponent implements OnInit {
   startIndex = 0;
   endIndex = 0;
 
-  // Exponer Math para el template
   Math = Math;
   baseApiUrl: any;
 
@@ -61,45 +78,6 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
-  buildApiUrl(): string {
-    let url = this.baseApiUrl;
-    const params: string[] = [];
-
-    // Fechas por defecto si no están definidas
-    const inicio = this.fechaInicio || '2024-01-01';
-    const fin = this.fechaFin || '2025-12-31';
-
-    const formatNoTZ = (dateStr: string, endOfDay = false) => {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr + (endOfDay ? 'T23:59:59' : 'T00:00:00');
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const hh = endOfDay ? '23' : '00';
-      const mi = endOfDay ? '59' : '00';
-      const ss = endOfDay ? '59' : '00';
-      return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
-    };
-
-    params.push(`fechaInicio=${encodeURIComponent(formatNoTZ(inicio, false))}`);
-    params.push(`fechaFin=${encodeURIComponent(formatNoTZ(fin, true))}`);
-
-    // Paginación
-    params.push(`page=${this.currentPage}`);
-    params.push(`size=${this.pageSize}`);
-
-    if (this.selectedTag) {
-      params.push(`tag=${this.selectedTag}`);
-    }
-    if (this.selectedEstado) {
-      params.push(`estado=${this.selectedEstado}`);
-    }
-
-    url += '?' + params.join('&');
-    console.log('URL de la API:', url);
-    return url;
-  }
-
   loadBlogs() {
     this.loading = true;
     const token = localStorage.getItem('token');
@@ -118,20 +96,31 @@ export class AdminBlogComponent implements OnInit {
       fechaFin: this.fechaFin
     }).subscribe({
       next: (response) => {
-        // ✅ Usamos un type guard para diferenciar el tipo
+        console.log('Respuesta del servidor:', response);
+        
         if (Array.isArray(response)) {
           // Respuesta simple (sin paginación)
           this.blogs = response;
-          this.totalElements = this.blogs.length;
+          this.filteredBlogs = [...response];
+          this.totalElements = response.length;
           this.totalPages = Math.ceil(this.totalElements / this.pageSize);
         } else {
           // Respuesta paginada
-          this.blogs = response.content ?? [];
+          this.blogs = response.content || [];
+          this.filteredBlogs = [...this.blogs];
           this.totalElements = Number(response.totalElements) || 0;
           this.totalPages = Number(response.totalPages) || 0;
-          this.currentPage = typeof response.number === 'number' ? response.number : 0;
-          this.pageSize = typeof response.size === 'number' ? response.size : this.pageSize;
+          this.currentPage = Number(response.number) || 0;
+          this.pageSize = Number(response.size) || this.pageSize;
         }
+
+        console.log('Datos de paginación:', {
+          totalElements: this.totalElements,
+          totalPages: this.totalPages,
+          currentPage: this.currentPage,
+          pageSize: this.pageSize,
+          blogsLength: this.blogs.length
+        });
 
         this.applyFilters();
         this.computePaginationInfo();
@@ -148,32 +137,36 @@ export class AdminBlogComponent implements OnInit {
     });
   }
 
-
   applyFilters() {
-    let filtered = this.blogs;
+    let filtered = [...this.blogs];
 
-    if (this.searchTerm) {
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(blog =>
-        blog.titulo?.toLowerCase().includes(this.searchTerm) ||
-        blog.descripcionCorta?.toLowerCase().includes(this.searchTerm) ||
-        blog.estado?.toLowerCase().includes(this.searchTerm) ||
-        blog.nombreUsuario?.toLowerCase().includes(this.searchTerm)
+        (blog.titulo?.toLowerCase() || '').includes(searchLower) ||
+        (blog.descripcionCorta?.toLowerCase() || '').includes(searchLower) ||
+        (blog.estado?.toLowerCase() || '').includes(searchLower) ||
+        (blog.nombreUsuario?.toLowerCase() || '').includes(searchLower)
       );
     }
 
     this.filteredBlogs = filtered;
-    // recalcular índices en caso de filtrado cliente
-    this.computePaginationInfo();
   }
 
   computePaginationInfo() {
     // Asegurar que sean números válidos
     this.totalElements = Number(this.totalElements) || 0;
     this.currentPage = Number(this.currentPage) || 0;
-    this.pageSize = Number(this.pageSize) || 1;
+    this.pageSize = Number(this.pageSize) || 5;
+    this.totalPages = Number(this.totalPages) || 0;
+
+    // Si totalPages es 0 pero tenemos elementos, calcularlo
+    if (this.totalPages === 0 && this.totalElements > 0) {
+      this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+    }
 
     // Construir array de páginas para *ngFor
-    this.pages = Array.from({ length: Math.max(0, this.totalPages) }, (_, i) => i);
+    this.pages = Array.from({ length: Math.max(1, this.totalPages) }, (_, i) => i);
 
     // startIndex y endIndex para mostrar "Mostrando X a Y de Z"
     if (this.totalElements === 0) {
@@ -183,10 +176,17 @@ export class AdminBlogComponent implements OnInit {
       this.startIndex = this.currentPage * this.pageSize + 1;
       this.endIndex = Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
     }
+
+    console.log('Info de paginación calculada:', {
+      pages: this.pages,
+      startIndex: this.startIndex,
+      endIndex: this.endIndex,
+      totalPages: this.totalPages
+    });
   }
 
   onFilterChange() {
-    this.currentPage = 0; // Resetear a la primera página
+    this.currentPage = 0;
     this.loadBlogs();
   }
 
@@ -238,8 +238,9 @@ export class AdminBlogComponent implements OnInit {
     }
   }
 
-
-  crearBlog() { this.router.navigate(['/admin/blog/create']); }
+  crearBlog() { 
+    this.router.navigate(['/admin/blog/create']); 
+  }
 
   editarBlog(blog: AdminBlog) {
     if (!blog.idArticulo) {
@@ -268,8 +269,14 @@ export class AdminBlogComponent implements OnInit {
         const userId = 1;
         this.blogService.toggleArchiveBlog(blog.idArticulo, accion as 'archivar' | 'desarchivar', userId)
           .subscribe({
-            next: (res) => { alert(res); this.loadBlogs(); },
-            error: (err) => { console.error(`Error al ${accion} blog:`, err); alert(`Error al ${accion} blog.`); }
+            next: (res) => { 
+              alert(res); 
+              this.loadBlogs(); 
+            },
+            error: (err) => { 
+              console.error(`Error al ${accion} blog:`, err); 
+              alert(`Error al ${accion} blog.`); 
+            }
           });
       }
     });
