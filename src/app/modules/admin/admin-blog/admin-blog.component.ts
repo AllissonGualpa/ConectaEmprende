@@ -19,8 +19,8 @@ import { Tag, AdminBlog } from '../blog.types';
   selector: 'app-admin-blog',
   standalone: true,
   imports: [
-    CommonModule, 
-    NavbarAdminComponent, 
+    CommonModule,
+    NavbarAdminComponent,
     FormsModule,
     MatSelectModule,
     MatDatepickerModule,
@@ -97,21 +97,23 @@ export class AdminBlogComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         console.log('Respuesta del servidor:', response);
-        
-        if (Array.isArray(response)) {
-          // Respuesta simple (sin paginación)
+
+        // Detecta si la respuesta tiene paginación
+        if (response && typeof response === 'object' && 'pageable' in response) {
+          const r = response as any;
+          this.blogs = r.content || [];
+          this.filteredBlogs = [...this.blogs];
+          this.totalElements = Number(r.pageable.length) || 0;
+          this.totalPages = Number(r.pageable.lastPage) + 1 || 1;
+          this.currentPage = Number(r.pageable.page) || 0;
+          this.pageSize = Number(r.pageable.size) || this.pageSize;
+        }
+        // Si el backend devuelve un array plano
+        else if (Array.isArray(response)) {
           this.blogs = response;
           this.filteredBlogs = [...response];
           this.totalElements = response.length;
           this.totalPages = Math.ceil(this.totalElements / this.pageSize);
-        } else {
-          // Respuesta paginada
-          this.blogs = response.content || [];
-          this.filteredBlogs = [...this.blogs];
-          this.totalElements = Number(response.totalElements) || 0;
-          this.totalPages = Number(response.totalPages) || 0;
-          this.currentPage = Number(response.number) || 0;
-          this.pageSize = Number(response.size) || this.pageSize;
         }
 
         console.log('Datos de paginación:', {
@@ -126,6 +128,7 @@ export class AdminBlogComponent implements OnInit {
         this.computePaginationInfo();
         this.loading = false;
       },
+
       error: (error) => {
         console.error('Error al cargar blogs:', error);
         this.loading = false;
@@ -135,6 +138,7 @@ export class AdminBlogComponent implements OnInit {
         }
       }
     });
+
   }
 
   applyFilters() {
@@ -238,8 +242,8 @@ export class AdminBlogComponent implements OnInit {
     }
   }
 
-  crearBlog() { 
-    this.router.navigate(['/admin/blog/create']); 
+  crearBlog() {
+    this.router.navigate(['/admin/blog/create']);
   }
 
   editarBlog(blog: AdminBlog) {
@@ -269,13 +273,13 @@ export class AdminBlogComponent implements OnInit {
         const userId = 1;
         this.blogService.toggleArchiveBlog(blog.idArticulo, accion as 'archivar' | 'desarchivar', userId)
           .subscribe({
-            next: (res) => { 
-              alert(res); 
-              this.loadBlogs(); 
+            next: (res) => {
+              alert(res);
+              this.loadBlogs();
             },
-            error: (err) => { 
-              console.error(`Error al ${accion} blog:`, err); 
-              alert(`Error al ${accion} blog.`); 
+            error: (err) => {
+              console.error(`Error al ${accion} blog:`, err);
+              alert(`Error al ${accion} blog.`);
             }
           });
       }
