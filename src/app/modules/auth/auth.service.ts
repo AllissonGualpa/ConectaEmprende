@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { Environment } from '../../environments/environments.development';
 
 // Interfaz usada en register.component.ts
 export interface RegisterData {
@@ -42,7 +43,7 @@ export interface RegisterData {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://eureka-emprende.onrender.com/v1/auth';
+  private apiUrl = Environment.api_url + Environment.api_auth;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
