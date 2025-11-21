@@ -6,6 +6,7 @@ import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
 import { Router } from '@angular/router';
+import { Environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-startups',
@@ -38,7 +39,7 @@ export class StartupsComponent implements OnInit {
 
   // Cargar categorías desde el endpoint
   fetchCategories() {
-    const endpoint = 'https://eureka-emprende.onrender.com/v1/categorias';
+    const endpoint = Environment.api_url + Environment.api_categorias;
     const token = localStorage.getItem('token');
 
     // Si no hay token, salimos directamente
@@ -69,7 +70,7 @@ export class StartupsComponent implements OnInit {
 
   // Cargar startups
   fetchStartups() {
-    const endpoint = 'https://eureka-emprende.onrender.com/v1/emprendimientos/filtrar';
+    const endpoint = Environment.api_url + Environment.api_emprendimientos + '/filtrar';
 
     this.http.get<any[]>(endpoint).subscribe({
       next: (data) => {

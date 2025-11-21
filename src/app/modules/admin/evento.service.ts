@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Environment } from '../../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
 export class EventoService {
   
-  private baseUrl = 'https://eureka-emprende.onrender.com';
+  private baseUrl = Environment.api_url + Environment.api_eventos;
 
   constructor(private http: HttpClient) {}
 
@@ -19,7 +20,7 @@ export class EventoService {
    */
   createEvent(data: any, options?: { idEmprendimiento?: number; idMultimedia?: number; token?: string }): Observable<any> {
     const idEmp = options?.idEmprendimiento;
-    const url = `${this.baseUrl}/v1/eventos/crear` + (idEmp ? `?idEmprendimiento=${idEmp}` : '');
+    const url = `${this.baseUrl}/crear` + (idEmp ? `?idEmprendimiento=${idEmp}` : '');
 
     // Si el payload incluye un File en data.imagen y la API no soporta archivo directo
     // puedes subirlo separadamente y pasar idMultimedia en options
@@ -67,7 +68,7 @@ export class EventoService {
    * Endpoint: /v1/eventos/inactivar/:idEvento
    */
   inactivateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
-    const url = `${this.baseUrl}/v1/eventos/inactivar/${idEvento}`;
+    const url = `${this.baseUrl}/inactivar/${idEvento}`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
@@ -91,7 +92,7 @@ export class EventoService {
    * Endpoint: /v1/eventos/activar/:idEvento
    */
   activateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
-    const url = `${this.baseUrl}/v1/eventos/activar/${idEvento}`;
+    const url = `${this.baseUrl}/activar/${idEvento}`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
@@ -107,7 +108,7 @@ export class EventoService {
    */
   editEvent(idEvento: string | number, idEmprendimiento?: number, data?: any, options?: { idMultimedia?: number; token?: string }): Observable<any> {
     const idEmp = idEmprendimiento ?? 4; // por defecto 4 si no se provee
-    const url = `${this.baseUrl}/v1/eventos/editar/${idEvento}/${idEmp}`;
+    const url = `${this.baseUrl}/editar/${idEvento}/${idEmp}`;
 
     let body: any;
     let headers = new HttpHeaders();
@@ -146,7 +147,7 @@ export class EventoService {
    * Obtener lista de eventos desde la API
    */
   getEvents(options?: { token?: string }): Observable<any> {
-  const url = `${this.baseUrl}/v1/eventos/filtrar`;
+    const url = `${this.baseUrl}/filtrar`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
@@ -160,7 +161,7 @@ export class EventoService {
    * Endpoint: /v1/eventos/publico?mes=11&page=0&size=10
    */
   getPublicEvents(options?: { mes?: number; page?: number; size?: number; token?: string }): Observable<any> {
-    const url = `${this.baseUrl}/v1/eventos/publico`;
+    const url = `${this.baseUrl}/publico`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
@@ -180,7 +181,7 @@ export class EventoService {
    * Endpoint: /v1/eventos/emprendedor?page=0&size=5
    */
   getEmprendedorEvents(options?: { page?: number; size?: number; token?: string }): Observable<any> {
-    const url = `${this.baseUrl}/v1/eventos/emprendedor`;
+    const url = `${this.baseUrl}/emprendedor`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
@@ -199,7 +200,7 @@ export class EventoService {
    * Ejemplo: /v1/eventos/admin?tipoEvento=presencial&fechaInicio=2024-11-01T00:00:00&fechaFin=2025-12-31T23:59:59&page=0&size=15
    */
   getAdminEvents(options?: { tipoEvento?: string; fechaInicio?: string; fechaFin?: string; page?: number; size?: number; token?: string }): Observable<any> {
-    const url = `${this.baseUrl}/v1/eventos/admin`;
+    const url = `${this.baseUrl}/admin`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {

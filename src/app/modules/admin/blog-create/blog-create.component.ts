@@ -36,8 +36,6 @@ export class BlogCreateComponent implements OnInit {
   // Estado de carga
   publicando = false;
 
-  private apiUrl = 'https://eureka-emprende.onrender.com/v1';
-
   constructor(
     private router: Router,
     private blogService: BlogService

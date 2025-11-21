@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
+import { Environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-emprendimientos',
@@ -22,9 +23,9 @@ export class AdminEmprendimientosComponent implements OnInit {
   selectedDate = '';
   loading = false;
 
-  private apiEmprendimientos = 'https://eureka-emprende.onrender.com/v1/emprendimientos';
-  private apiTipos = 'https://eureka-emprende.onrender.com/v1/tipos-emprendimiento';
-  private apiCategorias = 'https://eureka-emprende.onrender.com/v1/categorias';
+  private apiEmprendimientos = Environment.api_url + Environment.api_emprendimientos;
+  private apiTipos = Environment.api_url + Environment.api_tipos;
+  private apiCategorias = Environment.api_url + Environment.api_categorias;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -47,12 +48,14 @@ export class AdminEmprendimientosComponent implements OnInit {
     forkJoin({
       tipos: this.http.get<any[]>(this.apiTipos, { headers }),
       categorias: this.http.get<any[]>(this.apiCategorias, { headers }),
-      emprendimientos: this.http.get<any[]>(this.apiEmprendimientos, { headers }),
+      emprendimientos: this.http.get<any>(this.apiEmprendimientos, { headers }),
     }).subscribe({
       next: ({ tipos, categorias, emprendimientos }) => {
         this.tiposEmprendimiento = tipos;
         this.categorias = categorias;
-        this.emprendimientos = emprendimientos.map(emp => {
+        const lista = emprendimientos?.content ?? [];
+
+        this.emprendimientos = lista.map((emp: { tipoEmprendimientoId: any; nombreTipoEmprendimiento: any; }) => {
           const tipoData = this.tiposEmprendimiento.find(t => t.id === emp.tipoEmprendimientoId);
           return {
             ...emp,

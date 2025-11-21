@@ -5,6 +5,7 @@ import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
+import { Environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-emprendimientos',
@@ -36,7 +37,7 @@ export class EmprendimientosComponent implements OnInit {
    * Filtra solo los de tipoEmprendimientoId = 2 o 4 (Servicios y Productos)
    */
   fetchEmprendimientos() {
-    const endpoint = 'https://eureka-emprende.onrender.com/v1/emprendimientos/filtrar';
+    const endpoint = Environment.api_url+Environment.api_emprendimientos+'/filtrar';
 
     this.http.get<any[]>(endpoint).subscribe({
       next: (data) => {

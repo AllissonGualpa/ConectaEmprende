@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Environment } from '../../environments/environments.development';
+import { Environment } from '../../../environments/environment';
 
 // Interfaz usada en register.component.ts
 export interface RegisterData {
