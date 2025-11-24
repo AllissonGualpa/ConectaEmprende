@@ -7,10 +7,10 @@
     <!-- Contenedor interior -->
     <div class="flex flex-col h-full p-6 overflow-hidden">
       <!-- Sección de filtros y botones -->
-      <div class="flex-shrink-0 mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <!-- Buscador -->
-          <div class="w-full">
+          <div class="md:col-span-5">
             <mat-form-field appearance="outline" class="w-full">
               <mat-icon matPrefix class="text-gray-400">search</mat-icon>
               <input 
@@ -20,73 +20,58 @@
             </mat-form-field>
           </div>
 
-          <!-- Botones -->
-          <div class="flex gap-2 md:gap-3">
-            <button
-              mat-raised-button
-              color="primary"
-              class="!text-sm !py-2 !px-4 flex items-center gap-1"
-              (click)="loadBlogs()"
-            >
-              <mat-icon class="!text-base">search</mat-icon>
-              Consultar
-            </button>
+          <!-- Tags -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Tags</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select [(ngModel)]="selectedTag" (selectionChange)="onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option *ngFor="let tag of availableTags" [value]="tag.idTag">
+                  {{ tag.nombre }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-            <button
-              mat-raised-button
-              color="primary"
-              class="!text-sm !py-2 !px-4 flex items-center gap-1"
-              (click)="crearBlog()"
-            >
-              <mat-icon class="!text-base">add</mat-icon>
-              Crear
-            </button>
+          <!-- Estado -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Estado</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option value="PUBLICADO">Publicado</mat-option>
+                <mat-option value="BORRADOR">Borrador</mat-option>
+                <mat-option value="ARCHIVADO">Archivado</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Fecha Inicio -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput [matDatepicker]="pickerInicio" placeholder="Seleccionar fecha" [(ngModel)]="fechaInicio" (dateChange)="onFilterChange()">
+              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+              <mat-datepicker #pickerInicio></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <!-- Fecha Fin -->
+          <div class="md:col-span-1">
+            <label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
+            <mat-form-field appearance="outline" class="w-full">
+              <input matInput [matDatepicker]="pickerFin" placeholder="Seleccionar fecha" [(ngModel)]="fechaFin" (dateChange)="onFilterChange()">
+              <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+              <mat-datepicker #pickerFin></mat-datepicker>
+            </mat-form-field>
           </div>
         </div>
 
-        <!-- Filtros -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6 items-center">
-          <!-- Tag -->
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Tags</mat-label>
-            <mat-select style="border-style: hidden;" [(ngModel)]="selectedTag" (selectionChange)="onFilterChange()">
-              <mat-option value=""></mat-option>
-              <mat-option *ngFor="let tag of availableTags" [value]="tag.idTag">
-                {{ tag.nombre }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <!-- Estado -->
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Estado</mat-label>
-            <mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()">
-              <mat-option value=""></mat-option>
-              <mat-option value="PUBLICADO">Publicado</mat-option>
-              <mat-option value="BORRADOR">Borrador</mat-option>
-              <mat-option value="ARCHIVADO">Archivado</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <!-- Fecha Inicio -->
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Fecha inicio</mat-label>
-            <input matInput [matDatepicker]="pickerInicio" [(ngModel)]="fechaInicio" (dateChange)="onFilterChange()" />
-            <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-            <mat-datepicker #pickerInicio></mat-datepicker>
-          </mat-form-field>
-          <!-- Fecha Fin -->
-          <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Fecha fin</mat-label>
-            <input matInput [matDatepicker]="pickerFin" [(ngModel)]="fechaFin" (dateChange)="onFilterChange()" />
-            <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
-            <mat-datepicker #pickerFin></mat-datepicker>
-          </mat-form-field>
-          <!-- Botón limpiar -->
-          <div class="flex items-center justify-end">
-            <button mat-stroked-button color="warn" (click)="clearFilters()">
-              <mat-icon>clear_all</mat-icon>
-              Limpiar
-            </button>
-          </div>
+        <!-- Botones -->
+        <div class="flex justify-end mt-3 gap-2">
+          <button mat-raised-button color="primary" (click)="loadBlogs()">Consultar</button>
+          <button mat-raised-button color="accent" (click)="crearBlog()">Crear</button>
+          <button mat-stroked-button color="warn" (click)="clearFilters()">Limpiar filtros</button>
         </div>
       </div>
 
