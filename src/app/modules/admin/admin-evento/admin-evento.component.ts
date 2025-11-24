@@ -14,7 +14,6 @@ import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EventoService } from '../evento.service';
 import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
-import { EventoDeleteComponent } from '../evento-delete/evento-delete.component';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 
@@ -84,6 +83,8 @@ export class AdminEventoComponent {
   eventos: Evento[] = [
    
   ];
+
+  eventoAEliminar: Evento | null = null; // Variable para almacenar el evento a eliminar
 
   constructorInit() {
     // initialize filtered list
@@ -311,37 +312,48 @@ export class AdminEventoComponent {
     this.abrirEliminarEvento(evento);
   }
 
+  // Método para abrir el diálogo de eliminación
   abrirEliminarEvento(evento: Evento): void {
-    const ref = this.dialog.open(EventoDeleteComponent, {
-      width: '520px',
-      data: {
-        title: '¿Estás seguro de cancelar el evento seleccionado?',
-        message: `Esta acción cancelará el evento ${evento.nombre}. Por favor, confirma que deseas proceder con la cancelación.`
-      }
-    });
+    this.eventoAEliminar = evento; // Asigna el evento a la variable
+  }
 
-    ref.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        
-        const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
-        // strip leading '#' from id if present before sending to backend
-        const rawId = String(evento.id || '');
-        const idToSend = rawId.startsWith('#') ? rawId.slice(1) : rawId;
-        this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
-           next: (res: any) => {
-             // update local object so UI reflects cancellation immediately
-             evento.activo = false;
-             evento.estado = 'Cancelado';
-             this.applyFilters();
-             // Show confirmation dialog
-             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento', title: 'Evento cancelado', subtitle: `El evento '${evento.nombre}' fue cancelado.` } });
-           },
-           error: (err: any) => {
-             console.warn('Error inactivando evento', err);
-             // Optionally show an error dialog
-             this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Error', title: 'No se pudo cancelar el evento', subtitle: err?.message || 'Intenta nuevamente.' } });
-           }
+  // Método para cerrar el diálogo de eliminación
+  closeDeleteDialog(): void {
+    this.eventoAEliminar = null; // Limpia la variable
+  }
+
+  // Método para confirmar la eliminación
+  confirmDelete(evento: Evento): void {
+    const token = localStorage.getItem('token') || undefined;
+    const idToSend = String(evento.id).startsWith('#') ? evento.id.slice(1) : evento.id;
+  
+    this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+      next: () => {
+        evento.activo = false;
+        evento.estado = 'Cancelado';
+        this.applyFilters();
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Evento',
+            title: 'Evento cancelado',
+            type: 'success' // Mensaje de éxito
+          }
         });
+        this.closeDeleteDialog(); // Cierra el diálogo
+      },
+      error: (err) => {
+        console.warn('Error inactivando evento', err);
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Evento',
+            title: 'Error al cancelar el evento',
+            subtitle: 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
+            type: 'error' // Mensaje de error
+          }
+        });
+        this.closeDeleteDialog(); // Cierra el diálogo incluso si hay un error
       }
     });
   }
