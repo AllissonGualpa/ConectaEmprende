@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
 import { BlogService } from '../blog.service';
 import { Tag, AdminBlog } from '../blog.types';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
   selector: 'app-admin-blog',
@@ -72,18 +73,34 @@ export class AdminBlogComponent implements OnInit {
   }
 
   loadTags() {
+    this.loading = true; // Activar loading
     this.blogService.getAllTags().subscribe({
-      next: (tags) => { this.availableTags = tags; },
-      error: (err) => { console.error('Error al cargar tags:', err); }
+      next: (tags) => {
+        this.availableTags = tags;
+        this.loading = false; // Desactivar loading
+      },
+      error: (err) => {
+        console.error('Error al cargar tags:', err);
+        this.loading = false; // Desactivar loading en caso de error
+      }
     });
   }
 
   loadBlogs() {
-    this.loading = true;
+    this.loading = true; // Activar loading
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('No estás autenticado. Por favor, inicia sesión.');
+      this.dialog.open(MensajeConfirmacionComponent, {
+        width: '420px',
+        data: {
+          subject: 'Autenticación',
+          title: 'No estás autenticado',
+          subtitle: 'Por favor, inicia sesión para continuar.',
+          type: 'error'
+        }
+      });
       this.router.navigate(['/login']);
+      this.loading = false; // Desactivar loading si no hay token
       return;
     }
 
@@ -126,14 +143,22 @@ export class AdminBlogComponent implements OnInit {
 
         this.applyFilters();
         this.computePaginationInfo();
-        this.loading = false;
+        this.loading = false; // Desactivar loading al finalizar
       },
 
       error: (error) => {
         console.error('Error al cargar blogs:', error);
-        this.loading = false;
+        this.loading = false; // Desactivar loading en caso de error
         if (error.status === 401) {
-          alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Sesión expirada',
+              title: 'Tu sesión ha expirado',
+              subtitle: 'Por favor, inicia sesión nuevamente.',
+              type: 'error'
+            }
+          });
           this.router.navigate(['/login']);
         }
       }
@@ -248,7 +273,15 @@ export class AdminBlogComponent implements OnInit {
 
   editarBlog(blog: AdminBlog) {
     if (!blog.idArticulo) {
-      alert('No se pudo editar este artículo.');
+      this.dialog.open(MensajeConfirmacionComponent, {
+        width: '420px',
+        data: {
+          subject: 'Edición de blog',
+          title: 'No se pudo editar este artículo',
+          subtitle: 'El artículo no tiene un identificador válido.',
+          type: 'error'
+        }
+      });
       return;
     }
     this.router.navigate(['/admin/blog/edit', blog.idArticulo]);
@@ -270,16 +303,33 @@ export class AdminBlogComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.loading = true; // Activar loading antes de la operación
         const userId = 1;
         this.blogService.toggleArchiveBlog(blog.idArticulo, accion as 'archivar' | 'desarchivar', userId)
           .subscribe({
-            next: (res) => {
-              alert(res);
-              this.loadBlogs();
+            next: () => {
+              this.dialog.open(MensajeConfirmacionComponent, {
+                width: '420px',
+                data: {
+                  subject: 'Blog',
+                  title: `Blog ${accion === 'archivar' ? 'archivado' : 'desarchivado'} exitosamente`,
+                  type: 'success'
+                }
+              });
+              this.loadBlogs(); // Recargar blogs después de la operación
             },
             error: (err) => {
               console.error(`Error al ${accion} blog:`, err);
-              alert(`Error al ${accion} blog.`);
+              this.dialog.open(MensajeConfirmacionComponent, {
+                width: '420px',
+                data: {
+                  subject: 'Blog',
+                  title: `Error al ${accion} el blog`,
+                  subtitle: 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
+                  type: 'error'
+                }
+              });
+              this.loading = false; // Desactivar loading en caso de error
             }
           });
       }

@@ -4,6 +4,14 @@
 
   <!-- Contenido principal -->
   <main class="flex-1 flex flex-col h-full overflow-hidden">
+    <!-- Indicador global de carga -->
+    <div *ngIf="loading" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="text-center">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-white"></i>
+        <p class="mt-2 text-white text-lg">Cargando...</p>
+      </div>
+    </div>
+
     <!-- Contenedor interior -->
     <div class="flex flex-col h-full p-6 overflow-hidden">
       <!-- Sección de filtros y botones -->
