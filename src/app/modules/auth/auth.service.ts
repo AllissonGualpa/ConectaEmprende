@@ -44,8 +44,10 @@ export interface RegisterData {
 })
 export class AuthService {
   private apiUrl = Environment.api_url + Environment.api_auth;
+  private apiUrlUsuarios = Environment.api_url + Environment.api_uuarios;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  private perfilKey = 'perfil';
 
   constructor(
     private http: HttpClient,
@@ -91,10 +93,36 @@ export class AuthService {
     );
   }
 
+  getPerfil(): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.get<any>(this.apiUrlUsuarios + '/perfil', { headers }).pipe(
+      tap(perfil => {
+        try {
+          localStorage.setItem(this.perfilKey, JSON.stringify(perfil));
+        } catch (error) {
+          console.error('Error storing perfil in localStorage:', error);
+        }
+      })
+    );
+  }
+
+  getPerfilLocal(): any | null {
+    if (!this.isBrowser()) return null;
+
+    const raw = localStorage.getItem(this.perfilKey);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
   // Logout
   logout(): void {
     if (this.isBrowser()) {
       localStorage.removeItem('token');
+      localStorage.removeItem(this.perfilKey);
     }
     this.isAuthenticatedSubject.next(false);
   }
@@ -111,4 +139,10 @@ export class AuthService {
     }
     return null;
   }
+
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
+
 }

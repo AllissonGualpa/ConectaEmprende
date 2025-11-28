@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
+import { AuthService } from '../../../auth/auth.service';
 
 interface InformacionPersonal {
   nombre: string;
@@ -23,22 +24,46 @@ interface InformacionPersonal {
     MatIconModule,
     MatCardModule
   ],
+  providers: [AuthService],
   templateUrl: './seccion-personal.component.html',
   styles: []
 })
 export class SeccionPersonalComponent implements OnInit {
   informacionPersonal: InformacionPersonal = {
-    nombre: 'Joseline Vergara Correa',
-    email: 'joselinevergara@uees.edu.ec',
-    telefono: '0999853377',
-    fechaNacimiento: '01/09/2004',
-    fechaRegistro: '31/07/2025',
-    direccion: 'Urbanización Las Pirámides'
+    nombre: '',
+    email: '',
+    telefono: '',
+    fechaNacimiento: '',
+    fechaRegistro: '',
+    direccion: ''
   };
 
+  constructor(private authService: AuthService) {}
+
   ngOnInit(): void {
-    // Aquí puedes cargar los datos del usuario desde un servicio
-    // this.cargarDatosUsuario();
+    const perfil = this.authService.getPerfilLocal();
+
+    if (perfil) {
+      this.informacionPersonal = {
+        nombre: `${perfil.nombre ?? ''} ${perfil.apellido ?? ''}`.trim(),
+        email: perfil.correo ?? perfil.correoUees ?? '',
+        telefono: perfil.telefono ?? '',
+        fechaNacimiento: perfil.fechaNacimiento ?? '',
+        fechaRegistro: perfil.fechaRegistro ?? '',
+        direccion: perfil.direccion ?? '',
+        avatarUrl: perfil.avatarUrl ?? undefined
+      };
+    } else {
+      // Valores por defecto si no hay perfil en localStorage
+      this.informacionPersonal = {
+        nombre: 'Usuario',
+        email: '',
+        telefono: '',
+        fechaNacimiento: '',
+        fechaRegistro: '',
+        direccion: ''
+      };
+    }
   }
 
   editarPerfil(): void {

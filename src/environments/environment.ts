@@ -6,5 +6,6 @@ export const Environment = {
     api_emprendimientos: '/v1/emprendimientos',
     api_tipos: '/v1/tipos-emprendimiento',
     api_categorias: '/v1/categorias',
+    api_uuarios: '/v1/usuarios',
     version: 'development'
 };

@@ -67,6 +67,7 @@ export class LoginComponent {
         next: (response) => {
           console.log('Respuesta del backend:', response);
           localStorage.setItem('token', response.jwtToken);
+          this.authService.getPerfil().subscribe();
 
           // Redirección según usuario
           if (email === 'sofia@email.com' && password === 'sofia123') {

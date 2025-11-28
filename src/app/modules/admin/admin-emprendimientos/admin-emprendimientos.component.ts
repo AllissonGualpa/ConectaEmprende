@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { Environment } from '../../../../environments/environment';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-admin-emprendimientos',
@@ -23,11 +25,16 @@ export class AdminEmprendimientosComponent implements OnInit {
   selectedDate = '';
   loading = false;
 
-  private apiEmprendimientos = Environment.api_url + Environment.api_emprendimientos;
+  private apiEmprendimientos =
+    Environment.api_url + Environment.api_emprendimientos;
   private apiTipos = Environment.api_url + Environment.api_tipos;
   private apiCategorias = Environment.api_url + Environment.api_categorias;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.loadData();
@@ -38,7 +45,16 @@ export class AdminEmprendimientosComponent implements OnInit {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      alert('No se encontró el token. Por favor, inicia sesión nuevamente.');
+      this.loading = false;
+      this.dialog.open(MensajeConfirmacionComponent, {
+        width: '420px',
+        data: {
+          subject: 'Autenticación',
+          title: 'No estás autenticado',
+          subtitle: 'Por favor, inicia sesión para continuar.',
+          type: 'error',
+        },
+      });
       this.router.navigate(['/login']);
       return;
     }
@@ -55,24 +71,41 @@ export class AdminEmprendimientosComponent implements OnInit {
         this.categorias = categorias;
         const lista = emprendimientos?.content ?? [];
 
-        this.emprendimientos = lista.map((emp: { tipoEmprendimientoId: any; nombreTipoEmprendimiento: any; }) => {
-          const tipoData = this.tiposEmprendimiento.find(t => t.id === emp.tipoEmprendimientoId);
-          return {
-            ...emp,
-            tipoInfo: {
-              tipo: tipoData ? tipoData.tipo : 'Desconocido',
-              subTipo: tipoData ? tipoData.subTipo.trim() : emp.nombreTipoEmprendimiento,
-            },
-          };
-        });
+        this.emprendimientos = lista.map(
+          (emp: {
+            tipoEmprendimientoId: any;
+            nombreTipoEmprendimiento: any;
+          }) => {
+            const tipoData = this.tiposEmprendimiento.find(
+              (t) => t.id === emp.tipoEmprendimientoId
+            );
+            return {
+              ...emp,
+              tipoInfo: {
+                tipo: tipoData ? tipoData.tipo : 'Desconocido',
+                subTipo: tipoData
+                  ? tipoData.subTipo.trim()
+                  : emp.nombreTipoEmprendimiento,
+              },
+            };
+          }
+        );
         this.filteredEmprendimientos = [...this.emprendimientos];
         this.loading = false;
       },
-      error: err => {
-        console.error('Error al cargar datos:', err);
-        this.loading = false;
-        if (err.status === 401) {
-          alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      error: (error) => {
+        console.error('Error al cargar blogs:', error);
+        this.loading = false; // Desactivar loading en caso de error
+        if (error.status === 401) {
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Sesión expirada',
+              title: 'Tu sesión ha expirado',
+              subtitle: 'Por favor, inicia sesión nuevamente.',
+              type: 'error',
+            },
+          });
           this.router.navigate(['/login']);
         }
       },
@@ -80,15 +113,19 @@ export class AdminEmprendimientosComponent implements OnInit {
   }
 
   applyFilters() {
-    this.filteredEmprendimientos = this.emprendimientos.filter(emp => {
+    this.filteredEmprendimientos = this.emprendimientos.filter((emp) => {
       const matchesSearch =
         this.searchTerm === '' ||
-        emp.nombreComercial?.toLowerCase().includes(this.searchTerm.toLowerCase());
+        emp.nombreComercial
+          ?.toLowerCase()
+          .includes(this.searchTerm.toLowerCase());
       const matchesCategory =
-        this.selectedCategory === '' || emp.categoriaId == this.selectedCategory;
+        this.selectedCategory === '' ||
+        emp.categoriaId == this.selectedCategory;
       const matchesDate =
         this.selectedDate === '' ||
-        new Date(emp.fechaCreacion).toISOString().split('T')[0] === this.selectedDate;
+        new Date(emp.fechaCreacion).toISOString().split('T')[0] ===
+          this.selectedDate;
       return matchesSearch && matchesCategory && matchesDate;
     });
   }
@@ -129,7 +166,11 @@ export class AdminEmprendimientosComponent implements OnInit {
   }
 
   eliminarEmprendimiento(emp: any) {
-    if (confirm(`¿Seguro que deseas eliminar el emprendimiento "${emp.nombreComercial}"?`)) {
+    if (
+      confirm(
+        `¿Seguro que deseas eliminar el emprendimiento "${emp.nombreComercial}"?`
+      )
+    ) {
       console.log('Eliminando emprendimiento con ID:', emp.id);
     }
   }

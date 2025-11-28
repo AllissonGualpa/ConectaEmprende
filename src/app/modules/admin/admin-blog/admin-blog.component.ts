@@ -11,7 +11,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { BlogDeleteComponent } from '../blog-delete/blog-delete.component';
 import { BlogService } from '../blog.service';
 import { Tag, AdminBlog } from '../blog.types';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
@@ -291,13 +290,16 @@ export class AdminBlogComponent implements OnInit {
     if (!blog.idArticulo) return;
     const accion = blog.estado === 'ARCHIVADO' ? 'desarchivar' : 'archivar';
 
-    const dialogRef = this.dialog.open(BlogDeleteComponent, {
-      width: '450px',
+    const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+      width: '420px',
       data: {
+        subject: 'Blog',
         title: `¿Estás seguro que deseas ${accion} el blog "${blog.titulo}"?`,
-        message: blog.estado === 'ARCHIVADO'
-          ? 'Esta acción desarchivará el artículo y volverá a estar visible.'
-          : 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.'
+        subtitle:
+          blog.estado === 'ARCHIVADO'
+            ? 'Esta acción desarchivará el artículo y volverá a estar visible.'
+            : 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.',
+        type: 'info'
       }
     });
 
@@ -305,27 +307,35 @@ export class AdminBlogComponent implements OnInit {
       if (result) {
         this.loading = true; // Activar loading antes de la operación
         const userId = 1;
-        this.blogService.toggleArchiveBlog(blog.idArticulo, accion as 'archivar' | 'desarchivar', userId)
+        this.blogService
+          .toggleArchiveBlog(
+            blog.idArticulo,
+            accion as 'archivar' | 'desarchivar',
+            userId
+          )
           .subscribe({
             next: () => {
               this.dialog.open(MensajeConfirmacionComponent, {
                 width: '420px',
                 data: {
                   subject: 'Blog',
-                  title: `Blog ${accion === 'archivar' ? 'archivado' : 'desarchivado'} exitosamente`,
+                  title: `Blog ${
+                    accion === 'archivar' ? 'archivado' : 'desarchivado'
+                  } exitosamente`,
                   type: 'success'
                 }
               });
               this.loadBlogs(); // Recargar blogs después de la operación
             },
-            error: (err) => {
+            error: err => {
               console.error(`Error al ${accion} blog:`, err);
               this.dialog.open(MensajeConfirmacionComponent, {
                 width: '420px',
                 data: {
                   subject: 'Blog',
                   title: `Error al ${accion} el blog`,
-                  subtitle: 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
+                  subtitle:
+                    'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
                   type: 'error'
                 }
               });

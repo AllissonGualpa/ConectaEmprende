@@ -7,7 +7,7 @@ export interface ConfirmDialogData {
   subject?: string; // e.g. 'Evento' — used to build default title
   title?: string; // optional full title override
   subtitle?: string; // optional subtitle text
-  type?: 'success' | 'error'; // Nuevo: tipo de mensaje
+  type?: 'success' | 'error' | 'info'; // Agregado: tipo 'info'
 }
 
 @Component({
@@ -19,15 +19,31 @@ export interface ConfirmDialogData {
 export class MensajeConfirmacionComponent {
   public title: string;
   public subtitle: string;
-  public type: 'success' | 'error'; // Nuevo: tipo de mensaje
+  public type: 'success' | 'error' | 'info'; // Agregado: tipo 'info'
 
   constructor(
     public dialogRef: MatDialogRef<MensajeConfirmacionComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {
     const subject = data?.subject || 'Elemento';
-    this.type = data?.type || 'success'; // Por defecto, el tipo es 'success'
-    this.title = data?.title ?? (this.type === 'success' ? `${subject} creado exitosamente` : `Error al procesar ${subject}`);
+    this.type = data?.type || 'success'; // Por defecto, 'success'
+
+    if (data?.title) {
+      this.title = data.title;
+    } else {
+      switch (this.type) {
+        case 'success':
+          this.title = `${subject} creado exitosamente`;
+          break;
+        case 'error':
+          this.title = `Error al procesar ${subject}`;
+          break;
+        case 'info':
+          this.title = `${subject} - información`;
+          break;
+      }
+    }
+
     this.subtitle = data?.subtitle ?? '';
   }
 
