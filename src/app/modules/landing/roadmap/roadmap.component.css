@@ -332,6 +332,43 @@
   margin: 0;
 }
 
+/* Chat Invite */
+.chat-invite {
+  text-align: center;
+  margin: 3rem auto 4rem;
+  max-width: 480px;
+  padding: 1.5rem 1rem;
+}
+
+.chat-invite-text {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.chat-invite-button {
+  background-color: #f57c21;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  padding: 0.7rem 2.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+}
+
+.chat-invite-button:hover {
+  background-color: #e86f17;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.18);
+}
+
+.chat-invite-button:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
 /* Animations */
 @keyframes draw {
   from {

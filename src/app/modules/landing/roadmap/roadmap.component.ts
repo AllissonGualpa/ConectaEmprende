@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
+import { Router } from '@angular/router';
 
 interface StepDetail {
   title: string;
@@ -28,6 +29,8 @@ export class RoadmapComponent implements OnInit {
   visibleSteps: number[] = [];
   selectedStep: Step | null = null;
   showModal: boolean = false;
+
+  constructor(private router: Router) {}
 
   steps: Step[] = [
     { 
@@ -124,6 +127,10 @@ export class RoadmapComponent implements OnInit {
         this.visibleSteps.push(index);
       }, index * 400);
     });
+  }
+
+  openChat() {
+    this.router.navigate(['/emprendedor/luci']);
   }
 
   openStepDetails(step: Step): void {

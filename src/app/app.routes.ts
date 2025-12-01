@@ -17,6 +17,7 @@ import { BlogEditComponent } from './modules/admin/blog-edit/blog-edit.component
 import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimientos/admin-emprendimientos.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
+import { LuciComponent } from './modules/landing/luci/luci.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -38,6 +39,7 @@ export const routes: Routes = [
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor },
   { path: 'emprendedor/roadmap', component: RoadmapComponent },
+  { path: 'emprendedor/luci', component: LuciComponent },
 
   // Administración
   { path: 'admin', component: AdminDashboardComponent },
