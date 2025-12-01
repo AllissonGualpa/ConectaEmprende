@@ -79,3 +79,22 @@
     font-size: 1.4rem;
   }
 }
+
+.luci-chat-box {
+  width: 100%;
+  height: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  position: relative;
+}
+
+/* Forzar el Fullscreen UI a comportarse como EMBEDDED */
+.luci-chat-box .n8n-chat-fullscreen {
+  position: absolute !important;
+  inset: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  border-radius: 0 !important;
+}
+

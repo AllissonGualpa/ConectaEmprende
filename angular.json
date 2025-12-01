@@ -26,6 +26,7 @@
             ],
             "styles": [
               "src/assets/styles/styles.scss",
+              "node_modules/@n8n/chat/dist/style.css",
               "src/styles.css"
             ],
             "scripts": [],
@@ -40,13 +41,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "1mb",
+                  "maximumError": "10mb"
                 }
               ],
               "outputHashing": "all"
@@ -91,6 +92,7 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/indigo-pink.css",
+              "node_modules/@n8n/chat/style.css",
               "src/styles.css"
             ],
             "scripts": []
