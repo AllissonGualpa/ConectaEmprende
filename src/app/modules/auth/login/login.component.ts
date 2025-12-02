@@ -7,7 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AuthService } from '../auth.service';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +22,8 @@ import { AuthService } from '../auth.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    MatDialogModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
@@ -32,7 +35,8 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private dialog: MatDialog
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -67,18 +71,37 @@ export class LoginComponent {
         next: (response) => {
           console.log('Respuesta del backend:', response);
           localStorage.setItem('token', response.jwtToken);
-          this.authService.getPerfil().subscribe();
 
-          // Redirección según usuario
-          if (email === 'sofia@email.com' && password === 'sofia123') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/inicio']);
-          }
+          // Obtener perfil desde el backend y redirigir según rol
+          this.authService.getPerfil().subscribe({
+            next: (perfil) => {
+              // Ajusta 'rol' al nombre real de la propiedad en tu modelo
+              const rol = perfil?.nombreRol;
+
+              if (rol === 'ADMINISTRADOR') {
+                this.router.navigate(['/admin']);
+              } else {
+                this.router.navigate(['/inicio']);
+              }
+            },
+            error: (errPerfil) => {
+              console.error('Error al obtener el perfil:', errPerfil);
+              // En caso de error al traer el perfil, lo enviamos a inicio por defecto
+              this.router.navigate(['/inicio']);
+            }
+          });
         },
         error: (err) => {
           console.error('Error al iniciar sesión:', err);
-          alert('Credenciales incorrectas o error del servidor.');
+
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '380px',
+            data: {
+              type: 'error',
+              title: 'Error al iniciar sesión',
+              subtitle: 'Credenciales incorrectas o error del servidor.'
+            }
+          });
         }
       });
     } else {
