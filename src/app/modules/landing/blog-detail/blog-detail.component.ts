@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BlogService, BlogArticle } from '../../admin/blog.service';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-blog-detail',
@@ -17,10 +18,14 @@ export class BlogDetailComponent implements OnInit {
   cargando = true;
   error: string | null = null;
 
+  // contenido HTML saneado para mostrar en la vista
+  contenidoSeguro: SafeHtml | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private blogService: BlogService
+    private blogService: BlogService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +45,12 @@ export class BlogDetailComponent implements OnInit {
           ...data,
           fechaPublicacion: this.blogService.formatDisplayDate(data.fechaCreacion)
         };
+
+        // Marcar el contenido como HTML seguro
+        this.contenidoSeguro = this.sanitizer.bypassSecurityTrustHtml(
+          this.articulo.contenido || ''
+        );
+
         this.cargando = false;
       },
       error: (err: any) => {

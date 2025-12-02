@@ -3,7 +3,9 @@
 
   <!-- Contenido principal -->
   <main class="flex-1 p-8 overflow-y-auto">
-    <h1 class="text-2xl font-bold mb-6">¡Bienvenido {{ user.name }}!</h1>
+    <h1 class="text-2xl font-bold mb-6">
+      ¡{{ saludo }}, {{ user.name }}!
+    </h1>
 
     <!-- Tarjetas de Estadísticas -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">

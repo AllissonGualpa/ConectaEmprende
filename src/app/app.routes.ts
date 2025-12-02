@@ -13,7 +13,6 @@ import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.compon
 import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
 import { BlogDetailComponent } from './modules/landing/blog-detail/blog-detail.component';
 import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.component';
-import { BlogEditComponent } from './modules/admin/blog-edit/blog-edit.component';
 import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimientos/admin-emprendimientos.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
@@ -46,6 +45,6 @@ export const routes: Routes = [
   { path: 'admin/evento', component: AdminEventoComponent },
   { path: 'admin/blog', component: AdminBlogComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },
-  { path: 'admin/blog/edit/:id', component: BlogEditComponent },
+  { path: 'admin/blog/edit/:id', component: BlogCreateComponent },
   { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent }
 ];

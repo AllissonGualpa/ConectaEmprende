@@ -31,9 +31,10 @@
       class="w-full h-72 object-cover rounded-lg shadow-md mb-8" />
 
     <!-- Contenido completo -->
-    <div class="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line prose max-w-none">
-      {{ articulo.contenido }}
-    </div>
+    <div
+      class="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line prose max-w-none"
+      [innerHTML]="contenidoSeguro"
+    ></div>
 
     <!-- Botón volver -->
     <div class="mt-10 text-center">
