@@ -34,8 +34,8 @@
           <div id="quillEditor" class="quill-container"></div>
         </div>
 
-        <!-- Estado -->
-        <div class="mb-6">
+        <!-- Estado: solo visible en modo edición -->
+        <div class="mb-6" *ngIf="mode === 'edit'">
           <label class="block text-sm font-bold text-gray-700 mb-2">Estado</label>
           <select
             [(ngModel)]="blog.estado"
