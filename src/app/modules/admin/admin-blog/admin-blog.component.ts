@@ -99,7 +99,7 @@ export class AdminBlogComponent implements OnInit {
         }
       });
       this.router.navigate(['/login']);
-      this.loading = false; // Desactivar loading si no hay token
+      this.loading = false;
       return;
     }
 
@@ -112,7 +112,6 @@ export class AdminBlogComponent implements OnInit {
       fechaFin: this.fechaFin
     }).subscribe({
       next: (response) => {
-        console.log('Respuesta del servidor:', response);
 
         // Detecta si la respuesta tiene paginación
         if (response && typeof response === 'object' && 'pageable' in response) {
@@ -132,17 +131,9 @@ export class AdminBlogComponent implements OnInit {
           this.totalPages = Math.ceil(this.totalElements / this.pageSize);
         }
 
-        console.log('Datos de paginación:', {
-          totalElements: this.totalElements,
-          totalPages: this.totalPages,
-          currentPage: this.currentPage,
-          pageSize: this.pageSize,
-          blogsLength: this.blogs.length
-        });
-
         this.applyFilters();
         this.computePaginationInfo();
-        this.loading = false; // Desactivar loading al finalizar
+        this.loading = false;
       },
 
       error: (error) => {
