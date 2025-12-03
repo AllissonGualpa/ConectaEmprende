@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -9,10 +9,30 @@ import { Environment } from '../../../../environments/environment';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { MatDialog } from '@angular/material/dialog';
 
+// Imports de Angular Material para que se vea como admin-blog
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule }      from '@angular/material/input';
+import { MatSelectModule }     from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule }     from '@angular/material/button';
+import { MatIconModule }       from '@angular/material/icon';
+
 @Component({
   selector: 'app-admin-emprendimientos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarAdminComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NavbarAdminComponent,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
   templateUrl: './admin-emprendimientos.component.html',
 })
 export class AdminEmprendimientosComponent implements OnInit {
@@ -20,15 +40,22 @@ export class AdminEmprendimientosComponent implements OnInit {
   tiposEmprendimiento: any[] = [];
   filteredEmprendimientos: any[] = [];
   categorias: any[] = [];
+
+  // Nuevo: ciudades
+  ciudades: any[] = [];
+  selectedCiudad = '';
+
   searchTerm = '';
   selectedCategory = '';
-  selectedDate = '';
+  selectedDate: any = ''; // ya no se usará
+
   loading = false;
 
   private apiEmprendimientos =
     Environment.api_url + Environment.api_emprendimientos;
   private apiTipos = Environment.api_url + Environment.api_tipos;
   private apiCategorias = Environment.api_url + Environment.api_categorias;
+  private apiCiudades = Environment.api_url + Environment.api_ciudades;
 
   constructor(
     private http: HttpClient,
@@ -61,41 +88,29 @@ export class AdminEmprendimientosComponent implements OnInit {
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
+    // Carga inicial de combos + emprendimientos sin filtros
     forkJoin({
       tipos: this.http.get<any[]>(this.apiTipos, { headers }),
       categorias: this.http.get<any[]>(this.apiCategorias, { headers }),
-      emprendimientos: this.http.get<any>(this.apiEmprendimientos, { headers }),
+      ciudades: this.http.get<any[]>(this.apiCiudades, { headers }), // nuevo
+      emprendimientos: this.http.get<any>(this.apiEmprendimientos, {
+        headers,
+      }),
     }).subscribe({
-      next: ({ tipos, categorias, emprendimientos }) => {
+      next: ({ tipos, categorias, ciudades, emprendimientos }) => {
         this.tiposEmprendimiento = tipos;
         this.categorias = categorias;
+        this.ciudades = ciudades; // llenar combo ciudades
+
         const lista = emprendimientos?.content ?? [];
 
-        this.emprendimientos = lista.map(
-          (emp: {
-            tipoEmprendimientoId: any;
-            nombreTipoEmprendimiento: any;
-          }) => {
-            const tipoData = this.tiposEmprendimiento.find(
-              (t) => t.id === emp.tipoEmprendimientoId
-            );
-            return {
-              ...emp,
-              tipoInfo: {
-                tipo: tipoData ? tipoData.tipo : 'Desconocido',
-                subTipo: tipoData
-                  ? tipoData.subTipo.trim()
-                  : emp.nombreTipoEmprendimiento,
-              },
-            };
-          }
-        );
+        this.emprendimientos = this.mapEmprendimientos(lista);
         this.filteredEmprendimientos = [...this.emprendimientos];
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error al cargar blogs:', error);
-        this.loading = false; // Desactivar loading en caso de error
+        console.error('Error al cargar emprendimientos:', error);
+        this.loading = false;
         if (error.status === 401) {
           this.dialog.open(MensajeConfirmacionComponent, {
             width: '420px',
@@ -112,27 +127,78 @@ export class AdminEmprendimientosComponent implements OnInit {
     });
   }
 
+  // Mapea la lista cruda del backend a la estructura con tipoInfo
+  private mapEmprendimientos(lista: any[]): any[] {
+    return lista.map(
+      (emp: { tipoEmprendimientoId: any; nombreTipoEmprendimiento: any }) => {
+        const tipoData = this.tiposEmprendimiento.find(
+          (t) => t.id === emp.tipoEmprendimientoId
+        );
+        return {
+          ...emp,
+          tipoInfo: {
+            tipo: tipoData ? tipoData.tipo : 'Desconocido',
+            subTipo: tipoData
+              ? tipoData.subTipo.trim()
+              : emp.nombreTipoEmprendimiento,
+          },
+        };
+      }
+    );
+  }
+
+  // Llamar al backend aplicando filtros como query params
   applyFilters() {
-    this.filteredEmprendimientos = this.emprendimientos.filter((emp) => {
-      const matchesSearch =
-        this.searchTerm === '' ||
-        emp.nombreComercial
-          ?.toLowerCase()
-          .includes(this.searchTerm.toLowerCase());
-      const matchesCategory =
-        this.selectedCategory === '' ||
-        emp.categoriaId == this.selectedCategory;
-      const matchesDate =
-        this.selectedDate === '' ||
-        new Date(emp.fechaCreacion).toISOString().split('T')[0] ===
-          this.selectedDate;
-      return matchesSearch && matchesCategory && matchesDate;
-    });
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return;
+    }
+
+    this.loading = true;
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+    let params = new HttpParams();
+
+    // nombre (buscador)
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
+      params = params.set('nombre', this.searchTerm.trim());
+    }
+
+    // categoría: en el HTML usas [value]="cat.nombre", por lo que ya es el nombre
+    if (this.selectedCategory && this.selectedCategory !== '') {
+      params = params.set('categoria', this.selectedCategory);
+    }
+
+    // Nuevo: ciudad (usamos nombreCiudad como valor del select)
+    if (this.selectedCiudad && this.selectedCiudad !== '') {
+      params = params.set('ciudad', this.selectedCiudad);
+    }
+
+    // Quitar lógica de fecha (selectedDate ya no se usa)
+
+    // Paginación básica (puedes cambiar luego)
+    params = params.set('page', '0').set('size', '20');
+
+    this.http
+      .get<any>(this.apiEmprendimientos, { headers, params })
+      .subscribe({
+        next: (resp) => {
+          const lista = resp?.content ?? resp ?? [];
+          this.emprendimientos = this.mapEmprendimientos(lista);
+          this.filteredEmprendimientos = [...this.emprendimientos];
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al aplicar filtros:', error);
+          this.loading = false;
+        },
+      });
   }
 
   reload() {
     this.searchTerm = '';
     this.selectedCategory = '';
+    this.selectedCiudad = '';
     this.selectedDate = '';
     this.loadData();
   }
@@ -165,13 +231,20 @@ export class AdminEmprendimientosComponent implements OnInit {
     this.router.navigate(['/admin/emprendimientos/edit', emp.id]);
   }
 
-  eliminarEmprendimiento(emp: any) {
-    if (
-      confirm(
-        `¿Seguro que deseas eliminar el emprendimiento "${emp.nombreComercial}"?`
-      )
-    ) {
-      console.log('Eliminando emprendimiento con ID:', emp.id);
+  // Botón de inactivación (ya no “eliminar”)
+  desactivarEmprendimiento(emp: any) {
+    const confirmado = confirm(
+      `¿Seguro que deseas inactivar el emprendimiento "${emp.nombreComercial}"?`
+    );
+
+    if (!confirmado) {
+      return;
     }
+
+    // Aquí deberías llamar a tu API de inactivación cuando la tengas.
+    // Ejemplo futuro:
+    // this.http.patch(`${this.apiEmprendimientos}/${emp.id}/inactivar`, {}, { headers }).subscribe(...)
+
+    console.log('Inactivando emprendimiento con ID:', emp.id);
   }
 }

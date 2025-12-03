@@ -44,7 +44,7 @@ export interface RegisterData {
 })
 export class AuthService {
   private apiUrl = Environment.api_url + Environment.api_auth;
-  private apiUrlUsuarios = Environment.api_url + Environment.api_uuarios;
+  private apiUrlUsuarios = Environment.api_url + Environment.api_usuarios;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   private perfilKey = 'perfil';

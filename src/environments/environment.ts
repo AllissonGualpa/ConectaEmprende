@@ -6,7 +6,8 @@ export const Environment = {
     api_emprendimientos: '/v1/emprendimientos',
     api_tipos: '/v1/tipos-emprendimiento',
     api_categorias: '/v1/categorias',
-    api_uuarios: '/v1/usuarios',
+    api_usuarios: '/v1/usuarios',
+    api_ciudades:'/v1/ciudad',
     version: 'development',
     luciWebhookUrl: 'https://n8n-production-318b.up.railway.app/webhook/f498657d-463e-4076-8e60-d769872857d1/chat'
 };
