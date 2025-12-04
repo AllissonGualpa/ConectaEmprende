@@ -20,7 +20,7 @@ export class EventosComponent implements OnInit {
 
   //SEARCH BAR
    onSearch(payload: { query: string; [key: string]: any }) {
-    console.log('Búsqueda en Emprendimientos:', payload);
+    //console.log('Búsqueda en Emprendimientos:', payload);
 
     let result = this.cardsArray.slice();
 
@@ -135,7 +135,7 @@ export class EventosComponent implements OnInit {
       const id = it.idEvento ?? it.id ?? it._id ?? 0;
       const title = it.titulo || it.nombre || 'Evento';
       const description = it.descripcion || '';
-      const image = it.imagenUrl || it.imagen || '/assets/img/eventos/foto1.png';
+      const image = it.imagenUrl || it.urlMultimedia || '/assets/img/eventos/foto1.png';
       const dateRaw = it.fechaEvento || it.fecha || undefined;
       const date = dateRaw && String(dateRaw).includes('T') ? String(dateRaw).split('T')[0] : dateRaw;
       const location = it.lugar || it.direccion || '';

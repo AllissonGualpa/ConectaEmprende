@@ -67,6 +67,10 @@ export class AdminEventoComponent {
   ngOnInit(): void {
     this.loadEventosFromServer();
   }
+
+  // indicador global de carga (usado por el overlay en el HTML)
+  loading = false;
+
   searchText: string = '';
   fechaInicio: Date | null = null;
   fechaFin: Date | null = null;
@@ -92,6 +96,8 @@ export class AdminEventoComponent {
   }
 
   private loadEventosFromServer(): void {
+    this.loading = true; // empezar loading
+
     // call the new admin paginated endpoint. Pass tipoEvento and date range if provided.
     const tipoEventoParam = (this.estadoSeleccionado || '').toLowerCase().includes('pres') ? 'presencial' : ((this.estadoSeleccionado || '').toLowerCase().includes('onl') ? 'online' : undefined);
     const fechaInicioISO = this.fechaInicio ? new Date(this.startOfDay(this.fechaInicio)).toISOString() : undefined;
@@ -180,10 +186,12 @@ export class AdminEventoComponent {
             console.warn('Error mapeando eventos', e);
           }
           this.applyFilters();
+          this.loading = false; // terminar loading
         },
         error: (err: any) => {
           console.warn('No se pudieron cargar eventos desde el servidor, usando datos locales.', err);
           this.applyFilters();
+          this.loading = false; // terminar loading también en error
         }
       });
     
@@ -327,6 +335,8 @@ export class AdminEventoComponent {
     const token = localStorage.getItem('token') || undefined;
     const idToSend = String(evento.id).startsWith('#') ? evento.id.slice(1) : evento.id;
   
+    this.loading = true; // mostrar overlay mientras llama a la API
+
     this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
       next: () => {
         evento.activo = false;
@@ -341,6 +351,7 @@ export class AdminEventoComponent {
           }
         });
         this.closeDeleteDialog(); // Cierra el diálogo
+        this.loading = false; // terminar loading
       },
       error: (err) => {
         console.warn('Error inactivando evento', err);
@@ -354,6 +365,7 @@ export class AdminEventoComponent {
           }
         });
         this.closeDeleteDialog(); // Cierra el diálogo incluso si hay un error
+        this.loading = false; // terminar loading
       }
     });
   }
@@ -368,8 +380,7 @@ export class AdminEventoComponent {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-        // The backend returned a successful update. Refresh the list from server
-        // to make sure the UI reflects the authoritative data (avoids id/shape mismatches).
+        this.loading = true;
         this.loadEventosFromServer();
       }
     });
@@ -392,46 +403,8 @@ export class AdminEventoComponent {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-
-        let rawTipoRes = result.tipoEvento || result.tipo || '';
-        const lugarRes = String(result.direccion || result.lugar || '');
-        if (!rawTipoRes && lugarRes.toLowerCase().includes('online')) rawTipoRes = 'Online';
-        let tipoNormRes = '';
-        if (rawTipoRes) {
-          const ltr = String(rawTipoRes).toLowerCase();
-          if (ltr.includes('pres')) tipoNormRes = 'Presencial';
-          else if (ltr.includes('onl') || ltr.includes('vir')) tipoNormRes = 'Online';
-          else tipoNormRes = String(rawTipoRes).charAt(0).toUpperCase() + String(rawTipoRes).slice(1);
-        }
-
-        const newEvento: Evento = {
-          id: result.idEvento ? String(result.idEvento) : (result.id ? String(result.id) : `#${Math.floor(Math.random() * 90000) + 10000}`),
-          organizador: result.nombreEmprendimiento || result.organizador || 'Admin',
-          //organizadorIcono: result.organizadorIcono || 'person',
-          nombre: result.titulo || result.nombre || 'Nuevo Evento',
-          fecha: result.fechaEvento ? (String(result.fechaEvento).includes('T') ? String(result.fechaEvento).split('T')[0] : String(result.fechaEvento)) : '',
-          hora: result.hora || result.horaInicio || (result.fechaEvento && String(result.fechaEvento).includes('T') ? String(result.fechaEvento).split('T')[1].slice(0,5) : ''),
-          estado: result.estadoEvento || result.estado || (result.activo ? 'Activo' : 'Inactivo') || 'Activo',
-          descripcion: result.descripcion || '',
-          horaInicio: result.horaInicio || undefined,
-          horaFin: result.horaFin || undefined,
-          direccion: result.direccion || result.lugar || '',
-          linkInscripcion: result.linkInscripcion || result.link || '',
-          tipoEvento: tipoNormRes,
-          lugar: result.lugar || '',
-          idEmprendimiento: result.idEmprendimiento || undefined,
-          nombreEmprendimiento: result.nombreEmprendimiento || undefined,
-          idMultimedia: result.idMultimedia || undefined,
-          activo: typeof result.activo === 'boolean' ? result.activo : undefined,
-          fechaCreacion: result.fechaCreacion || undefined,
-          fechaModificacion: result.fechaModificacion || undefined
-        };
-
-        // Prepend to show newest first
-        this.eventos = [newEvento, ...this.eventos];
-        this.applyFilters();
-
-        // show created dialog (pass subject so text can be customized)
+        this.loading = true;
+        this.loadEventosFromServer();
         this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento' } });
       }
     });

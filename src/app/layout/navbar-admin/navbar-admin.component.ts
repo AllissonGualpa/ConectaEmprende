@@ -16,6 +16,40 @@ export class NavbarAdminComponent {
     role: ''
   };
 
+  // Menú dinámico
+  menuItems = [
+    {
+      nombre: 'Dashboard',
+      enlace: '/admin',
+      icono: 'analytics' as const
+    },
+    /*{
+      nombre: 'Solicitudes',
+      enlace: '/admin/solicitudes',
+      icono: 'solicitudes' as const
+    },*/
+    {
+      nombre: 'Emprendimientos',
+      enlace: '/admin/emprendimientos',
+      icono: 'emprendimientos' as const
+    },
+    /*{
+      nombre: 'Autoevaluación',
+      enlace: '/admin/autoevaluacion',
+      icono: 'autoevaluacion' as const
+    },*/
+    {
+      nombre: 'Eventos',
+      enlace: '/admin/evento',
+      icono: 'eventos' as const
+    },
+    {
+      nombre: 'Blog',
+      enlace: '/admin/blog',
+      icono: 'blog' as const
+    }
+  ];
+
   constructor(
     private router: Router,
     private authService: AuthService
@@ -40,7 +74,7 @@ export class NavbarAdminComponent {
     // Usar AuthService para centralizar la lógica
     this.authService.logout();
 
-    this.router.navigate(['/login']).then(() => {
+    this.router.navigate(['/inicio']).then(() => {
       window.history.pushState(null, '', '/login');
       window.onpopstate = () => {
         window.history.pushState(null, '', '/login');

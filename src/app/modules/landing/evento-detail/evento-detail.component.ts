@@ -59,7 +59,7 @@ export class EventoDetailComponent {
           tipoEvento: res.tipoEvento ?? res.tipo,
           linkInscripcion: res.linkInscripcion ?? res.link ?? res.url,
           direccion: res.direccion ?? res.lugar ?? '',
-          imagenUrl: res.imagenUrl ?? res.imagen ?? res.urlImagen
+          imagenUrl: res.urlMultimedia
         };
       },
       error: (err: any) => {

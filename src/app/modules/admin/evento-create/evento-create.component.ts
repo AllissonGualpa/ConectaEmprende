@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,92 +9,90 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Inject } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { EventoService } from '../evento.service';
-import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-evento-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule, MatSelectModule, HttpClientModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSelectModule
+  ],
   templateUrl: './evento-create.component.html',
   styleUrl: './evento-create.component.css'
 })
-
-
 export class EventoCreateComponent {
 
   form: FormGroup;
   loading = false;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, private dialogRef: MatDialogRef<EventoCreateComponent>,private cdr: ChangeDetectorRef, private eventoService: EventoService, @Inject(MAT_DIALOG_DATA) public dialogData?: any) {
+  constructor(
+    private fb: FormBuilder,
+    private dialogRef: MatDialogRef<EventoCreateComponent>,
+    private cdr: ChangeDetectorRef,
+    private eventoService: EventoService,
+    @Inject(MAT_DIALOG_DATA) public dialogData?: any
+  ) {
     this.form = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
       fecha: [null, Validators.required],
       horaInicio: [''],
       horaFin: [''],
-      tipo: ['VIRTUAL'],
+      tipo: ['PRESENCIAL'],
       link: [''],
-      direccion: ['Online'],
+      direccion: [''],
       imagen: [null],
       activarEvento: [false],
       token: ['']
     });
   }
+
   ngAfterViewInit(): void {
-    // 👇 Esto fuerza a Angular Material a recalcular estilos correctamente
     this.cdr.detectChanges();
   }
 
   ngOnInit(): void {
-    // If dialog sent data for edit, prefill the form
     const data = this.dialogData;
     if (data && data.mode === 'edit' && data.event) {
       const e = data.event;
-      // Prefer backend field names: titulo, fechaEvento, horaInicio, tipoEvento
       const nombre = e.titulo || e.nombre || '';
       const descripcion = e.descripcion || '';
       const link = e.linkInscripcion || e.link || '';
       const direccion = e.direccion || e.lugar || '';
 
-      // Normalize tipo to form values
-      let tipoVal = 'VIRTUAL';
+      let tipoVal = 'PRESENCIAL';
       const tipoRaw = (e.tipoEvento || e.tipo || '').toString().toLowerCase();
       if (tipoRaw.includes('pres')) tipoVal = 'PRESENCIAL';
       else if (tipoRaw.includes('onl') || tipoRaw.includes('vir') || tipoRaw.includes('virtual')) tipoVal = 'VIRTUAL';
 
       this.form.patchValue({ nombre, descripcion, link, direccion, tipo: tipoVal });
 
-      // fecha and hora: prefer fechaEvento (ISO)
       const fechaEventoRaw = e.fechaEvento || e.fecha || '';
       if (fechaEventoRaw) {
         const s = String(fechaEventoRaw);
-        if (s.includes('T')) {
-          const [datePart, timePart] = s.split('T');
-          this.form.patchValue({ fecha: datePart });
-          if (timePart) {
-            const hhmm = timePart.split(':').slice(0, 2).join(':');
-            this.form.patchValue({ horaInicio: hhmm });
-          }
-        } else if (s.includes('/')) {
-          const parts = s.split('/');
-          if (parts.length === 3) {
-            const d = parts[0].padStart(2, '0');
-            const m = parts[1].padStart(2, '0');
-            const y = parts[2];
-            this.form.patchValue({ fecha: `${y}-${m}-${d}` });
+        try {
+          const d = new Date(s);
+          if (!isNaN(d.getTime())) {
+            this.form.patchValue({ fecha: d });
           } else {
             this.form.patchValue({ fecha: s });
           }
-        } else {
+        } catch {
           this.form.patchValue({ fecha: s });
         }
       }
 
-      // horaInicio explicit fallback
       if (e.horaInicio) {
         this.form.patchValue({ horaInicio: e.horaInicio });
       } else if (e.hora) {
@@ -102,105 +100,102 @@ export class EventoCreateComponent {
         if (match) this.form.patchValue({ horaInicio: match[1] });
       }
 
-      // if event is inactive, expose activarEvento checkbox in form
       if (typeof e.activo === 'boolean' && e.activo === false) {
         this.form.patchValue({ activarEvento: false });
       }
     }
   }
 
-
   crear() {
-    if (this.form.valid) {
-      this.loading = true;
-      this.error = null;
-      const f = this.form.value;
+    if (!this.form.valid) return;
 
-      // Mapear los campos del formulario a los nombres que espera la API
-      // Construir fechaEvento en formato ISO completo (YYYY-MM-DDTHH:mm:SS)
-      let fechaEvento: string | null = null;
-      try {
-        const fechaVal = f.fecha; // puede ser string 'YYYY-MM-DD' o Date
-        const horaVal = f.horaInicio || '00:00';
+    this.loading = true;
+    this.error = null;
+    const f = this.form.value;
 
-        if (!fechaVal) {
-          fechaEvento = null;
-        } else {
-          // si fechaVal ya contiene 'T' asumimos que es ISO completo
-          if (typeof fechaVal === 'string' && fechaVal.includes('T')) {
-            fechaEvento = fechaVal;
-          } else {
-            // Normalizar fecha string
-            let datePart = '';
-            if (fechaVal instanceof Date) {
-              datePart = fechaVal.toISOString().slice(0, 10);
-            } else {
-              // fechaVal probablemente 'YYYY-MM-DD'
-              datePart = String(fechaVal);
-            }
+    let fechaEvento: string | null = null;
+    try {
+      const fechaVal = f.fecha;
+      const horaVal = f.horaInicio || '00:00';
 
-            // Normalizar hora (HH:mm or HH:mm:ss)
-            let timePart = String(horaVal);
-            if (/^\d{2}:\d{2}$/.test(timePart)) {
-              timePart = `${timePart}:00`;
-            }
-
-            fechaEvento = `${datePart}T${timePart}`;
-          }
-        }
-      } catch (e) {
+      if (!fechaVal) {
         fechaEvento = null;
+      } else if (typeof fechaVal === 'string' && fechaVal.includes('T')) {
+        fechaEvento = fechaVal;
+      } else {
+        let datePart = '';
+        if (fechaVal instanceof Date) {
+          datePart = fechaVal.toISOString().slice(0, 10);
+        } else {
+          datePart = String(fechaVal);
+        }
+
+        let timePart = String(horaVal);
+        if (/^\d{2}:\d{2}$/.test(timePart)) {
+          timePart = `${timePart}:00`;
+        }
+
+        fechaEvento = `${datePart}T${timePart}`;
       }
+    } catch {
+      fechaEvento = null;
+    }
 
-      const payload: any = {
-        titulo: f.nombre,
-        descripcion: f.descripcion,
-        fechaEvento: fechaEvento,
-        lugar: f.direccion || f.lugar || 'Online',
-        tipoEvento: f.tipo || 'VIRTUAL',
-        linkInscripcion: f.link || '',
-        direccion: f.direccion || '',
-        // idMultimedia: opcional, si el backend espera id en lugar de archivo
-      };
+    const tipoEvento = (f.tipo || 'PRESENCIAL').toString().toLowerCase();
 
-  // Backend aún no maneja subida de archivos; usar idMultimedia quemado
-  // No enviar archivo en el payload. El backend espera un idMultimedia (numérico).
-  payload.idMultimedia = 1; // valor fijo según lo indicado
+    const imagenFile: File | null = this.form.get('imagen')?.value || null;
+    const imagenStr = imagenFile ? imagenFile.name : null;
 
-      // Try to retrieve token from localStorage if user didn't paste one
-      let token = this.form.value.token;
-      if (!token) {
-        token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || '';
-      }
+    const body: any = {
+      titulo: f.nombre,
+      descripcion: f.descripcion || '',
+      fechaEvento: fechaEvento,
+      lugar: f.direccion || 'Online',
+      tipoEvento: tipoEvento,
+      activo: true,
+      linkInscripcion: f.link || '',
+      imagen: imagenStr
+    };
 
-      console.log('Enviar payload a createEvent:', payload);
+    let token = this.form.value.token;
+    if (!token) {
+      token =
+        localStorage.getItem('token') ||
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('authToken') ||
+        '';
+    }
 
-      // If dialog is used in edit mode, call the API to update the event
-      if (this.dialogData && this.dialogData.mode === 'edit') {
-        this.error = null;
-        const idEvento = this.dialogData.event?.id || this.dialogData.event?.idEvento;
-        const idEmprendimiento = this.dialogData.event?.idEmprendimiento || 4;
+    if (this.dialogData && this.dialogData.mode === 'edit') {
+      const idEvento = this.dialogData.event?.id || this.dialogData.event?.idEvento;
+      const idEmprendimiento = this.dialogData.event?.idEmprendimiento || 4;
 
-        this.eventoService.editEvent(idEvento, idEmprendimiento, payload, { idMultimedia: 1, token: token || undefined }).subscribe({
+      this.eventoService
+        .editEvent(idEvento, body, { token: token || undefined })
+        .subscribe({
           next: (res: any) => {
             this.loading = false;
-            // Ensure we return an object that contains an `id` field so the caller can match the event
-            const resId = res?.idEvento ? String(res.idEvento) : (res?.id ? String(res.id) : String(idEvento));
-            const closeObj = { ...payload, ...res, id: resId };
-            // If user checked activarEvento and the original event was inactive, call activate endpoint
+            const resId = res?.idEvento
+              ? String(res.idEvento)
+              : res?.id
+              ? String(res.id)
+              : String(idEvento);
+            const closeObj = { ...res, id: resId };
+
             const activar = this.form.value.activarEvento === true;
-            if (activar && this.dialogData.event && (this.dialogData.event.activo === false || this.dialogData.event.activo === 0)) {
-              this.eventoService.activateEvent(idEvento, { token: token || undefined }).subscribe({
-                next: () => {
-                  // return combined result to caller
-                  this.dialogRef.close({ ...closeObj, activo: true });
-                },
-                error: (err: any) => {
-                  // still close and surface edit result; activation failed
-                  this.dialogRef.close(closeObj);
-                }
-              });
-              return; // we've handled close in activate callback
+            if (
+              activar &&
+              this.dialogData.event &&
+              (this.dialogData.event.activo === false ||
+                this.dialogData.event.activo === 0)
+            ) {
+              this.eventoService
+                .activateEvent(idEvento, { token: token || undefined })
+                .subscribe({
+                  next: () => this.dialogRef.close({ ...closeObj, activo: true }),
+                  error: () => this.dialogRef.close(closeObj)
+                });
+              return;
             }
             this.dialogRef.close(closeObj);
           },
@@ -209,10 +204,15 @@ export class EventoCreateComponent {
             this.error = err?.message || 'Error actualizando evento';
           }
         });
-        return;
-      }
+      return;
+    }
 
-      this.eventoService.createEvent(payload, { idEmprendimiento: 4, token: token || undefined }).subscribe({
+    this.eventoService
+      .createEvent(body, {
+        idEmprendimiento: 4,
+        token: token || undefined
+      })
+      .subscribe({
         next: (res: any) => {
           this.loading = false;
           this.dialogRef.close(res);
@@ -220,10 +220,8 @@ export class EventoCreateComponent {
         error: (err: any) => {
           this.loading = false;
           this.error = err?.message || 'Error creando evento';
-          // opcional: podríamos mantener el diálogo abierto para mostrar el error
         }
       });
-    }
   }
 
   cancelar() {
@@ -235,8 +233,6 @@ export class EventoCreateComponent {
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
     this.form.patchValue({ imagen: file });
-    // For change detection if needed
     this.cdr.detectChanges();
   }
-
 }

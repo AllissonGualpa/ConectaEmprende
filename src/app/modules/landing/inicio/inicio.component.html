@@ -67,12 +67,10 @@
       </div>
     </div>
   </section>
-</main>
 
 <!--Categorias Destacadas-->
 <section id="categorias-destacadas" class="py-16 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
     <div class="text-center mb-10">
       <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
         Categorías Destacadas
@@ -80,182 +78,62 @@
       <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
     </div>
 
-    <!-- Grid de tarjetas -->
+    <!-- Grid de tarjetas dinámicas -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Card 1 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto1.jpg');"></div>
+      <a
+        *ngFor="let cat of categoriasDestacadas"
+        [href]="cat.link"
+        class="relative rounded-xl overflow-hidden group shadow-lg"
+        [ngClass]="{
+          'sm:col-span-2': cat.anchura === 'wide'
+        }"
+      >
+        <div
+          class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+          [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"
+        ></div>
         <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
 
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
-          <div class="text-left">
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Arte y cultura</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <!--flecha -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 2 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto2.png');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
+        <div
+          class="relative p-6 flex flex-col justify-between"
+          [ngClass]="{
+            'h-48 md:h-56 lg:h-44': cat.anchura === 'normal',
+            'h-36': cat.anchura === 'wide'
+          }"
+        >
           <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Salud y Bienestar</h3>
+            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">
+              {{ cat.nombre }}
+            </h3>
           </div>
 
           <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            <span
+              class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </span>
           </div>
         </div>
       </a>
-
-      <!-- Card 3 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto3.jpg');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Tecnología y Software</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 4 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto4.jpg');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Moda y Accesorios</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 5 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto5.png');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Alimentos y Bebidas</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 6 -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto6.jpg');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-48 md:h-56 lg:h-44 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Medio Ambiente</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 7 (ancha) -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg sm:col-span-2">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto7.png');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-36 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Educación y Formación</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 8 (ancha) -->
-      <a href="#" class="relative rounded-xl overflow-hidden group shadow-lg sm:col-span-1 lg:col-span-1">
-        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-             style="background-image: url('/assets/img/inicio/foto8.png');"></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
-
-        <div class="relative p-6 h-36 flex flex-col justify-between">
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">Servicios Profesionales</h3>
-          </div>
-
-          <div class="flex justify-end">
-            <span class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-      </a>
-
     </div>
   </div>
 </section>
 
- <!--Eventos -->
+ <!--Eventos 
 <section>
   <div class="text-center mb-10">
       <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
@@ -263,9 +141,9 @@
       </h2>
       <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
     </div>
-</section>
+</section> -->
 
-<!--Emprendimientos-->
+<!--Emprendimiento
 <section>
   <div class="text-center mb-10">
       <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
@@ -273,5 +151,6 @@
       </h2>
       <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
     </div>
-</section>
+</section>  -->
+</main>
 <app-footer></app-footer>

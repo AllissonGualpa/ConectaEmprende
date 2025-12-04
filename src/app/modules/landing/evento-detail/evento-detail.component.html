@@ -20,7 +20,19 @@
 
 		<dl class="grid grid-cols-1 gap-2 text-sm text-gray-700">
 			<div *ngIf="event.direccion"><dt class="font-semibold">Dirección</dt><dd>{{ event.direccion }}</dd></div> 
-			<div *ngIf="event.linkInscripcion"><dt class="font-semibold">Inscripción</dt><dd><a class="text-orange-500" target="_blank">Ir al formulario</a></dd></div> 
+			<div *ngIf="event.linkInscripcion">
+				<dt class="font-semibold">Inscripción</dt>
+				<dd>
+					<a 
+						[href]="event.linkInscripcion" 
+						class="text-orange-500 underline hover:text-orange-600"
+						target="_blank" 
+						rel="noopener noreferrer"
+					>
+						Ir al formulario
+					</a>
+				</dd>
+			</div> 
 		</dl>
 	</article>
 

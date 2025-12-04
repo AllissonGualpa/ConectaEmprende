@@ -5,8 +5,16 @@
   </aside>
 
   <!-- Main Content Area -->
-  <main class="flex-1 ml-64">
-    <div class="p-6">
+  <main class="flex-1 ml-64 flex flex-col h-full overflow-hidden">
+    <!-- Indicador global de carga (igual que admin-blog) -->
+    <div *ngIf="loading" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="text-center">
+        <i class="fa-solid fa-spinner fa-spin text-4xl text-white"></i>
+        <p class="mt-2 text-white text-lg">Cargando...</p>
+      </div>
+    </div>
+
+    <div class="p-6 flex-1 flex flex-col overflow-hidden">
       <!-- Header -->
       <div class="mb-6">
         <h1 class="text-2xl font-semibold text-gray-800">Eventos</h1>
@@ -46,14 +54,20 @@
           <!--estados-->
           <div class="md:col-span-1">
             <label class="block text-xs text-gray-600 mb-1">Estados</label>
-                <mat-form-field appearance="outline" class="w-full">
-                    <mat-select placeholder="Seleccionar estado" [(ngModel)]="estadoSeleccionado" (selectionChange)="applyFilters()">
-                    <mat-option value="">Todos</mat-option>
-                    <mat-option value="activo">Activo</mat-option>
-                    <mat-option value="inactivo">Inactivo</mat-option>
-                    </mat-select>
-                </mat-form-field>
-        </div>
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-select
+                placeholder="Seleccionar estado"
+                [(ngModel)]="estadoSeleccionado"
+                (selectionChange)="applyFilters()"
+              >
+                <mat-option value="">Todos</mat-option>
+                <!-- estos valores deben coincidir con e.estado en TS -->
+                <mat-option value="Programado">Programado</mat-option>
+                <mat-option value="Terminado">Terminado</mat-option>
+                <mat-option value="Cancelado">Cancelado</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
           <!--boton-->
     <div class="flex gap-2 items-end">
@@ -112,8 +126,15 @@
                   <button mat-icon-button color="primary" (click)="editarEvento(evento)">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="eliminarEvento(evento)">
-                    <mat-icon>delete</mat-icon>
+                  <!-- Icono dinámico según estado -->
+                  <button
+                    mat-icon-button
+                    (click)="eliminarEvento(evento)"
+                    [color]="evento.estado.toLowerCase() === 'cancelado' ? 'primary' : 'warn'"
+                  >
+                    <mat-icon>
+                      {{ evento.estado.toLowerCase() === 'cancelado' ? 'check_circle' : 'block' }}
+                    </mat-icon>
                   </button>
                 </div>
               </td>
@@ -142,14 +163,35 @@
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-700">!</div>
               <div>
-                <h3 class="text-lg font-semibold">{{ evento?.title || '¿Estás seguro de cancelar el evento seleccionado?' }}</h3>
-                <p class="text-sm text-gray-600 mt-2">{{ evento?.message || 'Esta acción eliminará permanentemente toda la información asociada al evento. Por favor, confirma que deseas proceder con la eliminación.' }}</p>
+                <h3 class="text-lg font-semibold">
+                  {{
+                    (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
+                      ? '¿Estás seguro de activar el evento seleccionado?'
+                      : '¿Estás seguro de cancelar el evento seleccionado?'
+                  }}
+                </h3>
+                <p class="text-sm text-gray-600 mt-2">
+                  {{
+                    (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
+                      ? 'Esta acción activará el evento y volverá a estar disponible para los usuarios.'
+                      : 'Esta acción cancelará el evento y dejará de estar disponible para los usuarios.'
+                  }}
+                </p>
               </div>
             </div>
         
             <div class="mt-6 flex justify-end gap-3">
               <button class="bg-gray-200 px-4 py-2 rounded" (click)="closeDeleteDialog()">Cancelar</button>
-              <button class="bg-orange-500 text-white px-4 py-2 rounded" (click)="eventoAEliminar && confirmDelete(eventoAEliminar)">Inactivar</button>
+              <button
+                class="bg-orange-500 text-white px-4 py-2 rounded"
+                (click)="eventoAEliminar && confirmDelete(eventoAEliminar)"
+              >
+                {{
+                  (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
+                    ? 'Activar'
+                    : 'Desactivar'
+                }}
+              </button>
             </div>
           </div>
         </ng-template>

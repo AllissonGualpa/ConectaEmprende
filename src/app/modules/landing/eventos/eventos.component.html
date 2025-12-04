@@ -60,13 +60,11 @@
 
     <ng-template #eventActions let-item>
       <div class="flex flex-col gap-2">
-        <button (click)="onRegister(item)" 
-        class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg active:scale-95 transition duration-150">Registrarse</button>
         <a (click)="onDiscover(item)" class="text-center text-orange-500 mt-2 cursor-pointer">Ver Detalle</a>
       </div>
     </ng-template>
 
-    <!-- empty overlay to prevent actionTemplate rendering in the image overlay -->
+    <!-- empty overlay to prevent actionTemp late rendering in the image overlay -->
     <ng-template #emptyOverlay></ng-template>
 
     <app-cards
