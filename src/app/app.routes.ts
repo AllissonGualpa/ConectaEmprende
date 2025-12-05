@@ -17,6 +17,7 @@ import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimie
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
 import { LuciComponent } from './modules/landing/luci/luci.component';
+import { AdminAutoevaluacionComponent } from './modules/admin/admin-autoevaluacion/admin-autoevaluacion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -46,5 +47,6 @@ export const routes: Routes = [
   { path: 'admin/blog', component: AdminBlogComponent },
   { path: 'admin/blog/create', component: BlogCreateComponent },
   { path: 'admin/blog/edit/:id', component: BlogCreateComponent },
-  { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent }
+  { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent },
+  { path: 'admin/autoevaluacion', component: AdminAutoevaluacionComponent }
 ];

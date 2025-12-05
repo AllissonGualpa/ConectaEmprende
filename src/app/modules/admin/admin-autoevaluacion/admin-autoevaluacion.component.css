@@ -1,0 +1,6 @@
+table th,
+table td {
+  transition: background-color 0.2s ease;
+}
+
+/* ...puedes agregar estilos específicos si los necesitas... */
