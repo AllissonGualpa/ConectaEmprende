@@ -23,21 +23,21 @@ export class NavbarAdminComponent {
       enlace: '/admin',
       icono: 'analytics' as const
     },
-    {
+    /*{
       nombre: 'Solicitudes',
       enlace: '/admin/solicitudes',
       icono: 'solicitudes' as const
-    },
+    },*/
     {
       nombre: 'Emprendimientos',
       enlace: '/admin/emprendimientos',
       icono: 'emprendimientos' as const
     },
-    /*{
+    {
       nombre: 'Autoevaluación',
       enlace: '/admin/autoevaluacion',
       icono: 'autoevaluacion' as const
-    },*/
+    },
     {
       nombre: 'Eventos',
       enlace: '/admin/evento',
