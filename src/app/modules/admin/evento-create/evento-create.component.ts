@@ -143,20 +143,7 @@ export class EventoCreateComponent {
 
     const tipoEvento = (f.tipo || 'PRESENCIAL').toString().toLowerCase();
 
-    const imagenFile: File | null = this.form.get('imagen')?.value || null;
-    const imagenStr = imagenFile ? imagenFile.name : null;
-
-    const body: any = {
-      titulo: f.nombre,
-      descripcion: f.descripcion || '',
-      fechaEvento: fechaEvento,
-      lugar: f.direccion || 'Online',
-      tipoEvento: tipoEvento,
-      activo: true,
-      linkInscripcion: f.link || '',
-      imagen: imagenStr
-    };
-
+    // Obtener token
     let token = this.form.value.token;
     if (!token) {
       token =
@@ -166,12 +153,48 @@ export class EventoCreateComponent {
         '';
     }
 
+    // Construir FormData si hay imagen binaria, sino JSON
+    let isFormData = false;
+    let bodyToSend: any;
+
+    const imagenData = this.form.get('imagen')?.value;
+    if (imagenData && imagenData.binary) {
+      // Enviar como FormData con binario
+      isFormData = true;
+      const formData = new FormData();
+      formData.append('titulo', f.nombre);
+      formData.append('descripcion', f.descripcion || '');
+      formData.append('fechaEvento', fechaEvento || '');
+      formData.append('lugar', f.direccion || 'Online');
+      formData.append('tipoEvento', tipoEvento);
+      formData.append('activo', 'true');
+      formData.append('linkInscripcion', f.link || '');
+      
+      // Agregar imagen binaria como Blob
+      const blob = new Blob([imagenData.binary], { type: imagenData.type });
+      formData.append('imagen', blob, imagenData.name);
+      
+      bodyToSend = formData;
+    } else {
+      // Enviar como JSON (sin imagen)
+      bodyToSend = {
+        titulo: f.nombre,
+        descripcion: f.descripcion || '',
+        fechaEvento: fechaEvento,
+        lugar: f.direccion || 'Online',
+        tipoEvento: tipoEvento,
+        activo: true,
+        linkInscripcion: f.link || '',
+        imagen: imagenData?.name || null
+      };
+    }
+
     if (this.dialogData && this.dialogData.mode === 'edit') {
       const idEvento = this.dialogData.event?.id || this.dialogData.event?.idEvento;
       const idEmprendimiento = this.dialogData.event?.idEmprendimiento || 4;
 
       this.eventoService
-        .editEvent(idEvento, body, { token: token || undefined })
+        .editEvent(idEvento, bodyToSend, { token: token || undefined, isFormData: isFormData })
         .subscribe({
           next: (res: any) => {
             this.loading = false;
@@ -208,9 +231,10 @@ export class EventoCreateComponent {
     }
 
     this.eventoService
-      .createEvent(body, {
+      .createEvent(bodyToSend, {
         idEmprendimiento: 4,
-        token: token || undefined
+        token: token || undefined,
+        isFormData: isFormData
       })
       .subscribe({
         next: (res: any) => {
@@ -232,7 +256,23 @@ export class EventoCreateComponent {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
-    this.form.patchValue({ imagen: file });
-    this.cdr.detectChanges();
+    
+    // Convertir a binario usando FileReader
+    const reader = new FileReader();
+    reader.onload = () => {
+      // El resultado es un ArrayBuffer; lo convertimos a Uint8Array
+      const arrayBuffer = reader.result as ArrayBuffer;
+      const binaryData = new Uint8Array(arrayBuffer);
+      this.form.patchValue({ 
+        imagen: { 
+          file: file,
+          binary: binaryData,
+          name: file.name,
+          type: file.type
+        } 
+      });
+      this.cdr.detectChanges();
+    };
+    reader.readAsArrayBuffer(file);
   }
 }
