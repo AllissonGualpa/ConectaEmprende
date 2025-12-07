@@ -1,0 +1,83 @@
+/* Avatar genérico para enlace de perfil en desktop */
+.avatar-circle {
+	width: 32px;
+	height: 32px;
+	border-radius: 9999px;
+	background: linear-gradient(135deg, #ED6C1C 0%, #f97316 100%);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-weight: 700;
+	font-size: 0.85rem;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.avatar-button {
+	padding: 4px;
+	border: none;
+	background: transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 9999px;
+	transition: background-color 0.2s ease;
+	cursor: pointer;
+}
+
+.avatar-button:hover {
+	background-color: #fff6eb;
+}
+
+.avatar-menu {
+	position: absolute;
+	right: 0;
+	margin-top: 8px;
+	min-width: 160px;
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+	padding: 8px 0;
+	z-index: 20;
+}
+
+.menu-item {
+	width: 100%;
+	text-align: left;
+	padding: 10px 14px;
+	font-size: 0.9rem;
+	color: #374151;
+	text-decoration: none;
+	background: transparent;
+	border: none;
+	display: block;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.menu-item:hover {
+	background-color: #fff3e7;
+	color: #c2410c;
+}
+
+.menu-item-danger {
+	color: #b91c1c;
+}
+
+.menu-item-danger:hover {
+	background-color: #fef2f2;
+	color: #991b1b;
+}
+
+/* Accesibilidad: texto solo para lectores de pantalla */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

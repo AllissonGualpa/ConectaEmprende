@@ -24,6 +24,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   mobileOpen = signal(false);
   isAuthenticated = false;
   userRole: string = '';
+  avatarInitial: string = 'A';
+  avatarMenuOpen = false;
   private authSubscription!: Subscription;
 
   constructor(private authService: AuthService, private router: Router) {}
@@ -48,6 +50,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   getUserRole(): void {
     const perfil = this.authService.getPerfilLocal();
     this.userRole = perfil?.nombreRol || perfil?.idRol || '';
+    const nombre = perfil?.nombre || perfil?.nombres || perfil?.name || perfil?.usuario || '';
+    const initial = nombre?.trim()?.charAt(0)?.toUpperCase();
+    this.avatarInitial = initial || 'P';
   }
 
   isAdmin(): boolean {
@@ -62,9 +67,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.mobileOpen.set(false);
   }
 
+  toggleAvatarMenu(): void {
+    this.avatarMenuOpen = !this.avatarMenuOpen;
+  }
+
+  closeAvatarMenu(): void {
+    this.avatarMenuOpen = false;
+  }
+
   onLogout(): void {
     this.authService.logout();
     this.closeMobile();
+    this.closeAvatarMenu();
     this.router.navigate(['/inicio']);
   }
 

@@ -40,40 +40,37 @@
               Blog
             </a>
 
-            <!-- Mostrar Perfil solo si está autenticado -->
-            @if (isAuthenticated) {
-              @if (!isAdmin()) {
-                <a routerLink="/emprendedor/gestion" routerLinkActive="!text-orange-500 !font-medium"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
-                  Perfil
-                </a>
-              }
-              @if (isAdmin()) {
-                <a routerLink="/admin" routerLinkActive="!text-orange-500 !font-medium"
-                  [routerLinkActiveOptions]="{ exact: true }"
-                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
-                  Panel administrador
-                </a>
-              }
-            }
+            <!-- Opciones autenticado en Desktop movidas al menú del avatar en la derecha -->
           </div>
         </nav>
 
-        <!-- Desktop Auth Buttons -->
+        <!-- Desktop Auth / Avatar -->
         <div class="hidden md:flex items-center space-x-4">
           @if (!isAuthenticated) {
-          <!-- Botón Login cuando NO está autenticado -->
           <a routerLink="/login" mat-raised-button
             class="!bg-orange-500 hover:!bg-orange-600 !text-white !px-6 !py-2 !rounded-md !text-sm !font-medium !shadow-sm hover:!shadow-md !transition-all no-underline">
             Inicia Sesión
           </a>
           } @else {
-          <!-- Botón Logout cuando SÍ está autenticado -->
-          <button mat-stroked-button (click)="onLogout()"
-            class="!border-orange-500 !text-orange-500 hover:!bg-orange-50 !px-6 !py-2 !rounded-md !text-sm !font-medium !transition-all">
-            Cerrar Sesión
-          </button>
+          <div class="relative">
+            <button type="button" (click)="toggleAvatarMenu()" class="avatar-button" aria-haspopup="true"
+              [attr.aria-expanded]="avatarMenuOpen">
+              <span class="sr-only">Abrir menú de usuario</span>
+              <span class="avatar-circle">{{ avatarInitial }}</span>
+            </button>
+
+            @if (avatarMenuOpen) {
+            <div class="avatar-menu">
+              @if (!isAdmin()) {
+              <a routerLink="/emprendedor/gestion" (click)="closeAvatarMenu()" class="menu-item">Perfil</a>
+              }
+              @if (isAdmin()) {
+              <a routerLink="/admin" (click)="closeAvatarMenu()" class="menu-item">Panel administrador</a>
+              }
+              <button type="button" (click)="onLogout()" class="menu-item menu-item-danger">Cerrar sesión</button>
+            </div>
+            }
+          </div>
           }
         </div>
 
