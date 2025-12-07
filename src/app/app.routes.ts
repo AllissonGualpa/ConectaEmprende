@@ -16,7 +16,6 @@ import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.
 import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimientos/admin-emprendimientos.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
-import { LuciComponent } from './modules/landing/luci/luci.component';
 import { AdminAutoevaluacionComponent } from './modules/admin/admin-autoevaluacion/admin-autoevaluacion.component';
 import { RoleGuard } from './core/services/role.guard';
 import { AuthGuard } from './core/services/auth.guard';
