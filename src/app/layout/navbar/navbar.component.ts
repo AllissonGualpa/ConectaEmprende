@@ -1,7 +1,7 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../modules/auth/auth.service';
@@ -26,7 +26,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   userRole: string = '';
   private authSubscription!: Subscription;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     // Suscribirse a los cambios de autenticación
@@ -65,8 +65,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   onLogout(): void {
     this.authService.logout();
     this.closeMobile();
-    // Opcional: redirigir al inicio después de logout
-    // this.router.navigate(['/inicio']);
+    this.router.navigate(['/inicio']);
   }
 
   ngOnDestroy(): void {

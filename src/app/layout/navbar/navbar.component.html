@@ -42,18 +42,20 @@
 
             <!-- Mostrar Perfil solo si está autenticado -->
             @if (isAuthenticated) {
-            <a routerLink="/emprendedor/gestion" routerLinkActive="!text-orange-500 !font-medium"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
-              Perfil
-            </a>
-            @if (isAdmin()) {
-            <a routerLink="/admin" routerLinkActive="!text-orange-500 !font-medium"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
-              Panel administrador
-            </a>
-            }
+              @if (!isAdmin()) {
+                <a routerLink="/emprendedor/gestion" routerLinkActive="!text-orange-500 !font-medium"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
+                  Perfil
+                </a>
+              }
+              @if (isAdmin()) {
+                <a routerLink="/admin" routerLinkActive="!text-orange-500 !font-medium"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-md text-sm transition-all no-underline">
+                  Panel administrador
+                </a>
+              }
             }
           </div>
         </nav>
@@ -97,14 +99,14 @@
           class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
           Inicio
         </a>
-        
+
         <!-- Enlace a Roadmap en mobile -->
         <a routerLink="/emprendedor/roadmap" routerLinkActive="!text-orange-500 !bg-orange-50"
           [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()"
           class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
           Roadmap
         </a>
-        
+
         <a routerLink="/emprendimientos" routerLinkActive="!text-orange-500 !bg-orange-50"
           [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()"
           class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
@@ -128,11 +130,20 @@
 
         <!-- Mostrar Perfil solo si está autenticado -->
         @if (isAuthenticated) {
-        <a routerLink="/emprendedor/gestion" routerLinkActive="!text-orange-500 !bg-orange-50"
-          [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()"
-          class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
-          Perfil
-        </a>
+          @if (!isAdmin()) {
+            <a routerLink="/emprendedor/gestion" routerLinkActive="!text-orange-500 !bg-orange-50"
+              [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()"
+              class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
+              Perfil
+            </a>
+          }
+          @if (isAdmin()) {
+            <a routerLink="/admin" routerLinkActive="!text-orange-500 !bg-orange-50"
+              [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()"
+              class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-md text-sm transition-all no-underline block">
+              Panel administrador
+            </a>
+          }
         }
 
         <!-- Botones de autenticación móviles -->
