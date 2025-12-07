@@ -18,13 +18,17 @@ import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/ge
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
 import { LuciComponent } from './modules/landing/luci/luci.component';
 import { AdminAutoevaluacionComponent } from './modules/admin/admin-autoevaluacion/admin-autoevaluacion.component';
+import { RoleGuard } from './core/services/role.guard';
+import { AuthGuard } from './core/services/auth.guard';
+import { AccesoDenegadoComponent } from './shared/components/acceso-denegado/acceso-denegado.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+  { path: 'acceso-denegado', component: AccesoDenegadoComponent },
 
   // Autenticación
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent, canActivate: [AuthGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [AuthGuard] },
 
   // Landing pública
   { path: 'inicio', component: InicioComponent },
@@ -37,16 +41,15 @@ export const routes: Routes = [
   { path: 'eventos/:id', component: EventoDetailComponent },
 
   // Emprendedor
-  { path: 'emprendedor/gestion', component: GestionEmprendedor },
-  { path: 'emprendedor/roadmap', component: RoadmapComponent },
-  { path: 'emprendedor/luci', component: LuciComponent },
+  { path: 'emprendedor/gestion', component: GestionEmprendedor, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
+  { path: 'emprendedor/roadmap', component: RoadmapComponent, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
 
   // Administración
-  { path: 'admin', component: AdminDashboardComponent },
-  { path: 'admin/evento', component: AdminEventoComponent },
-  { path: 'admin/blog', component: AdminBlogComponent },
-  { path: 'admin/blog/create', component: BlogCreateComponent },
-  { path: 'admin/blog/edit/:id', component: BlogCreateComponent },
-  { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent },
-  { path: 'admin/autoevaluacion', component: AdminAutoevaluacionComponent }
+  { path: 'admin', component: AdminDashboardComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/evento', component: AdminEventoComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/blog', component: AdminBlogComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/blog/create', component: BlogCreateComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/blog/edit/:id', component: BlogCreateComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/autoevaluacion', component: AdminAutoevaluacionComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } }
 ];

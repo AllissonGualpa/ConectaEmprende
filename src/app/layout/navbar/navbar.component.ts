@@ -23,6 +23,7 @@ import { Subscription } from 'rxjs';
 export class NavbarComponent implements OnInit, OnDestroy {
   mobileOpen = signal(false);
   isAuthenticated = false;
+  userRole: string = '';
   private authSubscription!: Subscription;
 
   constructor(private authService: AuthService) {}
@@ -32,8 +33,25 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isAuthenticated$.subscribe(
       (isAuth) => {
         this.isAuthenticated = isAuth;
+        // Obtener el rol cuando hay cambios de autenticación
+        if (isAuth) {
+          this.getUserRole();
+        } else {
+          this.userRole = '';
+        }
       }
     );
+    // Obtener el rol inicial
+    this.getUserRole();
+  }
+
+  getUserRole(): void {
+    const perfil = this.authService.getPerfilLocal();
+    this.userRole = perfil?.nombreRol || perfil?.idRol || '';
+  }
+
+  isAdmin(): boolean {
+    return this.userRole === 'ADMINISTRADOR';
   }
 
   toggleMobile(): void {
