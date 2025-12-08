@@ -19,12 +19,10 @@ import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-co
 interface Evento {
   id: string;
   organizador: string;
-  //organizadorIcono: string;
   nombre: string;
   fecha: string;
   hora: string;
   estado: 'Activo' | 'En proceso' | 'Inactivo' | string;
-  // additional fields from API
   descripcion?: string;
   horaInicio?: string;
   horaFin?: string;
@@ -70,7 +68,6 @@ export class AdminEventoComponent {
     this.loadEventosFromServer();
   }
 
-  // indicador global de carga (usado por el overlay en el HTML)
   loading = false;
 
   searchText: string = '';
@@ -78,11 +75,15 @@ export class AdminEventoComponent {
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
   filteredEventos: Evento[] = [];
-  // pagination (server-side aware)
-  pageSize: number = 15; // default page size for admin API
-  pageIndex: number = 0; // current page index (0-based)
-  pagedEventos: Evento[] = []; // slice of filteredEventos shown in table
-  totalCount: number = 0; // total elements reported by server (if available)
+
+  pageSize: number = 5;
+  currentPage: number = 0;
+  totalElements: number = 0;
+  totalPages: number = 0;
+  pages: number[] = [];
+  startIndex: number = 0;
+  endIndex: number = 0;
+  pagedEventos: Evento[] = [];
 
   displayedColumns: string[] = [
     'id',
@@ -95,30 +96,10 @@ export class AdminEventoComponent {
 
   eventos: Evento[] = [];
 
-  eventoAEliminar: Evento | null = null; // Variable para almacenar el evento a eliminar
-
-  constructorInit() {
-    // initialize filtered list
-    this.filteredEventos = this.eventos.slice();
-  }
+  eventoAEliminar: Evento | null = null;
 
   private loadEventosFromServer(): void {
-    this.loading = true; // empezar loading
-
-    // call the new admin paginated endpoint. Pass tipoEvento and date range if provided.
-    const tipoEventoParam = (this.estadoSeleccionado || '')
-      .toLowerCase()
-      .includes('pres')
-      ? 'presencial'
-      : (this.estadoSeleccionado || '').toLowerCase().includes('onl')
-      ? 'online'
-      : undefined;
-    const fechaInicioISO = this.fechaInicio
-      ? new Date(this.startOfDay(this.fechaInicio)).toISOString()
-      : undefined;
-    const fechaFinISO = this.fechaFin
-      ? new Date(this.endOfDay(this.fechaFin)).toISOString()
-      : undefined;
+    this.loading = true;
 
     const token =
       localStorage.getItem('token') ||
@@ -128,17 +109,14 @@ export class AdminEventoComponent {
 
     this.eventoService
       .getAdminEvents({
-        tipoEvento: tipoEventoParam,
-        fechaInicio: fechaInicioISO,
-        fechaFin: fechaFinISO,
-        page: this.pageIndex,
-        size: this.pageSize,
+        tipoEvento: undefined,
+        fechaInicio: undefined,
+        fechaFin: undefined,
         token,
       })
       .subscribe({
         next: (res: any) => {
           try {
-            // Support paginated shapes: { content: [], totalElements, number, size } or legacy shapes
             let items: any[] = [];
             if (Array.isArray(res)) items = res;
             else if (res?.content && Array.isArray(res.content))
@@ -148,12 +126,10 @@ export class AdminEventoComponent {
               items = res.result;
             else if (res?.items && Array.isArray(res.items)) items = res.items;
 
-            // map to local Evento shape
             this.eventos = (items || []).map((it: any) => {
               const fechaEvento = it.fechaEvento
                 ? String(it.fechaEvento)
                 : it.fecha || '';
-              // try to extract time part if present
               let horaStr = '';
               try {
                 if (fechaEvento.includes('T')) {
@@ -165,11 +141,10 @@ export class AdminEventoComponent {
                 } else if (it.horaInicio) {
                   horaStr = it.horaInicio;
                 }
-              } catch (e) {
+              } catch {
                 horaStr = it.hora || '';
               }
 
-              // derive and normalize tipoEvento: prefer explicit field, otherwise derive from direccion/lugar
               let rawTipo = it.tipoEvento || it.tipo || '';
               const lugarStr = String(it.direccion || it.lugar || '');
               if (!rawTipo && lugarStr.toLowerCase().includes('online'))
@@ -199,13 +174,11 @@ export class AdminEventoComponent {
                   it.organizador ||
                   it.usuario ||
                   'Admin',
-                organizadorIcono: it.organizadorIcono || 'person',
                 nombre: it.titulo || it.nombre || 'Evento',
                 fecha: fechaEvento.includes('T')
                   ? fechaEvento.split('T')[0]
                   : fechaEvento,
                 hora: horaStr,
-                // derive normalized estado: if activo is explicitly false prefer 'Cancelado', otherwise consider raw estado
                 estado: ((): string => {
                   if (typeof it.activo === 'boolean' && it.activo === false)
                     return 'Cancelado';
@@ -219,10 +192,8 @@ export class AdminEventoComponent {
                     )
                       return 'Terminado';
                     if (r.includes('cancel')) return 'Cancelado';
-                    // default when explicit but unknown -> Programado
                     return 'Programado';
                   }
-                  // fallback to activo boolean (true => Programado)
                   return it.activo === true ? 'Programado' : 'Cancelado';
                 })(),
                 descripcion: it.descripcion || '',
@@ -244,33 +215,27 @@ export class AdminEventoComponent {
                 fechaModificacion: it.fechaModificacion || undefined,
               } as Evento;
             });
-
-            // server reported total items
-            if (typeof res?.totalElements === 'number')
-              this.totalCount = Number(res.totalElements);
-            else if (typeof res?.total === 'number')
-              this.totalCount = Number(res.total);
-            else this.totalCount = this.eventos.length;
           } catch (e) {
             console.warn('Error mapeando eventos', e);
           }
+
           this.applyFilters();
-          this.loading = false; // terminar loading
+          this.loading = false;
         },
         error: (err: any) => {
           console.warn(
-            'No se pudieron cargar eventos desde el servidor, usando datos locales.',
+            'No se pudieron cargar eventos desde el servidor.',
             err
           );
+          this.eventos = [];
           this.applyFilters();
-          this.loading = false; // terminar loading también en error
+          this.loading = false;
         },
       });
   }
 
   private parseEventDate(dateStr: string): Date | null {
     if (!dateStr) return null;
-    // try dd/MM/yyyy
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
@@ -309,7 +274,6 @@ export class AdminEventoComponent {
     const estadoSel = (this.estadoSeleccionado || '').toLowerCase();
 
     this.filteredEventos = this.eventos.filter((e) => {
-      // text search against nombre and organizador
       if (hasQ) {
         const hay =
           (e.nombre || '').toLowerCase().includes(q) ||
@@ -317,13 +281,11 @@ export class AdminEventoComponent {
         if (!hay) return false;
       }
 
-      // estado filter
       if (estadoSel) {
         const est = (e.estado || '').toLowerCase();
         if (!est.includes(estadoSel)) return false;
       }
 
-      // date range filter
       if (hasFechaInicio || hasFechaFin) {
         const evtDate = this.parseEventDate(e.fecha);
         if (!evtDate) return false;
@@ -335,46 +297,63 @@ export class AdminEventoComponent {
 
       return true;
     });
-    //paginacion (revisar)
-    // reset to first page on new filter and compute paged results
-    this.pageIndex = 0;
-    this.updatePagedEventos();
-  }
-  private updatePagedEventos(): void {
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedEventos = (this.filteredEventos || []).slice(start, end);
+
+    this.currentPage = 0;
+    this.computePaginationInfo();
   }
 
-  get totalPages(): number {
-    return Math.max(
-      1,
-      Math.ceil((this.filteredEventos?.length || 0) / this.pageSize)
-    );
-  }
+  private computePaginationInfo(): void {
+    this.totalElements = this.filteredEventos.length;
+    this.currentPage = Number(this.currentPage) || 0;
+    this.pageSize = 5;
 
-  goToPage(index: number): void {
-    if (index < 0) index = 0;
-    if (index >= this.totalPages) index = this.totalPages - 1;
-    this.pageIndex = index;
-    this.updatePagedEventos();
+    this.totalPages =
+      this.totalElements === 0
+        ? 0
+        : Math.ceil(this.totalElements / this.pageSize);
+
+    if (this.currentPage >= this.totalPages && this.totalPages > 0) {
+      this.currentPage = this.totalPages - 1;
+    }
+    if (this.currentPage < 0) this.currentPage = 0;
+
+    this.pages = Array.from({ length: Math.max(1, this.totalPages) }, (_, i) => i);
+
+    if (this.totalElements === 0) {
+      this.startIndex = 0;
+      this.endIndex = 0;
+      this.pagedEventos = [];
+    } else {
+      this.startIndex = this.currentPage * this.pageSize + 1;
+      this.endIndex = Math.min(
+        (this.currentPage + 1) * this.pageSize,
+        this.totalElements
+      );
+      const start = this.currentPage * this.pageSize;
+      const end = start + this.pageSize;
+      this.pagedEventos = this.filteredEventos.slice(start, end);
+    }
   }
 
   nextPage(): void {
-    if (this.pageIndex < this.totalPages - 1) {
-      this.pageIndex++;
-      this.updatePagedEventos();
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.computePaginationInfo();
     }
   }
 
   prevPage(): void {
-    if (this.pageIndex > 0) {
-      this.pageIndex--;
-      this.updatePagedEventos();
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.computePaginationInfo();
     }
   }
 
-  //limpiar filtro
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.computePaginationInfo();
+  }
 
   clearFilters(): void {
     this.searchText = '';
@@ -406,24 +385,21 @@ export class AdminEventoComponent {
     this.abrirEliminarEvento(evento);
   }
 
-  // Método para abrir el diálogo de eliminación
   abrirEliminarEvento(evento: Evento): void {
-    this.eventoAEliminar = evento; // Asigna el evento a la variable
+    this.eventoAEliminar = evento;
   }
 
-  // Método para cerrar el diálogo de eliminación
   closeDeleteDialog(): void {
-    this.eventoAEliminar = null; // Limpia la variable
+    this.eventoAEliminar = null;
   }
 
-  // Método para confirmar la eliminación
   confirmDelete(evento: Evento): void {
     const token = localStorage.getItem('token') || undefined;
     const idToSend = String(evento.id).startsWith('#')
       ? evento.id.slice(1)
       : evento.id;
 
-    this.loading = true; // mostrar overlay mientras llama a la API
+    this.loading = true;
 
     if (evento.activo == true) {
       this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
@@ -435,11 +411,11 @@ export class AdminEventoComponent {
             data: {
               subject: 'Evento',
               title: 'Evento cancelado',
-              type: 'success', // Mensaje de éxito
+              type: 'success',
             },
           });
-          this.closeDeleteDialog(); // Cierra el diálogo
-          this.loading = false; // terminar loading
+          this.closeDeleteDialog();
+          this.loading = false;
         },
         error: (err) => {
           console.warn('Error inactivando evento', err);
@@ -450,11 +426,11 @@ export class AdminEventoComponent {
               title: 'Error al cancelar el evento',
               subtitle:
                 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
-              type: 'error', // Mensaje de error
+              type: 'error',
             },
           });
-          this.closeDeleteDialog(); // Cierra el diálogo incluso si hay un error
-          this.loading = false; // terminar loading
+          this.closeDeleteDialog();
+          this.loading = false;
         },
       });
     } else {
@@ -467,11 +443,11 @@ export class AdminEventoComponent {
             data: {
               subject: 'Evento',
               title: 'Evento activado',
-              type: 'success', // Mensaje de éxito
+              type: 'success',
             },
           });
-          this.closeDeleteDialog(); // Cierra el diálogo
-          this.loading = false; // terminar loading
+          this.closeDeleteDialog();
+          this.loading = false;
         },
         error: (err) => {
           console.warn('Error activando evento', err);
@@ -482,11 +458,11 @@ export class AdminEventoComponent {
               title: 'Error al cancelar el evento',
               subtitle:
                 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
-              type: 'error', // Mensaje de error
+              type: 'error',
             },
           });
-          this.closeDeleteDialog(); // Cierra el diálogo incluso si hay un error
-          this.loading = false; // terminar loading
+          this.closeDeleteDialog();
+          this.loading = false;
         },
       });
     }
