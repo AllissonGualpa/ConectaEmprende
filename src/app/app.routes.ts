@@ -20,6 +20,7 @@ import { AdminAutoevaluacionComponent } from './modules/admin/admin-autoevaluaci
 import { RoleGuard } from './core/services/role.guard';
 import { AuthGuard } from './core/services/auth.guard';
 import { AccesoDenegadoComponent } from './shared/components/acceso-denegado/acceso-denegado.component';
+import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/admin-solicitudes.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -50,5 +51,6 @@ export const routes: Routes = [
   { path: 'admin/blog/create', component: BlogCreateComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'admin/blog/edit/:id', component: BlogCreateComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
-  { path: 'admin/autoevaluacion', component: AdminAutoevaluacionComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } }
+  { path: 'admin/solicitudes', component: AdminSolicitudesComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
+  { path: 'admin/autoevaluacion', component: AdminEmprendimientosComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } }
 ];

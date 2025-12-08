@@ -23,11 +23,11 @@ export class NavbarAdminComponent {
       enlace: '/admin',
       icono: 'analytics' as const
     },
-    /*{
+    {
       nombre: 'Solicitudes',
       enlace: '/admin/solicitudes',
       icono: 'solicitudes' as const
-    },*/
+    },
     {
       nombre: 'Emprendimientos',
       enlace: '/admin/emprendimientos',
