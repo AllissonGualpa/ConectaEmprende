@@ -65,6 +65,9 @@ export class AdminSolicitudesComponent implements OnInit {
 
   Math = Math;
 
+  // 0: Pendientes, 1: En espera, 2: Pendientes de Actualizar
+  selectedTab = 0;
+
   constructor(
     private solicitudService: SolicitudService,
     private router: Router,
@@ -187,6 +190,24 @@ export class AdminSolicitudesComponent implements OnInit {
   onSearch(event: any) {
     this.searchTerm = (event?.target?.value || '').toLowerCase();
     this.applyFilters();
+  }
+
+  // Tabs
+  setTab(index: number) {
+    this.selectedTab = index;
+    // aquí más adelante puedes cambiar endpoint según el tab seleccionado
+    // por ahora solo recargamos
+    this.currentPage = 0;
+    this.loadSolicitudes();
+  }
+
+  get selectedTabLabel(): string {
+    switch (this.selectedTab) {
+      case 0: return 'Pendientes';
+      case 1: return 'En espera';
+      case 2: return 'Pendientes de Actualizar';
+      default: return '';
+    }
   }
 
   clearFilters() {
