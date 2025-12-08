@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { BlogService } from '../blog.service';
 import { Tag, AdminBlog } from '../blog.types';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-blog',
@@ -28,10 +29,10 @@ import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-co
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
   ],
   templateUrl: './admin-blog.component.html',
-  styleUrls: ['./admin-blog.component.css']
+  styleUrls: ['./admin-blog.component.css'],
 })
 export class AdminBlogComponent implements OnInit {
   blogs: AdminBlog[] = [];
@@ -63,8 +64,9 @@ export class AdminBlogComponent implements OnInit {
   constructor(
     private blogService: BlogService,
     private router: Router,
-    private dialog: MatDialog
-  ) { }
+    private dialog: MatDialog,
+    private authServices: AuthService
+  ) {}
 
   ngOnInit() {
     this.loadTags();
@@ -81,7 +83,7 @@ export class AdminBlogComponent implements OnInit {
       error: (err) => {
         console.error('Error al cargar tags:', err);
         this.loading = false; // Desactivar loading en caso de error
-      }
+      },
     });
   }
 
@@ -95,65 +97,70 @@ export class AdminBlogComponent implements OnInit {
           subject: 'Autenticación',
           title: 'No estás autenticado',
           subtitle: 'Por favor, inicia sesión para continuar.',
-          type: 'error'
-        }
+          type: 'error',
+        },
       });
       this.router.navigate(['/login']);
       this.loading = false;
       return;
     }
 
-    this.blogService.getBlogs({
-      page: this.currentPage,
-      size: this.pageSize,
-      tag: this.selectedTag,
-      estado: this.selectedEstado,
-      fechaInicio: this.fechaInicio,
-      fechaFin: this.fechaFin
-    }).subscribe({
-      next: (response) => {
+    this.blogService
+      .getBlogs({
+        page: this.currentPage,
+        size: this.pageSize,
+        tag: this.selectedTag,
+        estado: this.selectedEstado,
+        fechaInicio: this.fechaInicio,
+        fechaFin: this.fechaFin,
+      })
+      .subscribe({
+        next: (response) => {
+          // Detecta si la respuesta tiene paginación
+          if (
+            response &&
+            typeof response === 'object' &&
+            'pageable' in response
+          ) {
+            const r = response as any;
+            this.blogs = r.content || [];
+            this.filteredBlogs = [...this.blogs];
+            this.totalElements = Number(r.pageable.length) || 0;
+            this.totalPages = Number(r.pageable.lastPage) + 1 || 1;
+            this.currentPage = Number(r.pageable.page) || 0;
+            this.pageSize = Number(r.pageable.size) || this.pageSize;
+          }
+          // Si el backend devuelve un array plano
+          else if (Array.isArray(response)) {
+            this.blogs = response;
+            this.filteredBlogs = [...response];
+            this.totalElements = response.length;
+            this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+          }
 
-        // Detecta si la respuesta tiene paginación
-        if (response && typeof response === 'object' && 'pageable' in response) {
-          const r = response as any;
-          this.blogs = r.content || [];
-          this.filteredBlogs = [...this.blogs];
-          this.totalElements = Number(r.pageable.length) || 0;
-          this.totalPages = Number(r.pageable.lastPage) + 1 || 1;
-          this.currentPage = Number(r.pageable.page) || 0;
-          this.pageSize = Number(r.pageable.size) || this.pageSize;
-        }
-        // Si el backend devuelve un array plano
-        else if (Array.isArray(response)) {
-          this.blogs = response;
-          this.filteredBlogs = [...response];
-          this.totalElements = response.length;
-          this.totalPages = Math.ceil(this.totalElements / this.pageSize);
-        }
+          this.applyFilters();
+          this.computePaginationInfo();
+          this.loading = false;
+        },
 
-        this.applyFilters();
-        this.computePaginationInfo();
-        this.loading = false;
-      },
-
-      error: (error) => {
-        console.error('Error al cargar blogs:', error);
-        this.loading = false; // Desactivar loading en caso de error
-        if (error.status === 401) {
-          this.dialog.open(MensajeConfirmacionComponent, {
-            width: '420px',
-            data: {
-              subject: 'Sesión expirada',
-              title: 'Tu sesión ha expirado',
-              subtitle: 'Por favor, inicia sesión nuevamente.',
-              type: 'error'
-            }
-          });
-          this.router.navigate(['/login']);
-        }
-      }
-    });
-
+        error: (error) => {
+          console.error('Error al cargar blogs:', error);
+          this.loading = false; // Desactivar loading en caso de error
+          if (error.status === 401) {
+            this.dialog.open(MensajeConfirmacionComponent, {
+              width: '420px',
+              data: {
+                subject: 'Sesión expirada',
+                title: 'Tu sesión ha expirado',
+                subtitle: 'Por favor, inicia sesión nuevamente.',
+                type: 'error',
+              },
+            });
+            this.authServices.logout();
+            this.router.navigate(['/login']);
+          }
+        },
+      });
   }
 
   applyFilters() {
@@ -161,11 +168,12 @@ export class AdminBlogComponent implements OnInit {
 
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(blog =>
-        (blog.titulo?.toLowerCase() || '').includes(searchLower) ||
-        (blog.descripcionCorta?.toLowerCase() || '').includes(searchLower) ||
-        (blog.estado?.toLowerCase() || '').includes(searchLower) ||
-        (blog.nombreUsuario?.toLowerCase() || '').includes(searchLower)
+      filtered = filtered.filter(
+        (blog) =>
+          (blog.titulo?.toLowerCase() || '').includes(searchLower) ||
+          (blog.descripcionCorta?.toLowerCase() || '').includes(searchLower) ||
+          (blog.estado?.toLowerCase() || '').includes(searchLower) ||
+          (blog.nombreUsuario?.toLowerCase() || '').includes(searchLower)
       );
     }
 
@@ -185,7 +193,10 @@ export class AdminBlogComponent implements OnInit {
     }
 
     // Construir array de páginas para *ngFor
-    this.pages = Array.from({ length: Math.max(1, this.totalPages) }, (_, i) => i);
+    this.pages = Array.from(
+      { length: Math.max(1, this.totalPages) },
+      (_, i) => i
+    );
 
     // startIndex y endIndex para mostrar "Mostrando X a Y de Z"
     if (this.totalElements === 0) {
@@ -193,14 +204,17 @@ export class AdminBlogComponent implements OnInit {
       this.endIndex = 0;
     } else {
       this.startIndex = this.currentPage * this.pageSize + 1;
-      this.endIndex = Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
+      this.endIndex = Math.min(
+        (this.currentPage + 1) * this.pageSize,
+        this.totalElements
+      );
     }
 
     console.log('Info de paginación calculada:', {
       pages: this.pages,
       startIndex: this.startIndex,
       endIndex: this.endIndex,
-      totalPages: this.totalPages
+      totalPages: this.totalPages,
     });
   }
 
@@ -269,8 +283,8 @@ export class AdminBlogComponent implements OnInit {
           subject: 'Edición de blog',
           title: 'No se pudo editar este artículo',
           subtitle: 'El artículo no tiene un identificador válido.',
-          type: 'error'
-        }
+          type: 'error',
+        },
       });
       return;
     }
@@ -290,11 +304,11 @@ export class AdminBlogComponent implements OnInit {
           blog.estado === 'ARCHIVADO'
             ? 'Esta acción desarchivará el artículo y volverá a estar visible.'
             : 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.',
-        type: 'info'
-      }
+        type: 'info',
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loading = true; // Activar loading antes de la operación
         const userId = 1;
@@ -313,12 +327,12 @@ export class AdminBlogComponent implements OnInit {
                   title: `Blog ${
                     accion === 'archivar' ? 'archivado' : 'desarchivado'
                   } exitosamente`,
-                  type: 'success'
-                }
+                  type: 'success',
+                },
               });
               this.loadBlogs(); // Recargar blogs después de la operación
             },
-            error: err => {
+            error: (err) => {
               console.error(`Error al ${accion} blog:`, err);
               this.dialog.open(MensajeConfirmacionComponent, {
                 width: '420px',
@@ -327,11 +341,11 @@ export class AdminBlogComponent implements OnInit {
                   title: `Error al ${accion} el blog`,
                   subtitle:
                     'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
-                  type: 'error'
-                }
+                  type: 'error',
+                },
               });
               this.loading = false; // Desactivar loading en caso de error
-            }
+            },
           });
       }
     });

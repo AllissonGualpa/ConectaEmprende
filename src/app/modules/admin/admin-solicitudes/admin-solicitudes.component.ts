@@ -13,13 +13,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { SolicitudService } from './solicitud.service';
+import { AuthService } from '../../auth/auth.service';
 
 // Interface ajustada al backend real
 export interface Solicitud {
   id: number;
   estado: string;
   observaciones: string;
-  fechaSolicitud: string;       // o Date si luego haces parse
+  fechaSolicitud: string; // o Date si luego haces parse
   fechaRespuesta: string | null;
   emprendimientoId: number;
   usuarioId: number;
@@ -39,10 +40,10 @@ export interface Solicitud {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
   ],
   templateUrl: './admin-solicitudes.component.html',
-  styleUrls: ['./admin-solicitudes.component.css']
+  styleUrls: ['./admin-solicitudes.component.css'],
 })
 export class AdminSolicitudesComponent implements OnInit {
   solicitudes: Solicitud[] = [];
@@ -71,7 +72,8 @@ export class AdminSolicitudesComponent implements OnInit {
   constructor(
     private solicitudService: SolicitudService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authServices: AuthService
   ) {}
 
   ngOnInit() {
@@ -88,8 +90,8 @@ export class AdminSolicitudesComponent implements OnInit {
           subject: 'Autenticación',
           title: 'No estás autenticado',
           subtitle: 'Por favor, inicia sesión para continuar.',
-          type: 'error'
-        }
+          type: 'error',
+        },
       });
       this.router.navigate(['/login']);
       this.loading = false;
@@ -102,11 +104,15 @@ export class AdminSolicitudesComponent implements OnInit {
         size: this.pageSize,
         estado: this.selectedEstado,
         fechaInicio: this.fechaInicio,
-        fechaFin: this.fechaFin
+        fechaFin: this.fechaFin,
       })
       .subscribe({
         next: (response: any) => {
-          if (response && typeof response === 'object' && 'pageable' in response) {
+          if (
+            response &&
+            typeof response === 'object' &&
+            'pageable' in response
+          ) {
             const r = response as any;
             this.solicitudes = r.content || [];
             this.filteredSolicitudes = [...this.solicitudes];
@@ -135,12 +141,13 @@ export class AdminSolicitudesComponent implements OnInit {
                 subject: 'Sesión expirada',
                 title: 'Tu sesión ha expirado',
                 subtitle: 'Por favor, inicia sesión nuevamente.',
-                type: 'error'
-              }
+                type: 'error',
+              },
             });
+            this.authServices.logout();
             this.router.navigate(['/login']);
           }
-        }
+        },
       });
   }
 
@@ -149,11 +156,16 @@ export class AdminSolicitudesComponent implements OnInit {
 
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((s) =>
-        (s.estado ?? '').toLowerCase().includes(searchLower) ||
-        (s.observaciones ?? '').toLowerCase().includes(searchLower) ||
-        String(s.id ?? '').toLowerCase().includes(searchLower) ||
-        String(s.emprendimientoId ?? '').toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        (s) =>
+          (s.estado ?? '').toLowerCase().includes(searchLower) ||
+          (s.observaciones ?? '').toLowerCase().includes(searchLower) ||
+          String(s.id ?? '')
+            .toLowerCase()
+            .includes(searchLower) ||
+          String(s.emprendimientoId ?? '')
+            .toLowerCase()
+            .includes(searchLower)
       );
     }
 
@@ -170,14 +182,20 @@ export class AdminSolicitudesComponent implements OnInit {
       this.totalPages = Math.ceil(this.totalElements / this.pageSize);
     }
 
-    this.pages = Array.from({ length: Math.max(1, this.totalPages) }, (_, i) => i);
+    this.pages = Array.from(
+      { length: Math.max(1, this.totalPages) },
+      (_, i) => i
+    );
 
     if (this.totalElements === 0) {
       this.startIndex = 0;
       this.endIndex = 0;
     } else {
       this.startIndex = this.currentPage * this.pageSize + 1;
-      this.endIndex = Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
+      this.endIndex = Math.min(
+        (this.currentPage + 1) * this.pageSize,
+        this.totalElements
+      );
     }
   }
 
@@ -203,10 +221,14 @@ export class AdminSolicitudesComponent implements OnInit {
 
   get selectedTabLabel(): string {
     switch (this.selectedTab) {
-      case 0: return 'Pendientes';
-      case 1: return 'En espera';
-      case 2: return 'Pendientes de Actualizar';
-      default: return '';
+      case 0:
+        return 'Pendientes';
+      case 1:
+        return 'En espera';
+      case 2:
+        return 'Pendientes de Actualizar';
+      default:
+        return '';
     }
   }
 
@@ -260,8 +282,8 @@ export class AdminSolicitudesComponent implements OnInit {
           subject: 'Solicitud',
           title: 'No se pudo abrir esta solicitud',
           subtitle: 'La solicitud no tiene un identificador válido.',
-          type: 'error'
-        }
+          type: 'error',
+        },
       });
       return;
     }
@@ -275,13 +297,15 @@ export class AdminSolicitudesComponent implements OnInit {
       width: '420px',
       data: {
         subject: 'Solicitud',
-        title: `¿Confirmas marcar como ${nuevoEstado.toLowerCase()} la solicitud #${solicitud.id}?`,
+        title: `¿Confirmas marcar como ${nuevoEstado.toLowerCase()} la solicitud #${
+          solicitud.id
+        }?`,
         subtitle:
           nuevoEstado === 'APROBADA'
             ? 'Esta acción aprobará la solicitud.'
             : 'Esta acción rechazará la solicitud.',
-        type: 'info'
-      }
+        type: 'info',
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -297,8 +321,8 @@ export class AdminSolicitudesComponent implements OnInit {
                 data: {
                   subject: 'Solicitud',
                   title: `Solicitud ${nuevoEstado.toLowerCase()} exitosamente`,
-                  type: 'success'
-                }
+                  type: 'success',
+                },
               });
               this.loadSolicitudes();
             },
@@ -311,11 +335,11 @@ export class AdminSolicitudesComponent implements OnInit {
                   title: `Error al cambiar el estado de la solicitud`,
                   subtitle:
                     'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
-                  type: 'error'
-                }
+                  type: 'error',
+                },
               });
               this.loading = false;
-            }
+            },
           });
       }
     });

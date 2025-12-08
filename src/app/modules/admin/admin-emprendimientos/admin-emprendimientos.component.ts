@@ -17,6 +17,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule }     from '@angular/material/button';
 import { MatIconModule }       from '@angular/material/icon';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-admin-emprendimientos',
@@ -60,7 +61,8 @@ export class AdminEmprendimientosComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authServices: AuthService
   ) {}
 
   ngOnInit() {
@@ -121,6 +123,7 @@ export class AdminEmprendimientosComponent implements OnInit {
               type: 'error',
             },
           });
+          this.authServices.logout();
           this.router.navigate(['/login']);
         }
       },
