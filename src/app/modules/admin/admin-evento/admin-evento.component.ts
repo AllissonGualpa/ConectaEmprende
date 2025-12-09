@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { EventoService } from '../evento.service';
+import { EventoService, AdminEventosResponseDto, AdminEventoItemDto } from '../evento.service';
 import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
@@ -74,7 +74,6 @@ export class AdminEventoComponent {
   fechaInicio: Date | null = null;
   fechaFin: Date | null = null;
   estadoSeleccionado: string = '';
-  filteredEventos: Evento[] = [];
 
   pageSize: number = 5;
   currentPage: number = 0;
@@ -83,7 +82,6 @@ export class AdminEventoComponent {
   pages: number[] = [];
   startIndex: number = 0;
   endIndex: number = 0;
-  pagedEventos: Evento[] = [];
 
   displayedColumns: string[] = [
     'id',
@@ -107,29 +105,73 @@ export class AdminEventoComponent {
       localStorage.getItem('authToken') ||
       undefined;
 
+    const tipoEventoFilter = this.estadoSeleccionado || undefined;
+    const fechaInicioStr = this.fechaInicio
+      ? this.startOfDay(this.fechaInicio).toISOString()
+      : undefined;
+    const fechaFinStr = this.fechaFin
+      ? this.endOfDay(this.fechaFin).toISOString()
+      : undefined;
+
     this.eventoService
       .getAdminEvents({
-        tipoEvento: undefined,
-        fechaInicio: undefined,
-        fechaFin: undefined,
+        tipoEvento: tipoEventoFilter,
+        fechaInicio: fechaInicioStr,
+        fechaFin: fechaFinStr,
+        page: this.currentPage,
+        size: this.pageSize,
         token,
       })
       .subscribe({
-        next: (res: any) => {
+        next: (res: AdminEventosResponseDto) => {
           try {
-            let items: any[] = [];
-            if (Array.isArray(res)) items = res;
-            else if (res?.content && Array.isArray(res.content))
-              items = res.content;
-            else if (res?.data && Array.isArray(res.data)) items = res.data;
-            else if (res?.result && Array.isArray(res.result))
-              items = res.result;
-            else if (res?.items && Array.isArray(res.items)) items = res.items;
+            const items: AdminEventoItemDto[] = res.content || [];
+            const pageable = res.pageable;
 
-            this.eventos = (items || []).map((it: any) => {
-              const fechaEvento = it.fechaEvento
-                ? String(it.fechaEvento)
-                : it.fecha || '';
+            if (pageable) {
+              // Normalizar valores de paginación
+              this.totalElements =
+                typeof pageable.length === 'number' && pageable.length >= 0
+                  ? pageable.length
+                  : items.length;
+              this.pageSize =
+                typeof pageable.size === 'number' && pageable.size > 0
+                  ? pageable.size
+                  : this.pageSize;
+              this.currentPage =
+                typeof pageable.page === 'number' && pageable.page >= 0
+                  ? pageable.page
+                  : 0;
+
+              // Si lastPage viene como índice base 0
+              if (
+                typeof pageable.lastPage === 'number' &&
+                pageable.lastPage >= 0
+              ) {
+                this.totalPages = pageable.lastPage + 1;
+              } else {
+                // Fallback si no viene lastPage
+                this.totalPages =
+                  this.pageSize > 0
+                    ? Math.ceil(this.totalElements / this.pageSize)
+                    : 1;
+              }
+            } else {
+              // Fallback si no viene pageable
+              this.totalElements = items.length;
+              this.totalPages =
+                this.pageSize > 0
+                  ? Math.ceil(this.totalElements / this.pageSize)
+                  : 1;
+            }
+
+            if (this.totalPages === 0 && this.totalElements > 0) {
+              // Si hay elementos pero totalPages terminó en 0, forzar 1
+              this.totalPages = 1;
+            }
+
+            this.eventos = items.map((it) => {
+              const fechaEvento = String(it.fechaEvento || '');
               let horaStr = '';
               try {
                 if (fechaEvento.includes('T')) {
@@ -138,17 +180,12 @@ export class AdminEventoComponent {
                     .split(':')
                     .slice(0, 2)
                     .join(':');
-                } else if (it.horaInicio) {
-                  horaStr = it.horaInicio;
                 }
               } catch {
-                horaStr = it.hora || '';
+                horaStr = '';
               }
 
-              let rawTipo = it.tipoEvento || it.tipo || '';
-              const lugarStr = String(it.direccion || it.lugar || '');
-              if (!rawTipo && lugarStr.toLowerCase().includes('online'))
-                rawTipo = 'Online';
+              let rawTipo = it.tipoEvento || '';
               let tipoNorm = '';
               if (rawTipo) {
                 const lt = String(rawTipo).toLowerCase();
@@ -162,64 +199,49 @@ export class AdminEventoComponent {
               }
 
               return {
-                id: it.idEvento
-                  ? String(it.idEvento)
-                  : it.id
-                  ? String(it.id)
-                  : it._id
-                  ? String(it._id)
-                  : `#${Math.floor(Math.random() * 90000) + 10000}`,
-                organizador:
-                  it.nombreEmprendimiento ||
-                  it.organizador ||
-                  it.usuario ||
-                  'Admin',
-                nombre: it.titulo || it.nombre || 'Evento',
+                id: String(it.idEvento),
+                organizador: it.nombreEmprendimiento || 'Admin',
+                nombre: it.titulo || 'Evento',
                 fecha: fechaEvento.includes('T')
                   ? fechaEvento.split('T')[0]
                   : fechaEvento,
                 hora: horaStr,
                 estado: ((): string => {
-                  if (typeof it.activo === 'boolean' && it.activo === false)
-                    return 'Cancelado';
-                  const rawEstado = it.estadoEvento || it.estado;
+                  if (it.activo === false) return 'Cancelado';
+                  const rawEstado = it.estadoEvento;
                   if (typeof rawEstado === 'string' && rawEstado.trim()) {
                     const r = rawEstado.toLowerCase();
-                    if (
-                      r.includes('term') ||
-                      r.includes('finish') ||
-                      r.includes('completed')
-                    )
-                      return 'Terminado';
+                    if (r.includes('term')) return 'Terminado';
                     if (r.includes('cancel')) return 'Cancelado';
                     return 'Programado';
                   }
                   return it.activo === true ? 'Programado' : 'Cancelado';
                 })(),
-                descripcion: it.descripcion || '',
-                horaInicio:
-                  it.horaInicio ||
-                  (fechaEvento.includes('T')
-                    ? fechaEvento.split('T')[1]
-                    : undefined),
-                horaFin: it.horaFin || undefined,
-                direccion: it.direccion || it.lugar || '',
-                linkInscripcion: it.linkInscripcion || it.link || '',
+                descripcion: '',
+                horaInicio: horaStr || undefined,
+                horaFin: undefined,
+                direccion: '',
+                linkInscripcion: '',
                 tipoEvento: tipoNorm,
-                lugar: it.lugar || it.direccion || '',
+                lugar: '',
                 idEmprendimiento: it.idEmprendimiento || undefined,
                 nombreEmprendimiento: it.nombreEmprendimiento || undefined,
-                idMultimedia: it.idMultimedia || undefined,
-                activo: typeof it.activo === 'boolean' ? it.activo : undefined,
+                idMultimedia: undefined,
+                activo: it.activo,
                 fechaCreacion: it.fechaCreacion || undefined,
-                fechaModificacion: it.fechaModificacion || undefined,
+                fechaModificacion: undefined,
               } as Evento;
             });
+
+            this.computePaginationInfo();
           } catch (e) {
             console.warn('Error mapeando eventos', e);
+            this.eventos = [];
+            this.totalElements = 0;
+            this.totalPages = 0;
+            this.computePaginationInfo();
           }
 
-          this.applyFilters();
           this.loading = false;
         },
         error: (err: any) => {
@@ -228,7 +250,9 @@ export class AdminEventoComponent {
             err
           );
           this.eventos = [];
-          this.applyFilters();
+          this.totalElements = 0;
+          this.totalPages = 0;
+          this.computePaginationInfo();
           this.loading = false;
         },
       });
@@ -267,92 +291,59 @@ export class AdminEventoComponent {
   }
 
   applyFilters(): void {
-    const q = (this.searchText || '').toLowerCase().trim();
-    const hasQ = q.length > 0;
-    const hasFechaInicio = !!this.fechaInicio;
-    const hasFechaFin = !!this.fechaFin;
-    const estadoSel = (this.estadoSeleccionado || '').toLowerCase();
-
-    this.filteredEventos = this.eventos.filter((e) => {
-      if (hasQ) {
-        const hay =
-          (e.nombre || '').toLowerCase().includes(q) ||
-          (e.organizador || '').toLowerCase().includes(q);
-        if (!hay) return false;
-      }
-
-      if (estadoSel) {
-        const est = (e.estado || '').toLowerCase();
-        if (!est.includes(estadoSel)) return false;
-      }
-
-      if (hasFechaInicio || hasFechaFin) {
-        const evtDate = this.parseEventDate(e.fecha);
-        if (!evtDate) return false;
-        if (hasFechaInicio && evtDate < this.startOfDay(this.fechaInicio!))
-          return false;
-        if (hasFechaFin && evtDate > this.endOfDay(this.fechaFin!))
-          return false;
-      }
-
-      return true;
-    });
-
     this.currentPage = 0;
-    this.computePaginationInfo();
+    this.loadEventosFromServer();
   }
 
   private computePaginationInfo(): void {
-    this.totalElements = this.filteredEventos.length;
     this.currentPage = Number(this.currentPage) || 0;
-    this.pageSize = 5;
 
-    this.totalPages =
-      this.totalElements === 0
-        ? 0
-        : Math.ceil(this.totalElements / this.pageSize);
+    if (this.totalElements <= 0 || this.pageSize <= 0) {
+      this.totalPages = 0;
+      this.pages = [];
+      this.startIndex = 0;
+      this.endIndex = 0;
+      return;
+    }
 
-    if (this.currentPage >= this.totalPages && this.totalPages > 0) {
+    // Si totalPages no viene o es 0, calcularlo
+    if (!this.totalPages || this.totalPages <= 0) {
+      this.totalPages = Math.max(
+        1,
+        Math.ceil(this.totalElements / this.pageSize)
+      );
+    }
+
+    if (this.currentPage >= this.totalPages) {
       this.currentPage = this.totalPages - 1;
     }
     if (this.currentPage < 0) this.currentPage = 0;
 
-    this.pages = Array.from({ length: Math.max(1, this.totalPages) }, (_, i) => i);
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
 
-    if (this.totalElements === 0) {
-      this.startIndex = 0;
-      this.endIndex = 0;
-      this.pagedEventos = [];
-    } else {
-      this.startIndex = this.currentPage * this.pageSize + 1;
-      this.endIndex = Math.min(
-        (this.currentPage + 1) * this.pageSize,
-        this.totalElements
-      );
-      const start = this.currentPage * this.pageSize;
-      const end = start + this.pageSize;
-      this.pagedEventos = this.filteredEventos.slice(start, end);
-    }
+    const baseIndex = this.currentPage * this.pageSize;
+    this.startIndex = baseIndex + 1;
+    this.endIndex = Math.min(baseIndex + this.pageSize, this.totalElements);
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
-      this.computePaginationInfo();
+      this.loadEventosFromServer();
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
-      this.computePaginationInfo();
+      this.loadEventosFromServer();
     }
   }
 
   goToPage(page: number): void {
     if (page < 0 || page >= this.totalPages) return;
     this.currentPage = page;
-    this.computePaginationInfo();
+    this.loadEventosFromServer();
   }
 
   clearFilters(): void {
@@ -360,7 +351,8 @@ export class AdminEventoComponent {
     this.fechaInicio = null;
     this.fechaFin = null;
     this.estadoSeleccionado = '';
-    this.applyFilters();
+    this.currentPage = 0;
+    this.loadEventosFromServer();
   }
 
   getEstadoClass(estado: string): string {
@@ -486,7 +478,8 @@ export class AdminEventoComponent {
   }
 
   consultar(): void {
-    console.log('Consultar eventos');
+    this.currentPage = 0;
+    this.loadEventosFromServer();
   }
 
   crearEvento(): void {

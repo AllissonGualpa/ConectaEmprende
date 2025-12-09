@@ -48,8 +48,8 @@ export class SeccionPersonalComponent implements OnInit {
         nombre: `${perfil.nombre ?? ''} ${perfil.apellido ?? ''}`.trim(),
         email: perfil.correo ?? perfil.correoUees ?? '',
         telefono: perfil.telefono ?? '',
-        fechaNacimiento: perfil.fechaNacimiento ?? '',
-        fechaRegistro: perfil.fechaRegistro ?? '',
+        fechaNacimiento: this.formatDateWithoutTime(perfil.fechaNacimiento),
+        fechaRegistro: this.formatDateWithoutTime(perfil.fechaRegistro),
         direccion: perfil.direccion ?? '',
         avatarUrl: perfil.avatarUrl ?? undefined
       };
@@ -64,6 +64,20 @@ export class SeccionPersonalComponent implements OnInit {
         direccion: ''
       };
     }
+  }
+
+  private formatDateWithoutTime(dateValue: string | Date | null | undefined): string {
+    if (!dateValue) return '';
+
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    if (isNaN(date.getTime())) return '';
+
+    // Formato dd/MM/yyyy
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
   }
 
   editarPerfil(): void {

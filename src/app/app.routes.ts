@@ -52,5 +52,5 @@ export const routes: Routes = [
   { path: 'admin/blog/edit/:id', component: BlogCreateComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'admin/emprendimientos', component: AdminEmprendimientosComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
   { path: 'admin/solicitudes', component: AdminSolicitudesComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
-  { path: 'admin/autoevaluacion', component: AdminEmprendimientosComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } }
+  { path: 'admin/autoevaluacion', component: AdminAutoevaluacionComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } }
 ];

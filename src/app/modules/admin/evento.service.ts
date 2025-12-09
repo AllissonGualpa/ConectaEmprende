@@ -4,6 +4,30 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Environment } from '../../../environments/environment';
 
+// DTOs para /admin
+export interface AdminEventoItemDto {
+  idEvento: number;
+  titulo: string;
+  idEmprendimiento: number;
+  nombreEmprendimiento: string;
+  fechaEvento: string;      // ISO
+  fechaCreacion: string;    // ISO
+  estadoEvento: string;     // 'programado', etc.
+  tipoEvento: string;       // 'presencial', etc.
+  activo: boolean;
+}
+
+export interface AdminEventosPageableDto {
+  length: number;
+  size: number;
+  page: number;
+  lastPage: number;
+}
+
+export interface AdminEventosResponseDto {
+  content: AdminEventoItemDto[];
+  pageable: AdminEventosPageableDto;
+}
 
 @Injectable({ providedIn: 'root' })
 export class EventoService {
@@ -122,16 +146,32 @@ export class EventoService {
   }
 
   /**
-   * Obtener lista de eventos desde la API
+   * Obtener lista de eventos desde la API (ADMIN) con paginación.
+   * Endpoint: /v1/eventos/filtrar?page=0&size=10
    */
-  getEvents(options?: { token?: string }): Observable<any> {
+  getEvents(options?: { page?: number; size?: number; token?: string }): Observable<any> {
     const url = `${this.baseUrl}/filtrar`;
     let headers = new HttpHeaders();
-    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    const token =
+      options?.token ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('accessToken') ||
+      localStorage.getItem('authToken');
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
-    return this.http.get(url, { headers }).pipe(catchError((err) => throwError(() => err)));
+
+    let params = new HttpParams();
+    if (options?.page != null) {
+      params = params.set('page', String(options.page));
+    }
+    if (options?.size != null) {
+      params = params.set('size', String(options.size));
+    }
+
+    return this.http
+      .get(url, { headers, params })
+      .pipe(catchError((err) => throwError(() => err)));
   }
 
   /**
@@ -175,9 +215,9 @@ export class EventoService {
 
   /**
    * Obtener eventos para el administrador con filtros y paginación.
-   * Ejemplo: /v1/eventos/admin?tipoEvento=presencial&fechaInicio=2024-11-01T00:00:00&fechaFin=2025-12-31T23:59:59&page=0&size=15
+   * Respuesta tipada con AdminEventosResponseDto.
    */
-  getAdminEvents(options?: { tipoEvento?: string; fechaInicio?: string; fechaFin?: string; page?: number; size?: number; token?: string }): Observable<any> {
+  getAdminEvents(options?: { tipoEvento?: string; fechaInicio?: string; fechaFin?: string; page?: number; size?: number; token?: string }): Observable<AdminEventosResponseDto> {
     const url = `${this.baseUrl}/admin`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
@@ -192,7 +232,7 @@ export class EventoService {
     if (options?.page != null) params = params.set('page', String(options.page));
     if (options?.size != null) params = params.set('size', String(options.size));
 
-    return this.http.get(url, { headers, params }).pipe(catchError((err) => throwError(() => err)));
+    return this.http.get<AdminEventosResponseDto>(url, { headers, params }).pipe(catchError((err) => throwError(() => err)));
   }
 
   /**

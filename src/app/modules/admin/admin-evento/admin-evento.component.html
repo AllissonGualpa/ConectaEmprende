@@ -110,7 +110,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let evento of pagedEventos; let i = index" [ngClass]="(i % 2 === 0) ? 'bg-[#f7f6fe]' : 'bg-white'" class="align-top hover:bg-[#f7f6fe]">
+            <tr *ngFor="let evento of eventos; let i = index" [ngClass]="(i % 2 === 0) ? 'bg-[#f7f6fe]' : 'bg-white'" class="align-top hover:bg-[#f7f6fe]">
               <td class="px-6 py-4 text-gray-800 font-medium">{{ evento.id }}</td>
               <td class="px-6 py-4"><div class="flex items-center gap-2"><span class="text-gray-800">{{ evento.organizador }}</span></div></td>
               <td class="px-6 py-4 text-gray-800">{{ evento.nombre }}</td>
@@ -141,7 +141,7 @@
             </tr>
 
             <!-- Mensaje sin datos -->
-            <tr *ngIf="pagedEventos.length === 0 && !loading">
+            <tr *ngIf="eventos.length === 0 && !loading">
               <td colspan="6" class="px-6 py-6 text-center text-gray-500 text-sm">
                 No se encontraron eventos
               </td>

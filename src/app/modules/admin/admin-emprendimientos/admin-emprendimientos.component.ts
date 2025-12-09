@@ -42,15 +42,23 @@ export class AdminEmprendimientosComponent implements OnInit {
   filteredEmprendimientos: any[] = [];
   categorias: any[] = [];
 
-  // Nuevo: ciudades
   ciudades: any[] = [];
   selectedCiudad = '';
 
   searchTerm = '';
   selectedCategory = '';
-  selectedDate: any = ''; // ya no se usará
+  selectedDate: any = '';
 
   loading = false;
+
+  // Estado de paginación
+  pageSize: number = 10;
+  currentPage: number = 0;
+  totalElements: number = 0;
+  totalPages: number = 0;
+  pages: number[] = [];
+  startIndex: number = 0;
+  endIndex: number = 0;
 
   private apiEmprendimientos =
     Environment.api_url + Environment.api_emprendimientos;
@@ -90,24 +98,62 @@ export class AdminEmprendimientosComponent implements OnInit {
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-    // Carga inicial de combos + emprendimientos sin filtros
+    // Carga inicial de combos + emprendimientos paginados
     forkJoin({
       tipos: this.http.get<any[]>(this.apiTipos, { headers }),
       categorias: this.http.get<any[]>(this.apiCategorias, { headers }),
-      ciudades: this.http.get<any[]>(this.apiCiudades, { headers }), // nuevo
+      ciudades: this.http.get<any[]>(this.apiCiudades, { headers }),
       emprendimientos: this.http.get<any>(this.apiEmprendimientos, {
         headers,
+        params: new HttpParams()
+          .set('page', String(this.currentPage))
+          .set('size', String(this.pageSize)),
       }),
     }).subscribe({
       next: ({ tipos, categorias, ciudades, emprendimientos }) => {
         this.tiposEmprendimiento = tipos;
         this.categorias = categorias;
-        this.ciudades = ciudades; // llenar combo ciudades
+        this.ciudades = ciudades;
 
         const lista = emprendimientos?.content ?? [];
+        const pageable = emprendimientos?.pageable;
+
+        if (pageable) {
+          this.totalElements =
+            typeof pageable.totalElements === 'number' &&
+            pageable.totalElements >= 0
+              ? pageable.totalElements
+              : lista.length;
+          this.pageSize =
+            typeof pageable.pageSize === 'number' && pageable.pageSize > 0
+              ? pageable.pageSize
+              : this.pageSize;
+          this.currentPage =
+            typeof pageable.pageNumber === 'number' && pageable.pageNumber >= 0
+              ? pageable.pageNumber
+              : 0;
+          this.totalPages =
+            typeof pageable.totalPages === 'number' && pageable.totalPages > 0
+              ? pageable.totalPages
+              : Math.max(
+                  1,
+                  Math.ceil(this.totalElements / this.pageSize)
+                );
+        } else {
+          this.totalElements = lista.length;
+          this.totalPages =
+            this.pageSize > 0
+              ? Math.max(1, Math.ceil(this.totalElements / this.pageSize))
+              : 1;
+        }
+
+        if (this.totalPages === 0 && this.totalElements > 0) {
+          this.totalPages = 1;
+        }
 
         this.emprendimientos = this.mapEmprendimientos(lista);
         this.filteredEmprendimientos = [...this.emprendimientos];
+        this.computePaginationInfo();
         this.loading = false;
       },
       error: (error) => {
@@ -130,7 +176,6 @@ export class AdminEmprendimientosComponent implements OnInit {
     });
   }
 
-  // Mapea la lista cruda del backend a la estructura con tipoInfo
   private mapEmprendimientos(lista: any[]): any[] {
     return lista.map(
       (emp: { tipoEmprendimientoId: any; nombreTipoEmprendimiento: any }) => {
@@ -150,7 +195,7 @@ export class AdminEmprendimientosComponent implements OnInit {
     );
   }
 
-  // Llamar al backend aplicando filtros como query params
+  // Llamar al backend aplicando filtros como query params (con paginación)
   applyFilters() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -162,33 +207,71 @@ export class AdminEmprendimientosComponent implements OnInit {
 
     let params = new HttpParams();
 
-    // nombre (buscador)
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       params = params.set('nombre', this.searchTerm.trim());
     }
 
-    // categoría: en el HTML usas [value]="cat.nombre", por lo que ya es el nombre
     if (this.selectedCategory && this.selectedCategory !== '') {
       params = params.set('categoria', this.selectedCategory);
     }
 
-    // Nuevo: ciudad (usamos nombreCiudad como valor del select)
     if (this.selectedCiudad && this.selectedCiudad !== '') {
       params = params.set('ciudad', this.selectedCiudad);
     }
 
-    // Quitar lógica de fecha (selectedDate ya no se usa)
-
-    // Paginación básica (puedes cambiar luego)
-    params = params.set('page', '0').set('size', '20');
+    // paginación desde el estado
+    params = params
+      .set('page', String(this.currentPage))
+      .set('size', String(this.pageSize));
 
     this.http
       .get<any>(this.apiEmprendimientos, { headers, params })
       .subscribe({
         next: (resp) => {
           const lista = resp?.content ?? resp ?? [];
-          this.emprendimientos = this.mapEmprendimientos(lista);
+          const pageable = resp?.pageable;
+
+          if (pageable) {
+            this.totalElements =
+              typeof pageable.totalElements === 'number' &&
+              pageable.totalElements >= 0
+                ? pageable.totalElements
+                : (Array.isArray(lista) ? lista.length : 0);
+            this.pageSize =
+              typeof pageable.pageSize === 'number' && pageable.pageSize > 0
+                ? pageable.pageSize
+                : this.pageSize;
+            this.currentPage =
+              typeof pageable.pageNumber === 'number' &&
+              pageable.pageNumber >= 0
+                ? pageable.pageNumber
+                : 0;
+            this.totalPages =
+              typeof pageable.totalPages === 'number' &&
+              pageable.totalPages > 0
+                ? pageable.totalPages
+                : Math.max(
+                    1,
+                    Math.ceil(this.totalElements / this.pageSize)
+                  );
+          } else {
+            const len = Array.isArray(lista) ? lista.length : 0;
+            this.totalElements = len;
+            this.totalPages =
+              this.pageSize > 0
+                ? Math.max(1, Math.ceil(len / this.pageSize))
+                : 1;
+          }
+
+          if (this.totalPages === 0 && this.totalElements > 0) {
+            this.totalPages = 1;
+          }
+
+          this.emprendimientos = this.mapEmprendimientos(
+            Array.isArray(lista) ? lista : []
+          );
           this.filteredEmprendimientos = [...this.emprendimientos];
+          this.computePaginationInfo();
           this.loading = false;
         },
         error: (error) => {
@@ -203,7 +286,58 @@ export class AdminEmprendimientosComponent implements OnInit {
     this.selectedCategory = '';
     this.selectedCiudad = '';
     this.selectedDate = '';
+    this.currentPage = 0;
     this.loadData();
+  }
+
+  private computePaginationInfo(): void {
+    this.currentPage = Number(this.currentPage) || 0;
+
+    if (this.totalElements <= 0 || this.pageSize <= 0) {
+      this.totalPages = 0;
+      this.pages = [];
+      this.startIndex = 0;
+      this.endIndex = 0;
+      return;
+    }
+
+    if (!this.totalPages || this.totalPages <= 0) {
+      this.totalPages = Math.max(
+        1,
+        Math.ceil(this.totalElements / this.pageSize)
+      );
+    }
+
+    if (this.currentPage >= this.totalPages) {
+      this.currentPage = this.totalPages - 1;
+    }
+    if (this.currentPage < 0) this.currentPage = 0;
+
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
+
+    const baseIndex = this.currentPage * this.pageSize;
+    this.startIndex = baseIndex + 1;
+    this.endIndex = Math.min(baseIndex + this.pageSize, this.totalElements);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.applyFilters();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.applyFilters();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.applyFilters();
   }
 
   formatFecha(fecha: string): string {
@@ -234,7 +368,6 @@ export class AdminEmprendimientosComponent implements OnInit {
     this.router.navigate(['/admin/emprendimientos/edit', emp.id]);
   }
 
-  // Botón de inactivación (ya no “eliminar”)
   desactivarEmprendimiento(emp: any) {
     const confirmado = confirm(
       `¿Seguro que deseas inactivar el emprendimiento "${emp.nombreComercial}"?`
@@ -243,10 +376,6 @@ export class AdminEmprendimientosComponent implements OnInit {
     if (!confirmado) {
       return;
     }
-
-    // Aquí deberías llamar a tu API de inactivación cuando la tengas.
-    // Ejemplo futuro:
-    // this.http.patch(`${this.apiEmprendimientos}/${emp.id}/inactivar`, {}, { headers }).subscribe(...)
 
     console.log('Inactivando emprendimiento con ID:', emp.id);
   }
