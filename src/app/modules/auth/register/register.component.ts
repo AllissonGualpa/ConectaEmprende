@@ -13,6 +13,8 @@ import { CustomDateAdapter } from '../../shared/adapters/CustomDateAdapter';
 import { AuthService, RegisterData } from '../auth.service';
 import { Router } from '@angular/router';
 import { LocationService, ProvinciaDto, CiudadDto } from '../../../core/services/location.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 export const MY_DATE_FORMATS = {
   parse: { dateInput: 'DD/MM/YYYY' },
@@ -78,7 +80,8 @@ export class RegisterComponent {
     private dateAdapter: DateAdapter<Date>,
     private authService: AuthService,
     private router: Router,
-    private locationService: LocationService
+    private locationService: LocationService,
+    private dialog: MatDialog
   ) {
     this.dateAdapter.setLocale('es-ES');
   }
@@ -232,15 +235,14 @@ export class RegisterComponent {
 
       const idRolEmprendedor = 2;
 
-      // CAMBIO PRINCIPAL: Ahora correo es correoUees y correoUees es el corporativo
       const registerData: RegisterData = {
         nombre: firstForm.nombre,
         apellido: firstForm.apellido,
         fechaNacimiento: this.formatDateToISO(firstForm.fechaNacimiento as Date),
         genero: firstForm.genero,
         contrasena: firstForm.contrasena,
-        correo: firstForm.correoUees, // ← CORRECCIÓN: Correo principal es el de UEES
-        correoUees: secondForm.correo, // ← CORRECCIÓN: Correo corporativo va aquí
+        correo: firstForm.correoUees,
+        correoUees: secondForm.correo,
         identificacion: secondForm.identificacion,
         parienteDirecto: secondForm.parienteDirecto === 'si',
         idRol: idRolEmprendedor,
@@ -269,22 +271,49 @@ export class RegisterComponent {
       console.log('Datos a enviar:', registerData);
 
       this.authService.register(registerData).subscribe({
-        next: (response) => {
+        next: () => {
           this.isLoading = false;
-          alert('Registro exitoso. Bienvenido a Eureka Emprende!');
-          this.router.navigate(['/login']);
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Registro',
+              title: 'Registro exitoso',
+              subtitle: 'Bienvenido a Eureka Emprende!',
+              type: 'success',
+            },
+          }).afterClosed().subscribe(() => {
+            this.router.navigate(['/login']);
+          });
         },
         error: (error) => {
           this.isLoading = false;
           const errorMessage = error.error?.message || error.message || 'Error desconocido';
-          alert('Error en el registro: ' + errorMessage);
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Registro',
+              title: 'Error en el registro',
+              subtitle: errorMessage,
+              type: 'error',
+            },
+          });
         }
       });
     } else {
       this.markFormGroupTouched(this.firstFormGroup);
       this.markFormGroupTouched(this.secondFormGroup);
       this.markFormGroupTouched(this.thirdFormGroup);
-      alert('Por favor, complete todos los campos requeridos correctamente');
+
+      // Usa el nuevo tipo visual 'warning' del MensajeConfirmacionComponent
+      this.dialog.open(MensajeConfirmacionComponent, {
+        width: '420px',
+        data: {
+          subject: 'Registro',
+          title: 'Formulario incompleto',
+          subtitle: 'Por favor, complete todos los campos requeridos correctamente.',
+          type: 'warning',
+        },
+      });
     }
   }
 }

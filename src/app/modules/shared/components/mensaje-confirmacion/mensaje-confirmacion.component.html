@@ -3,7 +3,8 @@
   [ngClass]="{
     'dialog-success': type === 'success',
     'dialog-error': type === 'error',
-    'dialog-info': type === 'info'
+    'dialog-info': type === 'info',
+    'dialog-warning': type === 'warning'
   }"
 >
   <div class="dialog-header">
@@ -49,6 +50,26 @@
           fill="#0369a1"
         />
       </svg>
+
+      <!-- Icono WARNING -->
+      <svg
+        *ngIf="type === 'warning'"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        class="icon-svg"
+      >
+        <g
+          fill="none"
+          stroke="#f59e0b"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 3L2 21h20L12 3z" />
+          <path d="M12 9v5" />
+          <path d="M12 17h0.01" />
+        </g>
+      </svg>
     </div>
 
     <div class="dialog-text">
@@ -88,6 +109,11 @@
 
   .dialog-info {
     /* tonos azules suaves */
+  }
+
+  .dialog-warning {
+    background-color: #fffbeb; /* amarillo muy claro */
+    border-left: 4px solid #f59e0b;
   }
 
   .dialog-header {

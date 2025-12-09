@@ -7,7 +7,7 @@ export interface ConfirmDialogData {
   subject?: string; // e.g. 'Evento' — used to build default title
   title?: string; // optional full title override
   subtitle?: string; // optional subtitle text
-  type?: 'success' | 'error' | 'info'; // Agregado: tipo 'info'
+  type?: 'success' | 'error' | 'info' | 'warning'; // Agregado: tipo 'warning'
 }
 
 @Component({
@@ -19,7 +19,7 @@ export interface ConfirmDialogData {
 export class MensajeConfirmacionComponent {
   public title: string;
   public subtitle: string;
-  public type: 'success' | 'error' | 'info'; // Agregado: tipo 'info'
+  public type: 'success' | 'error' | 'info' | 'warning'; // Agregado: tipo 'warning'
 
   constructor(
     public dialogRef: MatDialogRef<MensajeConfirmacionComponent>,
@@ -40,6 +40,9 @@ export class MensajeConfirmacionComponent {
           break;
         case 'info':
           this.title = `${subject} - información`;
+          break;
+        case 'warning':
+          this.title = `Advertencia sobre ${subject}`;
           break;
       }
     }
