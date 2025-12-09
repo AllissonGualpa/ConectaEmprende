@@ -8,6 +8,7 @@ export const Environment = {
     api_tipos: '/v1/tipos-emprendimiento',
     api_categorias: '/v1/categorias',
     api_usuarios: '/v1/usuarios',
+    api_provincia:'/v1/provincia',
     api_ciudades:'/v1/ciudad',
     version: 'development'
 };

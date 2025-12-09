@@ -12,6 +12,7 @@ import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, DateAdapter } from '@angular/materia
 import { CustomDateAdapter } from '../../shared/adapters/CustomDateAdapter';
 import { AuthService, RegisterData } from '../auth.service';
 import { Router } from '@angular/router';
+import { LocationService, ProvinciaDto, CiudadDto } from '../../../core/services/location.service';
 
 export const MY_DATE_FORMATS = {
   parse: { dateInput: 'DD/MM/YYYY' },
@@ -61,35 +62,9 @@ export class RegisterComponent {
 
   isLoading = false;
 
-  // Provincias y ciudades de Ecuador
-  provincias = [
-    { id: 1, nombre: 'Azuay', ciudades: [{ id: 1, nombre: 'Cuenca' }, { id: 2, nombre: 'Gualaceo' }, { id: 3, nombre: 'Paute' }, { id: 4, nombre: 'Sígsig' }] },
-    { id: 2, nombre: 'Bolívar', ciudades: [{ id: 5, nombre: 'Guaranda' }, { id: 6, nombre: 'San Miguel' }, { id: 7, nombre: 'Echeandía' }] },
-    { id: 3, nombre: 'Cañar', ciudades: [{ id: 8, nombre: 'Azogues' }, { id: 9, nombre: 'Biblián' }, { id: 10, nombre: 'La Troncal' }] },
-    { id: 4, nombre: 'Carchi', ciudades: [{ id: 11, nombre: 'Tulcán' }, { id: 12, nombre: 'Mira' }, { id: 13, nombre: 'Montúfar' }] },
-    { id: 5, nombre: 'Chimborazo', ciudades: [{ id: 14, nombre: 'Riobamba' }, { id: 15, nombre: 'Guano' }, { id: 16, nombre: 'Alausí' }] },
-    { id: 6, nombre: 'Cotopaxi', ciudades: [{ id: 17, nombre: 'Latacunga' }, { id: 18, nombre: 'La Maná' }, { id: 19, nombre: 'Salcedo' }] },
-    { id: 7, nombre: 'El Oro', ciudades: [{ id: 20, nombre: 'Machala' }, { id: 21, nombre: 'Pasaje' }, { id: 22, nombre: 'Santa Rosa' }] },
-    { id: 8, nombre: 'Esmeraldas', ciudades: [{ id: 23, nombre: 'Esmeraldas' }, { id: 24, nombre: 'Atacames' }, { id: 25, nombre: 'Quinindé' }] },
-    { id: 9, nombre: 'Galápagos', ciudades: [{ id: 26, nombre: 'Puerto Ayora' }, { id: 27, nombre: 'Puerto Baquerizo Moreno' }] },
-    { id: 10, nombre: 'Guayas', ciudades: [{ id: 28, nombre: 'Guayaquil' }, { id: 29, nombre: 'Daule' }, { id: 30, nombre: 'Samborondón' }, { id: 31, nombre: 'Milagro' }] },
-    { id: 11, nombre: 'Imbabura', ciudades: [{ id: 32, nombre: 'Ibarra' }, { id: 33, nombre: 'Otavalo' }, { id: 34, nombre: 'Cotacachi' }] },
-    { id: 12, nombre: 'Loja', ciudades: [{ id: 35, nombre: 'Loja' }, { id: 36, nombre: 'Catamayo' }, { id: 37, nombre: 'Macará' }] },
-    { id: 13, nombre: 'Los Ríos', ciudades: [{ id: 38, nombre: 'Babahoyo' }, { id: 39, nombre: 'Quevedo' }, { id: 40, nombre: 'Vinces' }] },
-    { id: 14, nombre: 'Manabí', ciudades: [{ id: 41, nombre: 'Portoviejo' }, { id: 42, nombre: 'Manta' }, { id: 43, nombre: 'Chone' }] },
-    { id: 15, nombre: 'Morona Santiago', ciudades: [{ id: 44, nombre: 'Macas' }, { id: 45, nombre: 'Sucúa' }, { id: 46, nombre: 'Gualaquiza' }] },
-    { id: 16, nombre: 'Napo', ciudades: [{ id: 47, nombre: 'Tena' }, { id: 48, nombre: 'Archidona' }] },
-    { id: 17, nombre: 'Orellana', ciudades: [{ id: 49, nombre: 'Francisco de Orellana' }, { id: 50, nombre: 'Dayuma' }] },
-    { id: 18, nombre: 'Pastaza', ciudades: [{ id: 51, nombre: 'Puyo' }, { id: 52, nombre: 'Mera' }] },
-    { id: 19, nombre: 'Pichincha', ciudades: [{ id: 53, nombre: 'Quito' }, { id: 54, nombre: 'Cayambe' }, { id: 55, nombre: 'Sangolquí' }] },
-    { id: 20, nombre: 'Santa Elena', ciudades: [{ id: 56, nombre: 'Santa Elena' }, { id: 57, nombre: 'La Libertad' }, { id: 58, nombre: 'Salinas' }] },
-    { id: 21, nombre: 'Santo Domingo de los Tsáchilas', ciudades: [{ id: 59, nombre: 'Santo Domingo' }] },
-    { id: 22, nombre: 'Sucumbíos', ciudades: [{ id: 60, nombre: 'Nueva Loja' }, { id: 61, nombre: 'Shushufindi' }] },
-    { id: 23, nombre: 'Tungurahua', ciudades: [{ id: 62, nombre: 'Ambato' }, { id: 63, nombre: 'Baños' }, { id: 64, nombre: 'Pelileo' }] },
-    { id: 24, nombre: 'Zamora Chinchipe', ciudades: [{ id: 65, nombre: 'Zamora' }, { id: 66, nombre: 'Yantzaza' }] },
-  ];
-
-  ciudadesFiltradas: { id: number, nombre: string }[] = [];
+  // Provincias y ciudades obtenidas desde la API
+  provincias: ProvinciaDto[] = [];
+  ciudadesFiltradas: { id: number; nombre: string }[] = [];
 
   // Tipos de emprendimiento según Supabase
   tiposEmprendimiento = [
@@ -102,7 +77,8 @@ export class RegisterComponent {
     private _formBuilder: FormBuilder,
     private dateAdapter: DateAdapter<Date>,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private locationService: LocationService
   ) {
     this.dateAdapter.setLocale('es-ES');
   }
@@ -138,6 +114,17 @@ export class RegisterComponent {
       estadoEmprendimiento: ['', Validators.required],
       tipoEmprendimiento: ['', Validators.required],
       datosPublicos: [true]
+    });
+
+    // Cargar provincias desde la API
+    this.locationService.getProvincias().subscribe({
+      next: (provincias) => {
+        this.provincias = provincias;
+      },
+      error: () => {
+        // Manejo simple de error, puedes mejorarlo (snackbar, etc.)
+        this.provincias = [];
+      }
     });
 
     // Mostrar campos de estudiante según selección
@@ -196,11 +183,27 @@ export class RegisterComponent {
       areaParienteControl?.updateValueAndValidity();
     });
 
-    // Filtrar ciudades según la provincia seleccionada
+    // Filtrar ciudades según la provincia seleccionada usando la API
     this.thirdFormGroup.get('provincia')?.valueChanges.subscribe((provinciaId) => {
-      const provincia = this.provincias.find(p => p.id === provinciaId);
-      this.ciudadesFiltradas = provincia ? provincia.ciudades : [];
-      this.thirdFormGroup.get('ciudad')?.setValue('');
+      if (!provinciaId) {
+        this.ciudadesFiltradas = [];
+        this.thirdFormGroup.get('ciudad')?.setValue('');
+        return;
+      }
+
+      this.locationService.getCiudadesPorProvincia(provinciaId).subscribe({
+        next: (ciudades: CiudadDto[]) => {
+          this.ciudadesFiltradas = ciudades.map((c) => ({
+            id: c.id,
+            nombre: c.nombreCiudad,
+          }));
+          this.thirdFormGroup.get('ciudad')?.setValue('');
+        },
+        error: () => {
+          this.ciudadesFiltradas = [];
+          this.thirdFormGroup.get('ciudad')?.setValue('');
+        },
+      });
     });
   }
 
