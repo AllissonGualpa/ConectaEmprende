@@ -49,8 +49,6 @@ export class StartupsDetailComponent implements OnInit {
 
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
-        console.log('Emprendimientos cargados:', data);
-
         // Buscar la startup por ID
         const found = data.find(e => e.id.toString() === id);
 

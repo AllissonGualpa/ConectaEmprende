@@ -69,7 +69,6 @@ export class LoginComponent {
 
       this.authService.login(email, password).subscribe({
         next: (response) => {
-          console.log('Respuesta del backend:', response);
           localStorage.setItem('token', response.jwtToken);
 
           // Obtener perfil desde el backend y redirigir según rol

@@ -376,7 +376,5 @@ export class AdminEmprendimientosComponent implements OnInit {
     if (!confirmado) {
       return;
     }
-
-    console.log('Inactivando emprendimiento con ID:', emp.id);
   }
 }

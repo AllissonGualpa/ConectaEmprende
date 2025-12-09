@@ -29,7 +29,6 @@ export class SeccionEventoComponent {
       fechaFin: this.fechaFin,
       estado: this.estadoSeleccionado
     };
-    console.log('Consultar con payload:', payload);
     this.onSearch(payload);
   }
 
@@ -115,7 +114,6 @@ export class SeccionEventoComponent {
 
   // Client-side filtering so SearchBar can filter by name, date or type without changing shared component
   onSearch(payload: any) {
-    console.log('SeccionEvento.onSearch payload:', payload);
     const q = String(payload?.query || '').toLowerCase().trim();
     const dateKey = payload?.date || payload?.fechaInicio || '';
     const typeKey = payload?.type || payload?.tipo || payload?.tipoEvento || '';

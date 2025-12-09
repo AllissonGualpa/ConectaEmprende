@@ -81,7 +81,6 @@ export class SeccionPersonalComponent implements OnInit {
   }
 
   editarPerfil(): void {
-    console.log('Editar perfil');
     // Aquí implementas la lógica para editar el perfil
     // Puede abrir un dialog de Material o navegar a otra vista
   }

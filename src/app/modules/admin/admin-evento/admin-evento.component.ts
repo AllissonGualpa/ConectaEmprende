@@ -482,10 +482,6 @@ export class AdminEventoComponent {
     this.loadEventosFromServer();
   }
 
-  crearEvento(): void {
-    console.log('Crear nuevo evento');
-  }
-
   abrirCrearEvento(): void {
     const ref = this.dialog.open(EventoCreateComponent, {
       width: '1000px',

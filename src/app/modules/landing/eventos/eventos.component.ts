@@ -20,7 +20,6 @@ export class EventosComponent implements OnInit {
 
   //SEARCH BAR
    onSearch(payload: { query: string; [key: string]: any }) {
-    //console.log('Búsqueda en Emprendimientos:', payload);
 
     let result = this.cardsArray.slice();
 
@@ -74,7 +73,6 @@ export class EventosComponent implements OnInit {
 
   // manejadores emitidos por <app-cards>
   onDiscover(item: CardItem) {
-    console.log('Descubrir item:', item);
     // navegar a la página de detalle del evento
     if (item && item.id != null) {
       this.router.navigate(['/eventos', item.id]);

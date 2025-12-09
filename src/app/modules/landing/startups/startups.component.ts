@@ -132,6 +132,6 @@ export class StartupsComponent implements OnInit {
   }
 
   onToggleFavorite(item: CardItem) {
-    console.log('Favorito cambiado:', item);
+    console.log('Toggle favorito:', item);
   }
 }

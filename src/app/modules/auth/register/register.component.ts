@@ -268,8 +268,6 @@ export class RegisterComponent {
         }
       };
 
-      console.log('Datos a enviar:', registerData);
-
       this.authService.register(registerData).subscribe({
         next: () => {
           this.isLoading = false;

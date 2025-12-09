@@ -209,13 +209,6 @@ export class AdminBlogComponent implements OnInit {
         this.totalElements
       );
     }
-
-    console.log('Info de paginación calculada:', {
-      pages: this.pages,
-      startIndex: this.startIndex,
-      endIndex: this.endIndex,
-      totalPages: this.totalPages,
-    });
   }
 
   onFilterChange() {
