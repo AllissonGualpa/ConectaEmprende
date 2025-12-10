@@ -11,6 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { HttpClientModule } from '@angular/common/http';
 import { EventoService } from '../evento.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
   selector: 'app-evento-create',
@@ -41,6 +43,7 @@ export class EventoCreateComponent {
     private dialogRef: MatDialogRef<EventoCreateComponent>,
     private cdr: ChangeDetectorRef,
     private eventoService: EventoService,
+    private dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public dialogData?: any
   ) {
     this.form = this.fb.group({
@@ -224,7 +227,20 @@ export class EventoCreateComponent {
           },
           error: (err: any) => {
             this.loading = false;
-            this.error = err?.message || 'Error actualizando evento';
+            const message =
+              err?.error?.message ||
+              err?.message ||
+              'Error actualizando evento';
+
+            this.dialog.open(MensajeConfirmacionComponent, {
+              width: '420px',
+              data: {
+                subject: 'Evento',
+                title: 'Error al actualizar el evento',
+                subtitle: message,
+                type: 'error'
+              }
+            });
           }
         });
       return;
@@ -243,7 +259,20 @@ export class EventoCreateComponent {
         },
         error: (err: any) => {
           this.loading = false;
-          this.error = err?.message || 'Error creando evento';
+          const message =
+            err?.error?.message ||
+            err?.message ||
+            'Error creando evento';
+
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Evento',
+              title: 'Error al crear el evento',
+              subtitle: message,
+              type: 'error'
+            }
+          });
         }
       });
   }
