@@ -12,6 +12,8 @@
       <a
         *ngFor="let item of menuItems"
         [routerLink]="item.enlace"
+        routerLinkActive="bg-gray-200 text-gray-900 font-bold shadow-inner"
+        [routerLinkActiveOptions]="{ exact: true }"
         class="flex items-center gap-4 text-gray-700 hover:text-orange-600 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-orange-50"
       >
         <!-- Icono dinámico -->
