@@ -11,10 +11,12 @@
             <select 
               id="tabs" 
               [(ngModel)]="selectedIndex"
+              (ngModelChange)="selectedIndex = +$event" 
               class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block w-full p-2.5 shadow-md">
-              <option [value]="0">Mi Perfil</option>
-              <option [value]="1">MI emprendimiento</option>
-              <option [value]="2">Mensajería</option>
+              <option [ngValue]="0">Mi Perfil</option>
+              <option [ngValue]="1">Mis Emprendimientos</option>
+              <option [ngValue]="2">Eventos</option>
+              <option [ngValue]="3">Mensajería</option>
             </select>
           </div>
           
