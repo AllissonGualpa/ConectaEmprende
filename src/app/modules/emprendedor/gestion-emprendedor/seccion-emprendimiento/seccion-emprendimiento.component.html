@@ -1,0 +1,30 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Mis Emprendimientos</h2>
+      <p class="text-sm text-gray-500">
+        Administra la información de tus emprendimientos registrados.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1"
+    >
+      <span class="mr-2">+ Nuevo emprendimiento</span>
+    </button>
+  </div>
+
+  <div *ngIf="!emprendimientos.length" class="border border-dashed border-gray-300 rounded-xl p-8 text-center">
+    <p class="text-gray-400 text-sm">
+      Aún no tienes emprendimientos registrados. Usa el botón "Nuevo emprendimiento" para crear uno.
+    </p>
+  </div>
+
+  <div *ngIf="emprendimientos.length" class="grid gap-4 md:grid-cols-2">
+    <app-cards
+      *ngFor="let emprendimiento of emprendimientos"
+      [items]="[emprendimiento]">
+    </app-cards>
+  </div>
+</div>

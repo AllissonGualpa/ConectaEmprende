@@ -4,6 +4,7 @@ export const Environment = {
     api_blog: '/v1/blog',
     api_eventos: '/v1/eventos',
     api_emprendimientos: '/v1/emprendimientos',
+    api_mi_emprendimiento: '/v1/mi-emprendimiento',
     api_solicitudes: '/v1/solicitudes',
     api_tipos: '/v1/tipos-emprendimiento',
     api_categorias: '/v1/categorias',
