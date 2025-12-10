@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
 import { EmprendimientoService } from '../../../emprendimiento.service';
 import { CardsComponent } from '../../../../layout/cards/cards.component';
-// importa tu componente de cards (ajusta la ruta y nombre si son distintos)
+import { CreateSolicitudEmprendimientoComponent } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
 
 @Component({
   selector: 'app-seccion-emprendimiento',
@@ -11,6 +11,7 @@ import { CardsComponent } from '../../../../layout/cards/cards.component';
   imports: [
     CommonModule,
     CardsComponent, // agregar componente de cards
+    CreateSolicitudEmprendimientoComponent, // modal de creación
   ],
   templateUrl: './seccion-emprendimiento.component.html',
   styleUrls: ['./seccion-emprendimiento.component.css']
@@ -18,6 +19,9 @@ import { CardsComponent } from '../../../../layout/cards/cards.component';
 export class SeccionEmprendimientoComponent implements OnInit {
   // Más adelante puedes inyectar servicios y manejar el listado real
   emprendimientos: any[] = [];
+
+  // control del modal
+  showCreateSolicitudModal = false;
 
   constructor(private emprendimientoService: EmprendimientoService) {}
 
@@ -30,5 +34,13 @@ export class SeccionEmprendimientoComponent implements OnInit {
         console.error('Error al cargar emprendimientos', err);
       }
     });
+  }
+
+  openCreateSolicitudModal(): void {
+    this.showCreateSolicitudModal = true;
+  }
+
+  closeCreateSolicitudModal(): void {
+    this.showCreateSolicitudModal = false;
   }
 }

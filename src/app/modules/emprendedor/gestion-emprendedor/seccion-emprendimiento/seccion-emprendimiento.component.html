@@ -1,30 +1,66 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-800">Mis Emprendimientos</h2>
-      <p class="text-sm text-gray-500">
-        Administra la información de tus emprendimientos registrados.
+<div class="relative">
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Mis Emprendimientos</h2>
+        <p class="text-sm text-gray-500">
+          Administra la información de tus emprendimientos registrados.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="openCreateSolicitudModal()"
+        class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1"
+      >
+        <span class="mr-2">+ Nuevo emprendimiento</span>
+      </button>
+    </div>
+
+    <div *ngIf="!emprendimientos.length" class="border border-dashed border-gray-300 rounded-xl p-8 text-center">
+      <p class="text-gray-400 text-sm">
+        Aún no tienes emprendimientos registrados. Usa el botón "Nuevo emprendimiento" para crear uno.
       </p>
     </div>
 
-    <button
-      type="button"
-      class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1"
+    <div *ngIf="emprendimientos.length" class="grid gap-4 md:grid-cols-2">
+      <app-cards
+        *ngFor="let emprendimiento of emprendimientos"
+        [items]="[emprendimiento]">
+      </app-cards>
+    </div>
+  </div>
+
+  <!-- Modal para crear solicitud de emprendimiento -->
+  <div
+    *ngIf="showCreateSolicitudModal"
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 pointer-events-none"
+  >
+    <div
+      class="bg-white rounded-xl shadow-lg w-full max-w-6xl h-[90vh] mx-4 relative flex flex-col pointer-events-auto"
     >
-      <span class="mr-2">+ Nuevo emprendimiento</span>
-    </button>
-  </div>
+      <button
+        type="button"
+        (click)="closeCreateSolicitudModal()"
+        class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl leading-none"
+      >
+        ×
+      </button>
 
-  <div *ngIf="!emprendimientos.length" class="border border-dashed border-gray-300 rounded-xl p-8 text-center">
-    <p class="text-gray-400 text-sm">
-      Aún no tienes emprendimientos registrados. Usa el botón "Nuevo emprendimiento" para crear uno.
-    </p>
-  </div>
+      <!-- Cabecera opcional del “pantallazo” -->
+      <div class="px-6 pt-5 pb-3 border-b">
+        <h3 class="text-lg font-semibold text-gray-800">
+          Crear solicitud de emprendimiento
+        </h3>
+        <p class="text-sm text-gray-500">
+          Completa la información necesaria para registrar tu nuevo emprendimiento.
+        </p>
+      </div>
 
-  <div *ngIf="emprendimientos.length" class="grid gap-4 md:grid-cols-2">
-    <app-cards
-      *ngFor="let emprendimiento of emprendimientos"
-      [items]="[emprendimiento]">
-    </app-cards>
+      <!-- Contenido scrollable -->
+      <div class="flex-1 overflow-auto px-6 pb-6 pt-3">
+        <app-create-solicitud-emprendimiento></app-create-solicitud-emprendimiento>
+      </div>
+    </div>
   </div>
 </div>
