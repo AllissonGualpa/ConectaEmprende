@@ -1,92 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// Interfaces para payload
-interface EmprendimientoDto {
-  id: number;
-  correoComercial: string;
-  correoUees: string;
-  identificacion: string;
-  parienteDirecto: string;
-  nombreComercialEmprendimiento: string;
-  fechaCreacion: string; // ISO
-  ciudad: number;
-  provinia: number;
-  estadoEmpredimiento: boolean;
-  tipoEmprendimiento: string;
-  tipoEmprendimientoId: number;
-  datosPublicos: boolean;
-}
-
-interface CategoriaDto {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  urlImagen: string;
-  idMultimedia: number;
-}
-
-interface EmprendimientoCategoriaDto {
-  emprendimiento: EmprendimientoDto;
-  categoria: CategoriaDto;
-  nombreCategoria: string;
-}
-
-interface DescripcionDto {
-  tipoDescripcion: string;
-  descripcion: string;
-  maxCaracteres: number;
-  obligatorio: boolean;
-  idEmprendimiento: number;
-  emprendimientoId: number;
-}
-
-interface MetricaDto {
-  emprendimientoId: number;
-  metricaId: number;
-  valor: string;
-}
-
-interface PresenciaDigitalDto {
-  emprendimientoId: number;
-  plataforma: string;
-  descripcion: string;
-}
-
-interface ParticipacionComunidadDto {
-  emprendimientoId: number;
-  opcionParticipacionId: number;
-  respuesta: boolean;
-  nombreOpcionParticipacion: string;
-}
-
-interface DeclaracionFinalDto {
-  emprendimientoId: number;
-  declaracionId: number;
-  aceptada: boolean;
-  fechaAceptacion: string; // ISO
-  nombreFirma: string;
-}
-
-interface SolicitudEmprendimientoDataDto {
-  usuarioId: number;
-  emprendimiento: EmprendimientoDto;
-  tipoAccion: string;
-  categorias: EmprendimientoCategoriaDto[];
-  descripciones: DescripcionDto[];
-  metricas: MetricaDto[];
-  presenciasDigitales: PresenciaDigitalDto[];
-  participacionesComunidad: ParticipacionComunidadDto[];
-  declaracionesFinales: DeclaracionFinalDto[];
-  imagenes: string[];
-  tiposMultimedia: string[];
-}
-
-export interface SolicitudEmprendimientoDto {
-  data: SolicitudEmprendimientoDataDto;
-  imagenes: string[];
-}
+import {
+  EmprendimientoDto,
+  EmprendimientoCategoriaDto,
+  DescripcionDto,
+  MetricaDto,
+  PresenciaDigitalDto,
+  ParticipacionComunidadDto,
+  DeclaracionFinalDto,
+  SolicitudEmprendimientoDto,
+} from './create-solicitud-emprendimiento.interfaces';
 
 @Component({
   selector: 'app-create-solicitud-emprendimiento',
@@ -179,6 +103,15 @@ export class CreateSolicitudEmprendimientoComponent {
     autorizaUsoImagenes: false,
     aceptaPoliticasCentro: false,
   };
+
+  // Helper: quita tildes y pasa a minúsculas
+  private normalizeText(value: string | null | undefined): string {
+    if (!value) return '';
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // elimina diacríticos
+      .toLocaleUpperCase();
+  }
 
   get isFirstStep(): boolean {
     return this.currentStep === 0;
@@ -287,21 +220,19 @@ export class CreateSolicitudEmprendimientoComponent {
   }
 
   finish(): void {
-    // Validar multimedia, métricas y declaraciones
     if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {
       return;
     }
 
     const nowIso = new Date().toISOString();
 
-    // Emprendimiento base (muchos campos dummy porque aún no los capturas en el wizard)
     const emprendimientoBase: EmprendimientoDto = {
       id: 0,
-      correoComercial: this.presenciaDigital.instagram || '',
+      correoComercial: this.normalizeText(this.presenciaDigital.instagram),
       correoUees: '',
       identificacion: '',
       parienteDirecto: '',
-      nombreComercialEmprendimiento: this.descripcion.resumen || '',
+      nombreComercialEmprendimiento: this.normalizeText(this.descripcion.resumen),
       fechaCreacion: nowIso,
       ciudad: 0,
       provinia: 0,
@@ -311,23 +242,23 @@ export class CreateSolicitudEmprendimientoComponent {
       datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
     };
 
-    const categoriasSeleccionadas = this.categories
+    const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
       .filter(c => c.selected)
-      .map<EmprendimientoCategoriaDto>((c, index) => ({
+      .map((c, index) => ({
         emprendimiento: emprendimientoBase,
         categoria: {
           id: index + 1,
-          nombre: c.label,
+          nombre: this.normalizeText(c.label),
           descripcion: '',
           urlImagen: '',
           idMultimedia: 0,
         },
-        nombreCategoria: c.label,
+        nombreCategoria: this.normalizeText(c.label),
       }));
 
     const descripciones: DescripcionDto[] = [
       {
-        tipoDescripcion: 'Resumen',
+        tipoDescripcion: this.normalizeText('Resumen'),
         descripcion: this.descripcion.resumen,
         maxCaracteres: 500,
         obligatorio: true,
@@ -335,7 +266,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: 'Diferencial',
+        tipoDescripcion: this.normalizeText('Diferencial'),
         descripcion: this.descripcion.diferencial,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -343,7 +274,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: 'Público objetivo',
+        tipoDescripcion: this.normalizeText('Público objetivo'),
         descripcion: this.descripcion.publicoObjetivo,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -351,7 +282,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: 'Propósito',
+        tipoDescripcion: this.normalizeText('Propósito'),
         descripcion: this.descripcion.proposito,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -359,7 +290,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: 'Historia',
+        tipoDescripcion: this.normalizeText('Historia'),
         descripcion: this.historia.historiaGeneral,
         maxCaracteres: 2000,
         obligatorio: true,
@@ -372,40 +303,44 @@ export class CreateSolicitudEmprendimientoComponent {
       {
         emprendimientoId: 0,
         metricaId: 1,
-        valor: this.metricas.clientes,
+        valor: this.normalizeText(this.metricas.clientes),
       },
       {
         emprendimientoId: 0,
         metricaId: 2,
-        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO',
+        valor: this.normalizeText(this.metricas.haGeneradoVentas ? 'SI' : 'NO'),
       },
       {
         emprendimientoId: 0,
         metricaId: 3,
-        valor: this.metricas.haParticipadoIncubacion ? (this.metricas.nombreProgramaIncubacion || 'SI') : 'NO',
+        valor: this.normalizeText(
+          this.metricas.haParticipadoIncubacion
+            ? (this.metricas.nombreProgramaIncubacion || 'SI')
+            : 'NO'
+        ),
       },
     ];
 
     const presenciasDigitales: PresenciaDigitalDto[] = [
       {
         emprendimientoId: 0,
-        plataforma: 'Instagram',
-        descripcion: this.presenciaDigital.instagram,
+        plataforma: 'instagram',
+        descripcion: this.normalizeText(this.presenciaDigital.instagram),
       },
       {
         emprendimientoId: 0,
-        plataforma: 'SitioWeb',
-        descripcion: this.presenciaDigital.sitioWeb,
+        plataforma: 'sitio web',
+        descripcion: this.normalizeText(this.presenciaDigital.sitioWeb),
       },
       {
         emprendimientoId: 0,
-        plataforma: 'WhatsApp',
-        descripcion: this.presenciaDigital.whatsapp,
+        plataforma: 'whatsapp',
+        descripcion: this.normalizeText(this.presenciaDigital.whatsapp),
       },
       {
         emprendimientoId: 0,
-        plataforma: 'TikTok',
-        descripcion: this.presenciaDigital.tiktok,
+        plataforma: 'tiktok',
+        descripcion: this.normalizeText(this.presenciaDigital.tiktok),
       },
     ];
 
@@ -414,19 +349,19 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
         opcionParticipacionId: 1,
         respuesta: !!this.participacion.interesRankings,
-        nombreOpcionParticipacion: 'Rankings',
+        nombreOpcionParticipacion: this.normalizeText('Rankings'),
       },
       {
         emprendimientoId: 0,
         opcionParticipacionId: 2,
         respuesta: !!this.participacion.publicacionesMensuales,
-        nombreOpcionParticipacion: 'PublicacionesMensuales',
+        nombreOpcionParticipacion: this.normalizeText('PublicacionesMensuales'),
       },
       {
         emprendimientoId: 0,
         opcionParticipacionId: 3,
         respuesta: !!this.participacion.recibirFeedback,
-        nombreOpcionParticipacion: 'Feedback',
+        nombreOpcionParticipacion: this.normalizeText('Feedback'),
       },
     ];
 
@@ -461,26 +396,27 @@ export class CreateSolicitudEmprendimientoComponent {
       },
     ];
 
-    // Para este ejemplo, las imágenes se envían como nombres o placeholders
     const imagenes: string[] = [
-      this.multimedia.logo ? 'logo.png' : '',
-      ...this.multimedia.fotosProductos.map((_, i) => `fotoProducto_${i + 1}.png`),
-      this.multimedia.banner ? 'banner.png' : '',
-      this.multimedia.videoPresentacion ? 'video.mp4' : '',
+      this.multimedia.logo ? this.normalizeText('logo.png') : '',
+      ...this.multimedia.fotosProductos.map((_, i) =>
+        this.normalizeText(`fotoProducto_${i + 1}.png`)
+      ),
+      this.multimedia.banner ? this.normalizeText('banner.png') : '',
+      this.multimedia.videoPresentacion ? this.normalizeText('video.mp4') : '',
     ].filter(x => !!x);
 
     const tiposMultimedia: string[] = [
-      this.multimedia.logo ? 'logo' : '',
-      this.multimedia.fotosProductos.length ? 'fotosProductos' : '',
-      this.multimedia.banner ? 'banner' : '',
-      this.multimedia.videoPresentacion ? 'video' : '',
+      this.multimedia.logo ? this.normalizeText('logo') : '',
+      this.multimedia.fotosProductos.length ? this.normalizeText('fotosProductos') : '',
+      this.multimedia.banner ? this.normalizeText('banner') : '',
+      this.multimedia.videoPresentacion ? this.normalizeText('video') : '',
     ].filter(x => !!x);
 
     const payload: SolicitudEmprendimientoDto = {
       data: {
         usuarioId: 0, // ajusta con el id real del usuario
         emprendimiento: emprendimientoBase,
-        tipoAccion: 'CREAR', // o el valor que manejes
+        tipoAccion: this.normalizeText('CREAR'), // o el valor que manejes
         categorias: categoriasSeleccionadas,
         descripciones,
         metricas,
