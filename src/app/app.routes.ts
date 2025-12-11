@@ -42,7 +42,7 @@ export const routes: Routes = [
 
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
-  { path: 'emprendedor/roadmap', component: RoadmapComponent, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
+  { path: 'emprendedor/roadmap/:id', component: RoadmapComponent, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
 
   // Administración
   { path: 'admin', component: AdminDashboardComponent, canActivate: [RoleGuard], data: { roles: ['ADMINISTRADOR'] } },
