@@ -31,6 +31,7 @@ import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-co
 export class LoginComponent {
   loginForm: FormGroup;
   hidePassword = true;
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -67,6 +68,8 @@ export class LoginComponent {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
 
+      this.loading = true;
+
       this.authService.login(email, password).subscribe({
         next: (response) => {
           localStorage.setItem('token', response.jwtToken);
@@ -74,24 +77,30 @@ export class LoginComponent {
           // Obtener perfil desde el backend y redirigir según rol
           this.authService.getPerfil().subscribe({
             next: (perfil) => {
-              // Ajusta 'rol' al nombre real de la propiedad en tu modelo
               const rol = perfil?.nombreRol;
 
               if (rol === 'ADMINISTRADOR') {
-                this.router.navigate(['/admin']);
+                this.router.navigate(['/admin']).finally(() => {
+                  this.loading = false;
+                });
               } else {
-                this.router.navigate(['/inicio']);
+                this.router.navigate(['/inicio']).finally(() => {
+                  this.loading = false;
+                });
               }
             },
             error: (errPerfil) => {
               console.error('Error al obtener el perfil:', errPerfil);
               // En caso de error al traer el perfil, lo enviamos a inicio por defecto
-              this.router.navigate(['/inicio']);
+              this.router.navigate(['/inicio']).finally(() => {
+                this.loading = false;
+              });
             }
           });
         },
         error: (err) => {
           console.error('Error al iniciar sesión:', err);
+          this.loading = false;
 
           this.dialog.open(MensajeConfirmacionComponent, {
             width: '380px',
