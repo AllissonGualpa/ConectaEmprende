@@ -15,6 +15,7 @@ import { BlogService } from '../blog.service';
 import { Tag, AdminBlog } from '../blog.types';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { AuthService } from '../../auth/auth.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-blog',
@@ -69,41 +70,41 @@ export class AdminBlogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadTags();
-    this.loadBlogs();
+    // 1) Primero cargamos tags sin tocar loading global
+    this.loadTagsAndBlogs();
   }
 
-  loadTags() {
-    this.loading = true; // Activar loading
+  private loadTagsAndBlogs(): void {
+    this.loading = true; // empezamos estado de carga general
+
     this.blogService.getAllTags().subscribe({
       next: (tags) => {
         this.availableTags = tags;
-        this.loading = false; // Desactivar loading
+        // 2) cuando terminen los tags, recién pedimos blogs
+        this.loadBlogs();
       },
       error: (err) => {
         console.error('Error al cargar tags:', err);
-        this.loading = false; // Desactivar loading en caso de error
+        // aunque fallen los tags, intentamos cargar blogs para no bloquear la pantalla
+        this.loadBlogs();
       },
     });
   }
 
-  loadBlogs() {
-    this.loading = true; // Activar loading
-    const token = localStorage.getItem('token');
-    if (!token) {
-      this.dialog.open(MensajeConfirmacionComponent, {
-        width: '420px',
-        data: {
-          subject: 'Autenticación',
-          title: 'No estás autenticado',
-          subtitle: 'Por favor, inicia sesión para continuar.',
-          type: 'error',
-        },
-      });
-      this.router.navigate(['/login']);
-      this.loading = false;
-      return;
-    }
+  loadTags() {
+    // Si quieres reutilizarlo en otro lado, que NO toque 'loading'
+    this.blogService.getAllTags().subscribe({
+      next: (tags) => {
+        this.availableTags = tags;
+      },
+      error: (err) => {
+        console.error('Error al cargar tags:', err);
+      },
+    });
+  }
+
+  loadBlogs(): void {
+    this.loading = true;
 
     this.blogService
       .getBlogs({
@@ -114,6 +115,11 @@ export class AdminBlogComponent implements OnInit {
         fechaInicio: this.fechaInicio,
         fechaFin: this.fechaFin,
       })
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        })
+      )
       .subscribe({
         next: (response) => {
           // Detecta si la respuesta tiene paginación
@@ -140,12 +146,11 @@ export class AdminBlogComponent implements OnInit {
 
           this.applyFilters();
           this.computePaginationInfo();
-          this.loading = false;
         },
-
         error: (error) => {
           console.error('Error al cargar blogs:', error);
-          this.loading = false; // Desactivar loading en caso de error
+          this.blogs = [];
+          this.filteredBlogs = [];
           if (error.status === 401) {
             this.dialog.open(MensajeConfirmacionComponent, {
               width: '420px',
@@ -211,12 +216,12 @@ export class AdminBlogComponent implements OnInit {
     }
   }
 
-  onFilterChange() {
+  onFilterChange(): void {
     this.currentPage = 0;
     this.loadBlogs();
   }
 
-  onSearch(event: any) {
+  onSearch(event: any): void {
     this.searchTerm = event.target.value.toLowerCase();
     this.applyFilters();
   }
@@ -311,6 +316,11 @@ export class AdminBlogComponent implements OnInit {
             accion as 'archivar' | 'desarchivar',
             userId
           )
+          .pipe(
+            finalize(() => {
+              this.loading = false; // Desactivar loading después de la operación
+            })
+          )
           .subscribe({
             next: () => {
               this.dialog.open(MensajeConfirmacionComponent, {
@@ -337,7 +347,6 @@ export class AdminBlogComponent implements OnInit {
                   type: 'error',
                 },
               });
-              this.loading = false; // Desactivar loading en caso de error
             },
           });
       }

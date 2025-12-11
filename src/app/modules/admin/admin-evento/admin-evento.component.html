@@ -123,7 +123,12 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex gap-2">
-                  <button mat-icon-button color="primary" (click)="editarEvento(evento)">
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    (click)="editarEvento(evento)"
+                    title="Editar evento"
+                  >
                     <mat-icon>edit</mat-icon>
                   </button>
                   <!-- Icono dinámico según estado -->
@@ -131,6 +136,7 @@
                     mat-icon-button
                     (click)="eliminarEvento(evento)"
                     [color]="evento.estado.toLowerCase() === 'cancelado' ? 'primary' : 'warn'"
+                    [title]="evento.estado.toLowerCase() === 'cancelado' ? 'Activar evento' : 'Cancelar evento'"
                   >
                     <mat-icon>
                       {{ evento.estado.toLowerCase() === 'cancelado' ? 'check_circle' : 'block' }}
