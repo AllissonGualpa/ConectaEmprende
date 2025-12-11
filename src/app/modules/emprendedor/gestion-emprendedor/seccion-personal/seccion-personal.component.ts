@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../../../auth/auth.service';
+import { EditarPerfilComponent, EditarPerfilData } from '../editar-perfil/editar-perfil.component';
 
 interface InformacionPersonal {
   nombre: string;
@@ -13,6 +14,7 @@ interface InformacionPersonal {
   fechaRegistro: string;
   direccion: string;
   avatarUrl?: string;
+  genero?: string;
 }
 
 @Component({
@@ -22,7 +24,8 @@ interface InformacionPersonal {
     CommonModule,
     MatButtonModule,
     MatIconModule,
-    MatCardModule
+    MatCardModule,
+    EditarPerfilComponent,
   ],
   providers: [AuthService],
   templateUrl: './seccion-personal.component.html',
@@ -38,6 +41,15 @@ export class SeccionPersonalComponent implements OnInit {
     direccion: ''
   };
 
+  showEditarPerfil = false;
+  formData: EditarPerfilData = {
+    nombre: '',
+    apellido: '',
+    genero: '',
+    correo: '',
+    fechaNacimiento: '',
+  };
+
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
@@ -51,10 +63,10 @@ export class SeccionPersonalComponent implements OnInit {
         fechaNacimiento: this.formatDateWithoutTime(perfil.fechaNacimiento),
         fechaRegistro: this.formatDateWithoutTime(perfil.fechaRegistro),
         direccion: perfil.direccion ?? '',
-        avatarUrl: perfil.avatarUrl ?? undefined
+        avatarUrl: perfil.avatarUrl ?? undefined,
+        genero: perfil.genero ?? '',
       };
     } else {
-      // Valores por defecto si no hay perfil en localStorage
       this.informacionPersonal = {
         nombre: 'Usuario',
         email: '',
@@ -72,7 +84,6 @@ export class SeccionPersonalComponent implements OnInit {
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     if (isNaN(date.getTime())) return '';
 
-    // Formato dd/MM/yyyy
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -81,13 +92,45 @@ export class SeccionPersonalComponent implements OnInit {
   }
 
   editarPerfil(): void {
-    // Aquí implementas la lógica para editar el perfil
-    // Puede abrir un dialog de Material o navegar a otra vista
+    const perfil = this.authService.getPerfilLocal() || {};
+    this.formData = {
+      nombre: perfil.nombre ?? '',
+      apellido: perfil.apellido ?? '',
+      genero: perfil.genero ?? '',
+      correo: this.informacionPersonal.email,
+      // Guardamos fechaNacimiento como ISO, si viene con hora ya debería estarlo
+      fechaNacimiento: perfil.fechaNacimiento ?? '',
+    };
+    this.showEditarPerfil = true;
   }
 
-  // cargarDatosUsuario(): void {
-  //   this.usuarioService.obtenerPerfil().subscribe(datos => {
-  //     this.informacionPersonal = datos;
-  //   });
-  // }
+  onGuardarPerfil(data: EditarPerfilData): void {
+    const nombreCompleto = `${data.nombre} ${data.apellido}`.trim();
+
+    this.informacionPersonal = {
+      ...this.informacionPersonal,
+      nombre: nombreCompleto,
+      email: data.correo,
+      fechaNacimiento: this.formatDateWithoutTime(data.fechaNacimiento),
+      genero: data.genero,
+    };
+
+    const perfil = this.authService.getPerfilLocal() || {};
+    const updatedPerfil = {
+      ...perfil,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      genero: data.genero,
+      correo: data.correo,
+      fechaNacimiento: data.fechaNacimiento,
+    };
+    // Actualiza aquí según tu implementación real de persistencia
+    // this.authService.setPerfilLocal(updatedPerfil);
+
+    this.showEditarPerfil = false;
+  }
+
+  onCancelarEdicion(): void {
+    this.showEditarPerfil = false;
+  }
 }

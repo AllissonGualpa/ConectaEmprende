@@ -72,6 +72,9 @@ export class InicioComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
+    // Ajusta esta lógica según tu mecanismo de auth real
+    const token = localStorage.getItem('authToken');
+    this.isLoggedIn = !!token;
     // Suscribirse al estado de autenticación
     this.authService.isAuthenticated$.subscribe(status => {
       this.isLoggedIn = status;
