@@ -38,16 +38,16 @@ export class EmprendimientoService {
 
         const formData = new FormData();
 
-        // El backend requiere la parte 'data'
+        // Parte JSON (nombre EXACTO que espera tu API)
         formData.append('data', JSON.stringify(data));
 
-        // Archivos asociados (logo, fotos, banner, video, etc.)
+        // Partes de archivo (campo imágenes múltiple)
         files.forEach(file => {
-            formData.append('imagenes', file);
+            formData.append('imagenes', file); // mismo nombre repetido para cada archivo
         });
 
         return this.http.post(`${this.baseUrlEmprendimientos}`, formData, {
-            headers,
+            headers, // NO se setea Content-Type manualmente
         });
     }
 }

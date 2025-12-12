@@ -110,13 +110,13 @@ export class CreateSolicitudEmprendimientoComponent {
     aceptaPoliticasCentro: false,
   };
 
-  // Helper: quita tildes y pasa a minúsculas
+  // Helper: quita tildes y pasa a MAYÚSCULAS
   private normalizeText(value: string | null | undefined): string {
     if (!value) return '';
     return value
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // elimina diacríticos
-      .toLocaleUpperCase();
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
   }
 
   get isFirstStep(): boolean {
@@ -232,13 +232,15 @@ export class CreateSolicitudEmprendimientoComponent {
 
     const nowIso = new Date().toISOString();
 
+    const emprendimientoId = 0;
+
     const emprendimientoBase: EmprendimientoDto = {
-      id: 0,
-      correoComercial: this.normalizeText(this.presenciaDigital.instagram),
+      id: emprendimientoId,
+      correoComercial: this.presenciaDigital.instagram, // en tu ejemplo no está normalizado
       correoUees: '',
       identificacion: '',
       parienteDirecto: '',
-      nombreComercialEmprendimiento: this.normalizeText(this.descripcion.resumen),
+      nombreComercialEmprendimiento: this.descripcion.resumen, // igual al texto original
       fechaCreacion: nowIso,
       ciudad: 0,
       provinia: 0,
@@ -254,7 +256,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimiento: emprendimientoBase,
         categoria: {
           id: index + 1,
-          nombre: this.normalizeText(c.label),
+          nombre: this.normalizeText(c.label), // TECNOLOGIA Y SOFTWARE, ARTE Y CULTURA, etc.
           descripcion: '',
           urlImagen: '',
           idMultimedia: 0,
@@ -264,7 +266,7 @@ export class CreateSolicitudEmprendimientoComponent {
 
     const descripciones: DescripcionDto[] = [
       {
-        tipoDescripcion: this.normalizeText('Resumen'),
+        tipoDescripcion: this.normalizeText('RESUMEN'),
         descripcion: this.descripcion.resumen,
         maxCaracteres: 500,
         obligatorio: true,
@@ -272,7 +274,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: this.normalizeText('Diferencial'),
+        tipoDescripcion: this.normalizeText('DIFERENCIAL'),
         descripcion: this.descripcion.diferencial,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -280,7 +282,8 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: this.normalizeText('Público objetivo'),
+        // PUBLICO OBJETIVO (sin tilde y en mayúsculas)
+        tipoDescripcion: this.normalizeText('PUBLICO OBJETIVO'),
         descripcion: this.descripcion.publicoObjetivo,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -288,7 +291,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: this.normalizeText('Propósito'),
+        tipoDescripcion: this.normalizeText('PROPOSITO'),
         descripcion: this.descripcion.proposito,
         maxCaracteres: 1000,
         obligatorio: true,
@@ -296,7 +299,7 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
       },
       {
-        tipoDescripcion: this.normalizeText('Historia'),
+        tipoDescripcion: this.normalizeText('HISTORIA'),
         descripcion: this.historia.historiaGeneral,
         maxCaracteres: 2000,
         obligatorio: true,
@@ -309,21 +312,19 @@ export class CreateSolicitudEmprendimientoComponent {
       {
         emprendimientoId: 0,
         metricaId: 1,
-        valor: this.normalizeText(this.metricas.clientes),
+        valor: this.metricas.clientes, // en tu ejemplo es "100+" tal cual
       },
       {
         emprendimientoId: 0,
         metricaId: 2,
-        valor: this.normalizeText(this.metricas.haGeneradoVentas ? 'SI' : 'NO'),
+        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO',
       },
       {
         emprendimientoId: 0,
         metricaId: 3,
-        valor: this.normalizeText(
-          this.metricas.haParticipadoIncubacion
-            ? (this.metricas.nombreProgramaIncubacion || 'SI')
-            : 'NO'
-        ),
+        valor: this.metricas.haParticipadoIncubacion
+          ? (this.metricas.nombreProgramaIncubacion || 'SI')
+          : 'NO',
       },
     ];
 
@@ -331,22 +332,22 @@ export class CreateSolicitudEmprendimientoComponent {
       {
         emprendimientoId: 0,
         plataforma: 'instagram',
-        descripcion: this.normalizeText(this.presenciaDigital.instagram),
+        descripcion: this.presenciaDigital.instagram,
       },
       {
         emprendimientoId: 0,
         plataforma: 'sitio web',
-        descripcion: this.normalizeText(this.presenciaDigital.sitioWeb),
+        descripcion: this.presenciaDigital.sitioWeb,
       },
       {
         emprendimientoId: 0,
         plataforma: 'whatsapp',
-        descripcion: this.normalizeText(this.presenciaDigital.whatsapp),
+        descripcion: this.presenciaDigital.whatsapp,
       },
       {
         emprendimientoId: 0,
         plataforma: 'tiktok',
-        descripcion: this.normalizeText(this.presenciaDigital.tiktok),
+        descripcion: this.presenciaDigital.tiktok,
       },
     ];
 
@@ -355,19 +356,19 @@ export class CreateSolicitudEmprendimientoComponent {
         emprendimientoId: 0,
         opcionParticipacionId: 1,
         respuesta: !!this.participacion.interesRankings,
-        nombreOpcionParticipacion: this.normalizeText('Rankings'),
+        nombreOpcionParticipacion: this.normalizeText('RANKINGS'),
       },
       {
         emprendimientoId: 0,
         opcionParticipacionId: 2,
         respuesta: !!this.participacion.publicacionesMensuales,
-        nombreOpcionParticipacion: this.normalizeText('PublicacionesMensuales'),
+        nombreOpcionParticipacion: this.normalizeText('PUBLICACIONESMENSUALES'),
       },
       {
         emprendimientoId: 0,
         opcionParticipacionId: 3,
         respuesta: !!this.participacion.recibirFeedback,
-        nombreOpcionParticipacion: this.normalizeText('Feedback'),
+        nombreOpcionParticipacion: this.normalizeText('FEEDBACK'),
       },
     ];
 
@@ -402,26 +403,41 @@ export class CreateSolicitudEmprendimientoComponent {
       },
     ];
 
-    const imagenes: string[] = [
-      this.multimedia.logo ? this.normalizeText('logo.png') : '',
-      ...this.multimedia.fotosProductos.map((_, i) =>
-        this.normalizeText(`fotoProducto_${i + 1}.png`)
-      ),
-      this.multimedia.banner ? this.normalizeText('banner.png') : '',
-      this.multimedia.videoPresentacion ? this.normalizeText('video.mp4') : '',
-    ].filter(x => !!x);
+    const imagenes: string[] = [];
 
-    const tiposMultimedia: string[] = [
-      this.multimedia.logo ? this.normalizeText('logo') : '',
-      this.multimedia.fotosProductos.length ? this.normalizeText('fotosProductos') : '',
-      this.multimedia.banner ? this.normalizeText('banner') : '',
-      this.multimedia.videoPresentacion ? this.normalizeText('video') : '',
-    ].filter(x => !!x);
+    // LOGO-{id}.PNG
+    if (this.multimedia.logo) {
+      imagenes.push(`LOGO-${emprendimientoId}.PNG`);
+    }
+
+    // FOTOPRODUCTO-{id}-_{1|2}.PNG
+    if (this.multimedia.fotosProductos.length > 0) {
+      imagenes.push(`FOTOPRODUCTO-${emprendimientoId}-_1.PNG`);
+    }
+    if (this.multimedia.fotosProductos.length > 1) {
+      imagenes.push(`FOTOPRODUCTO-${emprendimientoId}-_2.PNG`);
+    }
+
+    // BANNER-{id}.PNG
+    if (this.multimedia.banner) {
+      imagenes.push(`BANNER-${emprendimientoId}.PNG`);
+    }
+
+    // VIDEO-{id}.MP4
+    if (this.multimedia.videoPresentacion) {
+      imagenes.push(`VIDEO-${emprendimientoId}.MP4`);
+    }
+
+    const tiposMultimedia: string[] = [];
+    if (this.multimedia.logo) tiposMultimedia.push('LOGO');
+    if (this.multimedia.fotosProductos.length > 0) tiposMultimedia.push('FOTOSPRODUCTOS');
+    if (this.multimedia.banner) tiposMultimedia.push('BANNER');
+    if (this.multimedia.videoPresentacion) tiposMultimedia.push('VIDEO');
 
     const data: SolicitudEmprendimientoDataDto = {
-      usuarioId: 0, // TODO: reemplazar con el id real del usuario autenticado
+      usuarioId: 0, // TODO: setear id real del usuario
       emprendimiento: emprendimientoBase,
-      tipoAccion: this.normalizeText('CREAR'),
+      tipoAccion: 'CREAR',
       categorias: categoriasSeleccionadas,
       descripciones,
       metricas,
@@ -432,17 +448,10 @@ export class CreateSolicitudEmprendimientoComponent {
       tiposMultimedia,
     };
 
-    // Construir arreglo de archivos para multipart/form-data
     const files: File[] = [];
-    if (this.multimedia.logo) {
-      files.push(this.multimedia.logo);
-    }
-    if (this.multimedia.banner) {
-      files.push(this.multimedia.banner);
-    }
-    if (this.multimedia.videoPresentacion) {
-      files.push(this.multimedia.videoPresentacion);
-    }
+    if (this.multimedia.logo) files.push(this.multimedia.logo);
+    if (this.multimedia.banner) files.push(this.multimedia.banner);
+    if (this.multimedia.videoPresentacion) files.push(this.multimedia.videoPresentacion);
     if (this.multimedia.fotosProductos.length) {
       files.push(...this.multimedia.fotosProductos);
     }
@@ -452,7 +461,6 @@ export class CreateSolicitudEmprendimientoComponent {
       next: (resp) => {
         console.log('Emprendimiento grabado correctamente', resp);
         this.loading = false;
-        // aquí podrías emitir un evento al padre para cerrar el modal o refrescar la lista
       },
       error: (err) => {
         console.error('Error al grabar emprendimiento', err);
