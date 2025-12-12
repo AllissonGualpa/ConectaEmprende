@@ -9,23 +9,19 @@
     <div class="absolute inset-0 bg-black/10"></div>
 
     <!--contenido-->
-    <div
-      class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[520px] md:min-h-[580px] flex flex-col items-center justify-center text-center text-white">
-
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-8 min-h-[520px] md:min-h-[580px] flex flex-col items-start justify-center text-left text-white">
       <!--titulo-->
       <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
         Eventos
       </h1> <br>
-
       <!--parrafo-->
-      <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium max-w-2xl mx-auto leading-relaxed">
+      <p class="text-base sm:text-lg md:text-xl text-white/90 font-medium leading-relaxed mt-2 max-w-5xl lg:max-w-6xl">
         Descubre los próximos eventos que impulsan el ecosistema emprendedor. <br>
         Conecta, aprende y haz crecer tus ideas junto a otros innovadores. ¡No te los pierdas!
       </p>
-
       <!-- search bar -->
-      <div class="w-full flex justify-center mt-10 px-4 ">
-        <div class="w-full max-w-5xl  z-10">
+      <div class="w-full mt-10 z-10 ">
+        <div class="max-w-5xl lg:max-w-6xl">
           <app-search-bar
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre o tipo'"
