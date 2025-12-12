@@ -10,7 +10,9 @@ import {
   ParticipacionComunidadDto,
   DeclaracionFinalDto,
   SolicitudEmprendimientoDto,
+  SolicitudEmprendimientoDataDto,
 } from './create-solicitud-emprendimiento.interfaces';
+import { EmprendimientoService } from '../../../emprendimiento.service';
 
 @Component({
   selector: 'app-create-solicitud-emprendimiento',
@@ -24,6 +26,10 @@ import {
 })
 export class CreateSolicitudEmprendimientoComponent {
   currentStep = 0;
+
+  loading = false;
+
+  constructor(private emprendimientoService: EmprendimientoService) {}
 
   steps = [
     { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
@@ -412,24 +418,47 @@ export class CreateSolicitudEmprendimientoComponent {
       this.multimedia.videoPresentacion ? this.normalizeText('video') : '',
     ].filter(x => !!x);
 
-    const payload: SolicitudEmprendimientoDto = {
-      data: {
-        usuarioId: 0, // ajusta con el id real del usuario
-        emprendimiento: emprendimientoBase,
-        tipoAccion: this.normalizeText('CREAR'), // o el valor que manejes
-        categorias: categoriasSeleccionadas,
-        descripciones,
-        metricas,
-        presenciasDigitales,
-        participacionesComunidad,
-        declaracionesFinales,
-        imagenes,
-        tiposMultimedia,
-      },
-      imagenes, // mismas o adicionales según tu API
+    const data: SolicitudEmprendimientoDataDto = {
+      usuarioId: 0, // TODO: reemplazar con el id real del usuario autenticado
+      emprendimiento: emprendimientoBase,
+      tipoAccion: this.normalizeText('CREAR'),
+      categorias: categoriasSeleccionadas,
+      descripciones,
+      metricas,
+      presenciasDigitales,
+      participacionesComunidad,
+      declaracionesFinales,
+      imagenes,
+      tiposMultimedia,
     };
 
-    console.log('Payload de solicitud de emprendimiento', payload);
+    // Construir arreglo de archivos para multipart/form-data
+    const files: File[] = [];
+    if (this.multimedia.logo) {
+      files.push(this.multimedia.logo);
+    }
+    if (this.multimedia.banner) {
+      files.push(this.multimedia.banner);
+    }
+    if (this.multimedia.videoPresentacion) {
+      files.push(this.multimedia.videoPresentacion);
+    }
+    if (this.multimedia.fotosProductos.length) {
+      files.push(...this.multimedia.fotosProductos);
+    }
+
+    this.loading = true;
+    this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
+      next: (resp) => {
+        console.log('Emprendimiento grabado correctamente', resp);
+        this.loading = false;
+        // aquí podrías emitir un evento al padre para cerrar el modal o refrescar la lista
+      },
+      error: (err) => {
+        console.error('Error al grabar emprendimiento', err);
+        this.loading = false;
+      },
+    });
   }
 
   // Manejo de carga de archivos
