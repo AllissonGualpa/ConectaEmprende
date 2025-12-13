@@ -94,16 +94,39 @@ export class AdminAutoevaluacionComponent implements OnInit {
         fechaFin: this.fechaFin || undefined
       })
       .subscribe({
-        next: (data: Autoevaluacion[]) => {
-          this.autoevaluaciones = data || [];
-          this.totalElements = this.autoevaluaciones.length;
-
+        next: (response: any) => {
+          console.log('Respuesta del API:', response);
+          
+          // Manejar diferentes formatos de respuesta
+          let data: Autoevaluacion[] = [];
+          
+          if (Array.isArray(response)) {
+            data = response;
+          } else if (response?.data && Array.isArray(response.data)) {
+            data = response.data;
+          } else if (response?.content && Array.isArray(response.content)) {
+            data = response.content;
+          } else if (response?.emprendimientos && Array.isArray(response.emprendimientos)) {
+            data = response.emprendimientos;
+          }
+          
+          console.log('Data procesada:', data);
+          
+          this.autoevaluaciones = data;
           this.applyFilters();
-          this.computePaginationInfo();
-
           this.loading = false;
         },
-        error: () => {
+        error: (err) => {
+          console.error('Error al cargar autoevaluaciones:', err);
+          this.autoevaluaciones = [];
+          this.filtered = [];
+          this.totalElements = 0;
+          this.totalPages = 0;
+          this.pages = [];
+          this.loading = false;
+        },
+        complete: () => {
+          console.log('Observable completado');
           this.loading = false;
         }
       });
@@ -114,16 +137,23 @@ export class AdminAutoevaluacionComponent implements OnInit {
     const term = (this.searchTerm || '').toLowerCase().trim();
 
     this.filtered = this.autoevaluaciones.filter(a =>
-      a.nombreComercial.toLowerCase().includes(term) ||
-      a.categorias.toLowerCase().includes(term) ||
-      a.tipo.toLowerCase().includes(term)
+      (a.nombreComercial || '').toLowerCase().includes(term) ||
+      (a.categorias || '').toLowerCase().includes(term) ||
+      (a.tipo || '').toLowerCase().includes(term)
     );
+
+    this.computePaginationInfo();
   }
 
   /** Paginar localmente */
   computePaginationInfo(): void {
     this.totalElements = this.filtered.length;
-    this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+    this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
+
+    // Asegurar que currentPage esté en rango válido
+    if (this.currentPage >= this.totalPages) {
+      this.currentPage = Math.max(0, this.totalPages - 1);
+    }
 
     this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
 
