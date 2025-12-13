@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 export interface SearchPayload {
   query: string;
@@ -19,7 +19,18 @@ export interface SearchPayload {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatDatepickerModule, MatNativeDateModule, MatInputModule, MatFormFieldModule],
   templateUrl: './search-bar.component.html',
-  styleUrls: ['./search-bar.component.css']
+  styleUrls: ['./search-bar.component.css'],
+  animations: [
+    trigger('expandCollapse', [
+      transition(':enter', [
+        style({ height: '0', opacity: 0 }),
+        animate('250ms ease-out', style({ height: '*', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ height: '0', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
   @Output() search = new EventEmitter<SearchPayload>();
@@ -36,6 +47,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 
   form: FormGroup = this.fb.group({ query: [''] });
   private sub?: Subscription;
+  showMobileFilters = false;
 
   constructor(private fb: FormBuilder) {}
 

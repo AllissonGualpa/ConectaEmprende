@@ -2,10 +2,13 @@
   <form
     (ngSubmit)="submit()"
     [formGroup]="form"
-    class="w-full max-w-6xl bg-white rounded-2xl md:rounded-full shadow-lg px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:gap-4 lg:gap-6 relative z-50">
+    class="w-full max-w-6xl bg-white rounded-lg md:rounded-xl shadow-lg px-4 sm:px-6 py-4 sm:py-5 flex flex-col md:flex-row md:items-center md:gap-4 lg:gap-6 relative z-50">
 
     <!--input-->
-    <div class="flex-1 min-w-0">
+    <div class="flex-1 min-w-0 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-400 flex-shrink-0 md:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
+      </svg>
       <input
         formControlName="query"
         type="search"
@@ -13,6 +16,20 @@
         aria-label="Buscar"
         class="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base md:text-lg"
       />
+      <!-- Botón filtros móvil -->
+      <button
+        type="button"
+        (click)="showMobileFilters = !showMobileFilters"
+        *ngIf="filters.length > 0"
+        class="md:hidden flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        <span class="text-xs font-medium">Filtros</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 transition-transform" [class.rotate-180]="showMobileFilters" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
     </div>
 
     <!-- separador -->
@@ -21,23 +38,33 @@
     <!--filtros desktop-->
     <div class="hidden md:flex items-center gap-3 lg:gap-6 flex-wrap">
       <ng-container *ngFor="let f of filters">
-        <div class="flex flex-col text-left min-w-[120px]">
-          <span class="text-xs text-gray-400 leading-tight mb-1">{{ f.label }}</span>
+        <div class="flex flex-col text-left min-w-[100px]">
+          <span class="text-xs text-orange-500 font-semibold leading-tight mb-0.5">{{ f.label }}</span>
           <ng-container [ngSwitch]="f.key">
             <ng-container *ngSwitchCase="'date'">
-              <mat-form-field appearance="fill" class="w-36 lg:w-40">
-                <input matInput [matDatepicker]="picker" [formControlName]="f.key" />
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
+              <div class="relative flex items-center">
+                <input
+                  type="date"
+                  [formControlName]="f.key"
+                  class="text-sm text-gray-500 bg-transparent outline-none cursor-pointer hover:text-gray-700 transition-colors w-28"
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-400 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                </svg>
+              </div>
             </ng-container>
             <ng-container *ngSwitchDefault>
-              <select
-                [formControlName]="f.key"
-                class="text-sm lg:text-base text-gray-700 bg-transparent outline-none cursor-pointer hover:text-gray-900 transition-colors">
-                <option value="">Seleccionar</option>
-                <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
-              </select>
+              <div class="relative flex items-center">
+                <select
+                  [formControlName]="f.key"
+                  class="text-sm text-gray-500 bg-transparent outline-none cursor-pointer hover:text-gray-700 transition-colors appearance-none pr-4">
+                  <option value="">Seleccionar</option>
+                  <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+                </select>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-400 absolute right-0 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                </svg>
+              </div>
             </ng-container>
           </ng-container>
         </div>
@@ -48,34 +75,68 @@
     <button
       type="submit"
       aria-label="Buscar"
-      class="mt-3 md:mt-0 md:ml-2 lg:ml-3 inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0 self-center md:self-auto">
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      class="hidden md:inline-flex mt-3 md:mt-0 md:ml-2 lg:ml-3 items-center justify-center bg-white text-gray-700 rounded-full w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0 self-center md:self-auto">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
       </svg>
     </button>
 
-    <!-- filtros móvil -->
-    <div class="mt-4 md:hidden flex flex-col gap-3 w-full">
-      <ng-container *ngFor="let f of filters">
-        <ng-container [ngSwitch]="f.key">
-          <ng-container *ngSwitchCase="'date'">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-label>{{ f.label }}</mat-label>
-              <input matInput [matDatepicker]="mobilePicker" [formControlName]="f.key" />
-              <mat-datepicker-toggle matSuffix [for]="mobilePicker"></mat-datepicker-toggle>
-              <mat-datepicker #mobilePicker></mat-datepicker>
-            </mat-form-field>
-          </ng-container>
-          <ng-container *ngSwitchDefault>
-            <select
-              [formControlName]="f.key"
-              class="w-full text-sm sm:text-base p-3 border border-gray-300 rounded-lg outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all bg-white text-gray-700">
-              <option value="">{{ f.label }}</option>
-              <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
-            </select>
+    <!-- filtros móvil mejorado -->
+    <div 
+      *ngIf="showMobileFilters"
+      [@expandCollapse]
+      class="md:hidden w-full mt-4 pt-4 border-t border-gray-100 overflow-hidden">
+      
+      <div class="grid grid-cols-2 gap-3">
+        <ng-container *ngFor="let f of filters; let i = index">
+          <ng-container [ngSwitch]="f.key">
+            <ng-container *ngSwitchCase="'date'">
+              <div class="col-span-2 sm:col-span-1">
+                <label class="text-xs text-orange-500 font-semibold mb-1.5 block">{{ f.label }}</label>
+                <div class="relative">
+                  <input
+                    type="date"
+                    [formControlName]="f.key"
+                    class="w-full text-sm p-2.5 pl-9 border border-gray-200 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-200 transition-all bg-gray-50 text-gray-600"
+                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+              <div class="col-span-2 sm:col-span-1">
+                <label class="text-xs text-orange-500 font-semibold mb-1.5 block">{{ f.label }}</label>
+                <div class="relative">
+                  <select
+                    [formControlName]="f.key"
+                    class="w-full text-sm p-2.5 pl-9 border border-gray-200 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-200 transition-all bg-gray-50 text-gray-600 appearance-none">
+                    <option value="">Seleccionar</option>
+                    <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+                  </select>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </ng-container>
           </ng-container>
         </ng-container>
-      </ng-container>
+      </div>
+
+      <!-- Botón buscar móvil -->
+      <button
+        type="submit"
+        class="w-full mt-4 py-2.5 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
+        </svg>
+        Buscar
+      </button>
     </div>
   </form>
 </div>
