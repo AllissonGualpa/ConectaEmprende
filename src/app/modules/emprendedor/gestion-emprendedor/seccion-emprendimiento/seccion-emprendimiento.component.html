@@ -1,9 +1,9 @@
-<div class="relative">
+<div class="relative px-4 sm:px-0">
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h2 class="text-2xl font-bold text-gray-800">Mis Emprendimientos</h2>
-        <p class="text-sm text-gray-500">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Mis Emprendimientos</h2>
+        <p class="text-xs sm:text-sm text-gray-500">
           Administra la información de tus emprendimientos registrados.
         </p>
       </div>
@@ -11,9 +11,12 @@
       <button
         type="button"
         (click)="openCreateSolicitudModal()"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1"
+        class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-orange-500 text-white text-sm font-semibold shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 transition-colors"
       >
-        <span class="mr-2">+ Nuevo emprendimiento</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Nuevo emprendimiento</span>
       </button>
     </div>
 
@@ -34,31 +37,38 @@
   <!-- Modal para crear solicitud de emprendimiento -->
   <div
     *ngIf="showCreateSolicitudModal"
-    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 pointer-events-none"
+    class="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/40"
   >
     <div
-      class="bg-white rounded-xl shadow-lg w-full max-w-6xl h-[90vh] mx-4 relative flex flex-col pointer-events-auto"
+      class="bg-white rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-6xl h-[95vh] sm:h-[90vh] sm:mx-4 relative flex flex-col animate-slideUp sm:animate-none"
     >
+      <!-- Barra de arrastre móvil -->
+      <div class="sm:hidden flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+      </div>
+
       <button
         type="button"
         (click)="closeCreateSolicitudModal()"
-        class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl leading-none"
+        class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
       >
-        x
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
 
-      <!-- Cabecera opcional del “pantallazo” -->
-      <div class="px-6 pt-5 pb-3 border-b">
-        <h3 class="text-lg font-semibold text-gray-800">
+      <!-- Cabecera -->
+      <div class="px-4 sm:px-6 pt-2 sm:pt-5 pb-3 border-b">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-800 pr-8">
           Crear solicitud de emprendimiento
         </h3>
-        <p class="text-sm text-gray-500">
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">
           Completa la información necesaria para registrar tu nuevo emprendimiento.
         </p>
       </div>
 
       <!-- Contenido scrollable -->
-      <div class="flex-1 overflow-auto px-6 pb-6 pt-3">
+      <div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
         <app-create-solicitud-emprendimiento></app-create-solicitud-emprendimiento>
       </div>
     </div>
