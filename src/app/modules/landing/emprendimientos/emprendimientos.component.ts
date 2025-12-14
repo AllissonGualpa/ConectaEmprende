@@ -9,6 +9,7 @@ import { SearchBarComponent } from '../../shared/components/search-bar/search-ba
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
 import { EmprendimientoService, EmprendimientosFilter } from '../../emprendimiento.service';
 import { Environment } from '../../../../environments/environment';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-emprendimientos',
@@ -35,16 +36,25 @@ export class EmprendimientosComponent implements OnInit {
   // Filtros dinámicos
   searchFilters: any[] = [];
 
+  // Categoría obtenida de la ruta
+  categoriaFromRoute: string | null = null;
+  initialSearchValues: any = {};
+
   private apiCategorias = Environment.api_url + Environment.api_categorias;
   private apiCiudades = Environment.api_url + Environment.api_ciudades;
 
   constructor(
     private emprendimientoService: EmprendimientoService,
-    private http: HttpClient
+    private http: HttpClient,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    this.loadFiltersAndData();
+    // Leer el parámetro de la ruta antes de cargar filtros
+    this.route.queryParamMap.subscribe(params => {
+      this.categoriaFromRoute = params.get('categoria');
+      this.loadFiltersAndData();
+    });
   }
 
   /**
@@ -71,7 +81,15 @@ export class EmprendimientosComponent implements OnInit {
         this.ciudades = ciudades;
         this.categorias = categorias;
         this.buildSearchFilters();
-        this.fetchEmprendimientos({ tipo: 'EMPRENDIMIENTO' });
+
+        // Si hay categoría en la ruta, setear valor inicial y buscar
+        if (this.categoriaFromRoute) {
+          this.initialSearchValues = { category: this.categoriaFromRoute };
+          this.fetchEmprendimientos({ tipo: 'EMPRENDIMIENTO', categoria: this.categoriaFromRoute });
+        } else {
+          this.initialSearchValues = {};
+          this.fetchEmprendimientos({ tipo: 'EMPRENDIMIENTO' });
+        }
       },
       error: (err) => {
         console.error('Error inesperado al cargar filtros:', err);

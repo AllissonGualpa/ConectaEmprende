@@ -29,9 +29,10 @@
         <div class="max-w-5xl lg:max-w-6xl">
           <app-search-bar
             *ngIf="searchFilters.length > 0"
+            [filters]="searchFilters"
+            [initialValues]="initialSearchValues"
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre o tipo'"
-            [filters]="searchFilters"
           >
           </app-search-bar>
         </div>

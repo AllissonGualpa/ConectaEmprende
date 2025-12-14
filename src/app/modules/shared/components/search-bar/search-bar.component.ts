@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, OnDestroy, SimpleChanges, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -32,7 +32,7 @@ export interface SearchPayload {
     ])
   ]
 })
-export class SearchBarComponent implements OnInit, OnDestroy {
+export class SearchBarComponent implements OnInit, OnDestroy, OnChanges {
   @Output() search = new EventEmitter<SearchPayload>();
 
   // dynamic filters: array of { key,label,options } no agregar nada aqui si no en el html por ejemplo el key date (plantilla)
@@ -44,6 +44,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 
   @Input() labelQuery = 'Buscar por nombre o tipo';
   @Input() containerClass = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+  @Input() initialValues: any;
 
   form: FormGroup = this.fb.group({ query: [''] });
   private sub?: Subscription;
@@ -58,7 +59,20 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         this.form.addControl(f.key, this.fb.control(''));
       }
     });
+
+    // Set initial values if provided
+    if (this.initialValues) {
+      this.form.patchValue(this.initialValues, { emitEvent: false });
+    }
+
     this.sub = this.form.valueChanges.pipe(debounceTime(250)).subscribe(() => this.submit());
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialValues'] && this.initialValues) {
+      // Set initial values when input changes
+      this.form.patchValue(this.initialValues, { emitEvent: false });
+    }
   }
 
   submit() {
