@@ -42,7 +42,7 @@
         </p>
       </div>
 
-      <div *ngIf="emprendimientos.length" class="grid gap-4 md:grid-cols-2">
+      <div *ngIf="emprendimientos.length" >
         <app-cards
           *ngFor="let emprendimiento of emprendimientos"
           [items]="[emprendimiento]">

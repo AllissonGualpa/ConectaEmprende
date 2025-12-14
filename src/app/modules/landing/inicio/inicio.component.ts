@@ -17,6 +17,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class InicioComponent implements OnInit {
   isLoggedIn: boolean = false;
+  loading: boolean = true;
 
   // Cards dinámicos de categorías destacadas
   categoriasDestacadas: any[] = [];
@@ -35,6 +36,7 @@ export class InicioComponent implements OnInit {
       this.isLoggedIn = status;
     });
 
+    this.loading = true;
     // Cargar categorías desde API
     this.http.get<any[]>('http://eureka.osc-fr1.scalingo.io/v1/categorias').subscribe({
       next: (categorias) => {
@@ -44,10 +46,12 @@ export class InicioComponent implements OnInit {
           anchura: 'normal',
           link: `/landing/emprendimientos?categoria=${encodeURIComponent(cat.nombre)}`
         }));
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error al cargar categorías destacadas:', err);
         this.categoriasDestacadas = [];
+        this.loading = false;
       }
     });
   }

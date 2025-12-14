@@ -2,15 +2,13 @@
   class="flex flex-col md:flex-row justify-center items-center min-h-screen p-8 gap-8 md:gap-16 max-w-screen-lg mx-auto relative"
 >
   <!-- Overlay de carga -->
-  <div
-    *ngIf="loading"
-    class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-  >
-    <div class="text-center">
-      <i class="fa-solid fa-spinner fa-spin text-3xl text-white"></i>
-      <p class="mt-2 text-white text-sm">Iniciando sesión...</p>
+  <div *ngIf="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <span class="text-gray-500 text-sm">Iniciando sesión...</span>
     </div>
-  </div>
 
   <!-- Formulario -->
   <div class="w-full max-w-md">
