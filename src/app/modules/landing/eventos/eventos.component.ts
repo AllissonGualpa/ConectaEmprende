@@ -20,39 +20,56 @@ export class EventosComponent implements OnInit {
 
   //SEARCH BAR
    onSearch(payload: { query: string; [key: string]: any }) {
-
-    let result = this.cardsArray.slice();
-
-    // Query text filter
-    const q = payload.query?.trim()?.toLowerCase();
-    if (q) {
-      result = result.filter(i => (i.title || '').toLowerCase().includes(q) || (i.description || '').toLowerCase().includes(q));
+    // Construir los parámetros para la API
+    const params: any = {};
+    if (payload.query) {
+      params.titulo = payload.query;
     }
+    if (payload['month']) {
+      // Convertir nombre de mes a número (soporta "Mayo", "mayo", etc.)
+      const meses = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+      ];
+      const payloadMonthStr = String(payload['month']).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const mesesNormalizados = meses.map(m => m.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+      const idx = mesesNormalizados.indexOf(payloadMonthStr);
+      if (idx >= 0) params.mes = idx + 1;
+    }
+    // No se procesa type porque el payload no lo envía
+    params.page = 0;
+    params.size = this.pageSize;
 
-    // Date filter: payload['date'] is 'YYYY-MM-DD'
-    if (payload['date']) {
-      const payloadDate: string = payload['date'];
-      result = result.filter(item => {
-        if (!item.date) return false;
-        let itemDateStr = '';
-        if (typeof item.date === 'string') {
-          itemDateStr = item.date;
-        } else if (item.date instanceof Date) {
-          itemDateStr = item.date.toISOString().slice(0, 10);
-        } else {
-          itemDateStr = new Date(item.date).toISOString().slice(0, 10);
+    this.eventoService.getPublicEvents(params).subscribe({
+      next: (res: any) => {
+        let items: any[] = [];
+        if (Array.isArray(res)) {
+          items = res;
+        } else if (res?.content && Array.isArray(res.content)) {
+          items = res.content;
+        } else if (res?.data && Array.isArray(res.data)) {
+          items = res.data;
+        } else if (res?.result && Array.isArray(res.result)) {
+          items = res.result;
+        } else if (res?.items && Array.isArray(res.items)) {
+          items = res.items;
         }
-        return itemDateStr === payloadDate;
-      });
-    }
-
-    // Location filter
-    if (payload['location']) {
-      result = result.filter(i => i.location === payload['location']);
-    }
-
-    // assign
-    this.filtered = result;
+        this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
+        this.filtered = this.cardsArray.slice();
+        // Actualizar paginación si es necesario
+        if (typeof res?.size === 'number') this.pageSize = Number(res.size);
+        else if (res?.pageable?.pageSize) this.pageSize = Number(res.pageable.pageSize);
+        if (typeof res?.number === 'number') this.currentPage = Number(res.number);
+        else if (res?.pageable?.pageNumber) this.currentPage = Number(res.pageable.pageNumber || 0);
+        const totalElements = (typeof res?.totalElements === 'number') ? Number(res.totalElements) : ((typeof res?.total === 'number') ? Number(res.total) : this.cardsArray.length);
+        this.totalPages = Math.max(1, Math.ceil(totalElements / this.pageSize));
+      },
+      error: (err: any) => {
+        console.warn('Error cargando eventos públicos desde backend', err);
+        this.cardsArray = [];
+        this.filtered = this.cardsArray.slice();
+      }
+    });
   }
 
   // cards populated from backend
@@ -91,7 +108,7 @@ export class EventosComponent implements OnInit {
     }
 
     private loadEventosFromServer(): void {
-        // Use public paginated API. Defaults: current month, page 0, size 10
+        // Usar filtro de mes si está en la búsqueda, si no, usar mes actual
         const currentMonth = new Date().getMonth() + 1; // JS months are 0-based
         const page = 0;
         const size = this.pageSize;

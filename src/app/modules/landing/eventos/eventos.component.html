@@ -26,8 +26,10 @@
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre o tipo'"
             [filters]="[
-              { key: 'date', label: 'Fecha' },
-              { key: 'type', label: 'Tipo', options: ['Online','Presencial'] }
+              { key: 'month', label: 'Mes', options: [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+              ] }
             ]">
           </app-search-bar>
         </div>
