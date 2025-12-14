@@ -22,16 +22,20 @@ export class SeccionEmprendimientoComponent implements OnInit {
 
   // control del modal
   showCreateSolicitudModal = false;
+  loading = false; // <-- loading agregado
 
   constructor(private emprendimientoService: EmprendimientoService) {}
 
   ngOnInit(): void {
+    this.loading = true;
     this.emprendimientoService.getMisEmprendimientos().subscribe({
       next: (data) => {
         this.emprendimientos = data;
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error al cargar emprendimientos', err);
+        this.loading = false;
       }
     });
   }
