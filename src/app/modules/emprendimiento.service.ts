@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+export interface EmprendimientosFilter {
+    nombre?: string;
+    tipo?: string;
+    categoria?: string;
+    ciudad?: string;
+    page?: number;
+    size?: number;
+}
 import { Environment } from '../../environments/environment';
 import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 
@@ -20,6 +29,21 @@ export class EmprendimientoService {
             : {};
 
         return this.http.get(`${this.baseUrl}/mis-emprendimientos`, { headers });
+    }
+
+    getEmprendimientos(filters?: EmprendimientosFilter): Observable<any> {
+        let params = new HttpParams();
+        
+        if (filters) {
+            if (filters.nombre) params = params.set('nombre', filters.nombre);
+            if (filters.tipo) params = params.set('tipo', filters.tipo);
+            if (filters.categoria) params = params.set('categoria', filters.categoria);
+            if (filters.ciudad) params = params.set('ciudad', filters.ciudad);
+            if (filters.page !== undefined) params = params.set('page', filters.page.toString());
+            if (filters.size !== undefined) params = params.set('size', filters.size.toString());
+        }
+
+        return this.http.get(`${this.baseUrlEmprendimientos}`, { params });
     }
 
     /**

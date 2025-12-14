@@ -28,34 +28,10 @@
       <div class="w-full mt-10 z-10">
         <div class="max-w-5xl lg:max-w-6xl">
           <app-search-bar
+            *ngIf="searchFilters.length > 0"
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre o tipo'"
-            [filters]="[
-              {
-                key: 'category',
-                label: 'Categoría',
-                options: [
-                  'Arte y cultura',
-                  'Salud y Bienestar',
-                  'Tecnología',
-                  'Moda',
-                  'Alimentos y Bebidas',
-                  'Medio Ambiente',
-                  'Educación',
-                  'Servicios Profesionales'
-                ]
-              },
-              {
-                key: 'location',
-                label: 'Ubicación',
-                options: ['Quito', 'Guayaquil', 'Cuenca']
-              },
-              {
-                key: 'type',
-                label: 'Tipo',
-                options: ['Producto', 'Servicio']
-              }
-            ]"
+            [filters]="searchFilters"
           >
           </app-search-bar>
         </div>
@@ -67,12 +43,27 @@
   <section
     class="py-8 sm:py-10 md:py-12 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
   >
-    <app-cards
-      [items]="filteredCards"
-      [pageSize]="6"
-      (discover)="onDiscover($event)"
-      (toggleFavorite)="onToggleFavorite($event)"
-    ></app-cards>
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-16">
+      <i class="fa-solid fa-spinner fa-spin text-4xl text-orange-500"></i>
+      <p class="mt-4 text-gray-600">Cargando emprendimientos...</p>
+    </div>
+
+    <!-- Cards cuando no está cargando -->
+    <ng-container *ngIf="!loading">
+      <app-cards
+        [items]="filteredCards"
+        [pageSize]="6"
+        (discover)="onDiscover($event)"
+        (toggleFavorite)="onToggleFavorite($event)"
+      ></app-cards>
+
+      <!-- Mensaje si no hay resultados -->
+      <div *ngIf="filteredCards.length === 0" class="text-center py-16">
+        <i class="fa-solid fa-box-open text-5xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No se encontraron emprendimientos</p>
+      </div>
+    </ng-container>
   </section>
 </main>
 

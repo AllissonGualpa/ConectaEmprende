@@ -77,6 +77,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         payload[f.key] = val || '';
       }
     });
+    console.log('SearchBar submit payload:', payload);
     this.search.emit(payload);
   }
 
