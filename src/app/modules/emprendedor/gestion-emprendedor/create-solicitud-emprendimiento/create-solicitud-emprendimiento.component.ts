@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,10 +9,11 @@ import {
   PresenciaDigitalDto,
   ParticipacionComunidadDto,
   DeclaracionFinalDto,
-  SolicitudEmprendimientoDto,
   SolicitudEmprendimientoDataDto,
 } from './create-solicitud-emprendimiento.interfaces';
 import { EmprendimientoService } from '../../../emprendimiento.service';
+import { CiudadDto, LocationService, ProvinciaDto } from '../../../../core/services/location.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-create-solicitud-emprendimiento',
@@ -24,12 +25,54 @@ import { EmprendimientoService } from '../../../emprendimiento.service';
   templateUrl: './create-solicitud-emprendimiento.component.html',
   styleUrls: ['./create-solicitud-emprendimiento.component.css'],
 })
-export class CreateSolicitudEmprendimientoComponent {
+export class CreateSolicitudEmprendimientoComponent implements OnInit {
+  // --- UBICACIÓN ---
+  ubicacion = {
+    provincia: '',
+    ciudad: ''
+  };
+  provincias: ProvinciaDto[] = [];
+  ciudadesFiltradas: { id: number; nombre: string }[] = [];
+
+  constructor(
+    private emprendimientoService: EmprendimientoService,
+    private locationService: LocationService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Cargar provincias desde la API
+    this.locationService.getProvincias().subscribe({
+      next: (provincias: ProvinciaDto[]) => {
+        this.provincias = provincias;
+      },
+      error: () => {
+        this.provincias = [];
+      }
+    });
+  }
+
+  onProvinciaChange() {
+    this.ubicacion.ciudad = '';
+    if (!this.ubicacion.provincia) {
+      this.ciudadesFiltradas = [];
+      return;
+    }
+    this.locationService.getCiudadesPorProvincia(Number(this.ubicacion.provincia)).subscribe({
+      next: (ciudades: CiudadDto[]) => {
+        this.ciudadesFiltradas = ciudades.map((c) => ({
+          id: c.id,
+          nombre: c.nombreCiudad,
+        }));
+      },
+      error: () => {
+        this.ciudadesFiltradas = [];
+      },
+    });
+  }
   currentStep = 0;
 
   loading = false;
-
-  constructor(private emprendimientoService: EmprendimientoService) {}
 
   steps = [
     { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
@@ -234,6 +277,10 @@ export class CreateSolicitudEmprendimientoComponent {
 
     const emprendimientoId = 0;
 
+    // Mapear provincia y ciudad seleccionadas
+    const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
+    const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+
     const emprendimientoBase: EmprendimientoDto = {
       id: emprendimientoId,
       correoComercial: this.presenciaDigital.instagram, // en tu ejemplo no está normalizado
@@ -242,8 +289,8 @@ export class CreateSolicitudEmprendimientoComponent {
       parienteDirecto: '',
       nombreComercialEmprendimiento: this.descripcion.resumen, // igual al texto original
       fechaCreacion: nowIso,
-      ciudad: 0,
-      provinia: 0,
+      ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
+      provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
       estadoEmpredimiento: true,
       tipoEmprendimiento: '',
       tipoEmprendimientoId: 0,
@@ -403,30 +450,31 @@ export class CreateSolicitudEmprendimientoComponent {
       },
     ];
 
-    const imagenes: string[] = [];
+    // Convertir archivos a base64 y agregarlos al array imagenes
+    const imagenes: { nombre: string, binary: string, tipo: string }[] = [];
+    const promesas: Promise<void>[] = [];
 
-    // LOGO-{id}.PNG
-    if (this.multimedia.logo) {
-      imagenes.push(`LOGO-${emprendimientoId}.PNG`);
-    }
+    const agregarArchivo = (file: File, nombre: string) => {
+      const prom = new Promise<void>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          imagenes.push({
+            nombre,
+            binary: (reader.result as string).split(',')[1],
+            tipo: file.type
+          });
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      });
+      promesas.push(prom);
+    };
 
-    // FOTOPRODUCTO-{id}-_{1|2}.PNG
-    if (this.multimedia.fotosProductos.length > 0) {
-      imagenes.push(`FOTOPRODUCTO-${emprendimientoId}-_1.PNG`);
-    }
-    if (this.multimedia.fotosProductos.length > 1) {
-      imagenes.push(`FOTOPRODUCTO-${emprendimientoId}-_2.PNG`);
-    }
-
-    // BANNER-{id}.PNG
-    if (this.multimedia.banner) {
-      imagenes.push(`BANNER-${emprendimientoId}.PNG`);
-    }
-
-    // VIDEO-{id}.MP4
-    if (this.multimedia.videoPresentacion) {
-      imagenes.push(`VIDEO-${emprendimientoId}.MP4`);
-    }
+    if (this.multimedia.logo) agregarArchivo(this.multimedia.logo, `LOGO-${emprendimientoId}.PNG`);
+    if (this.multimedia.banner) agregarArchivo(this.multimedia.banner, `BANNER-${emprendimientoId}.PNG`);
+    if (this.multimedia.videoPresentacion) agregarArchivo(this.multimedia.videoPresentacion, `VIDEO-${emprendimientoId}.MP4`);
+    if (this.multimedia.fotosProductos.length > 0) agregarArchivo(this.multimedia.fotosProductos[0], `FOTOPRODUCTO-${emprendimientoId}-_1.PNG`);
+    if (this.multimedia.fotosProductos.length > 1) agregarArchivo(this.multimedia.fotosProductos[1], `FOTOPRODUCTO-${emprendimientoId}-_2.PNG`);
 
     const tiposMultimedia: string[] = [];
     if (this.multimedia.logo) tiposMultimedia.push('LOGO');
@@ -434,19 +482,23 @@ export class CreateSolicitudEmprendimientoComponent {
     if (this.multimedia.banner) tiposMultimedia.push('BANNER');
     if (this.multimedia.videoPresentacion) tiposMultimedia.push('VIDEO');
 
-    const data: SolicitudEmprendimientoDataDto = {
-      usuarioId: 0, // TODO: setear id real del usuario
-      emprendimiento: emprendimientoBase,
-      tipoAccion: 'CREAR',
-      categorias: categoriasSeleccionadas,
-      descripciones,
-      metricas,
-      presenciasDigitales,
-      participacionesComunidad,
-      declaracionesFinales,
-      imagenes,
-      tiposMultimedia,
-    };
+    this.loading = true;
+    Promise.all(promesas).then(() => {
+      // Obtener usuarioId desde localStorage
+      const usuarioLocal = this.authService.getPerfilLocal();
+      const usuarioId = usuarioLocal && usuarioLocal.id ? usuarioLocal.id : 0;
+      const data: SolicitudEmprendimientoDataDto = {
+        usuarioId,
+        emprendimiento: emprendimientoBase,
+        tipoAccion: 'CREAR',
+        categorias: categoriasSeleccionadas,
+        descripciones,
+        metricas,
+        presenciasDigitales,
+        participacionesComunidad,
+        declaracionesFinales,
+        tiposMultimedia,
+      };
 
     const files: File[] = [];
     if (this.multimedia.logo) files.push(this.multimedia.logo);
@@ -458,14 +510,15 @@ export class CreateSolicitudEmprendimientoComponent {
 
     this.loading = true;
     this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
-      next: (resp) => {
-        console.log('Emprendimiento grabado correctamente', resp);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al grabar emprendimiento', err);
-        this.loading = false;
-      },
+        next: (resp) => {
+          console.log('Emprendimiento grabado correctamente', resp);
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error al grabar emprendimiento', err);
+          this.loading = false;
+        },
+      });
     });
   }
 

@@ -74,7 +74,6 @@ export interface SolicitudEmprendimientoDataDto {
   presenciasDigitales: PresenciaDigitalDto[];
   participacionesComunidad: ParticipacionComunidadDto[];
   declaracionesFinales: DeclaracionFinalDto[];
-  imagenes: string[];
   tiposMultimedia: string[];
 }
 
