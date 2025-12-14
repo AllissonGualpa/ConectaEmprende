@@ -64,6 +64,22 @@ export class AuthService {
     return isPlatformBrowser(this.platformId);
   }
 
+    // Verifica si el token JWT ha expirado
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+    try {
+      // JWT: header.payload.signature
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload.exp) return true;
+      // exp está en segundos desde epoch
+      const now = Math.floor(Date.now() / 1000);
+      return payload.exp < now;
+    } catch (e) {
+      return true;
+    }
+  }
+
   // Verificar si existe token al inicializar
   private hasToken(): boolean {
     if (this.isBrowser()) {
