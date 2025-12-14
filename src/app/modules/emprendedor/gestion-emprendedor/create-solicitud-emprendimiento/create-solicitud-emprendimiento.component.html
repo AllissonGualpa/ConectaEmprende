@@ -298,6 +298,25 @@
             </div>
           </div>
         </section>
+
+        <!-- Sección Tipo de Emprendimiento -->
+        <section class="space-y-6">
+          <div class="text-center">
+            <h2 class="text-xl font-bold text-[#1E71D8] mb-2">Tipo de emprendimiento</h2>
+            <p class="text-gray-500 text-sm">Selecciona el tipo de emprendimiento que mejor describe tu proyecto.</p>
+          </div>
+          <div class="max-w-md mx-auto">
+            <label class="block text-sm font-semibold text-gray-800 mb-2">Tipo</label>
+            <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="tipoEmprendimiento"
+              required>
+              <option value="" disabled selected>Seleccionar tipo</option>
+              <option value="Startup">Startup</option>
+              <option value="Servicio">Emprendimiento - Servicio</option>
+              <option value="Producto">Emprendimiento - Producto</option>
+            </select>
+          </div>
+        </section>
       </div>
 
       <div *ngSwitchCase="3" class="space-y-10">

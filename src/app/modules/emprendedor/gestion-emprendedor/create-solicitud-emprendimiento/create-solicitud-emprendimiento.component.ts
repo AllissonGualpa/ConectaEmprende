@@ -1,3 +1,4 @@
+// ...existing code...
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +27,8 @@ import { AuthService } from '../../../auth/auth.service';
   styleUrls: ['./create-solicitud-emprendimiento.component.css'],
 })
 export class CreateSolicitudEmprendimientoComponent implements OnInit {
+    // Tipo de emprendimiento seleccionado en la sección correspondiente
+    tipoEmprendimiento: string = '';
   // --- UBICACIÓN ---
   ubicacion = {
     provincia: '',
@@ -292,7 +295,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
       provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
       estadoEmpredimiento: true,
-      tipoEmprendimiento: '',
+      tipoEmprendimiento: this.tipoEmprendimiento,
       tipoEmprendimientoId: 0,
       datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
     };
