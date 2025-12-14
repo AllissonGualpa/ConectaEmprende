@@ -7,15 +7,16 @@
     style="background-image: url('/assets/img/emprendimiento/foto1.png');"
     aria-label="Sección de bienvenida"
   >
-    <!-- Capa oscura -->
+    <!--capa oscura-->
     <div class="absolute inset-0 bg-black/10"></div>
 
-    <!-- Contenido -->
+    <!--contenido-->
     <div class="relative max-w-7xl mx-auto px-4 sm:px-8 py-16 sm:py-20 md:py-24 min-h-fit md:min-h-[580px] flex flex-col items-start justify-center text-left text-white transition-all duration-300 ease-in-out">
       <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 font-poppins">
         Startups
       </h1>
 
+      <!--parrafo-->
       <p
         class="text-base sm:text-lg md:text-xl text-white/90 font-medium leading-relaxed mt-2
                max-w-5xl lg:max-w-6xl"
@@ -24,24 +25,14 @@
         Descubre propuestas escalables con potencial de impacto y crecimiento global.
       </p>
 
-      <!-- Barra de búsqueda -->
-      <div class="w-full mt-10  z-10">
+      <!-- search bar-->
+      <div class="w-full mt-10 z-10">
         <div class="max-w-5xl lg:max-w-6xl">
           <app-search-bar
+            *ngIf="searchFilters.length > 0"
             (search)="onSearch($event)"
             [labelQuery]="'Buscar por nombre'"
-            [filters]="[
-              {
-                key: 'category',
-                label: 'Categoría',
-                options: categories
-              },
-              {
-                key: 'location',
-                label: 'Ubicación',
-                options: ['Quito', 'Guayaquil', 'Cuenca']
-              }
-            ]"
+            [filters]="searchFilters"
           >
           </app-search-bar>
         </div>
@@ -49,14 +40,31 @@
     </div>
   </section>
 
-  <!-- Tarjetas -->
-  <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <app-cards
-      [items]="cardsArray"
-      [pageSize]="6"
-      (discover)="onDiscover($event)"
-      (toggleFavorite)="onToggleFavorite($event)"
-    ></app-cards>
+  <!-- tarjetas -->
+  <section
+    class="py-8 sm:py-10 md:py-12 lg:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+  >
+    <!-- Indicador de carga -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-16">
+      <i class="fa-solid fa-spinner fa-spin text-4xl text-orange-500"></i>
+      <p class="mt-4 text-gray-600">Cargando startups...</p>
+    </div>
+
+    <!-- Cards cuando no está cargando -->
+    <ng-container *ngIf="!loading">
+      <app-cards
+        [items]="filteredCards"
+        [pageSize]="6"
+        (discover)="onDiscover($event)"
+        (toggleFavorite)="onToggleFavorite($event)"
+      ></app-cards>
+
+      <!-- Mensaje si no hay resultados -->
+      <div *ngIf="filteredCards.length === 0" class="text-center py-16">
+        <i class="fa-solid fa-rocket text-5xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No se encontraron startups</p>
+      </div>
+    </ng-container>
   </section>
 </main>
 

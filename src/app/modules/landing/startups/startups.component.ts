@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
-import { Router } from '@angular/router';
+import { EmprendimientoService, EmprendimientosFilter } from '../../emprendimiento.service';
 import { Environment } from '../../../../environments/environment';
 
 @Component({
@@ -13,7 +15,6 @@ import { Environment } from '../../../../environments/environment';
   standalone: true,
   imports: [
     CommonModule,
-    HttpClientModule,
     NavbarComponent,
     FooterComponent,
     SearchBarComponent,
@@ -23,115 +24,174 @@ import { Environment } from '../../../../environments/environment';
   styleUrls: ['./startups.component.css'],
 })
 export class StartupsComponent implements OnInit {
-  // Declarar la propiedad antes de usarla en el template
-  categories: string[] = [];
-
   cardsArray: CardItem[] = [];
-  allStartups: any[] = [];
+  filteredCards: CardItem[] = [];
   loading = true;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  // Datos del backend
+  ciudades: any[] = [];
+  categorias: any[] = [];
+
+  // Filtros dinámicos
+  searchFilters: any[] = [];
+
+  private apiCategorias = Environment.api_url + Environment.api_categorias;
+  private apiCiudades = Environment.api_url + Environment.api_ciudades;
+
+  constructor(
+    private emprendimientoService: EmprendimientoService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit() {
-    this.fetchCategories();
-    this.fetchStartups();
+    this.loadFiltersAndData();
   }
 
-  // Cargar categorías desde el endpoint
-  fetchCategories() {
-    const endpoint = Environment.api_url + Environment.api_categorias;
-    const token = localStorage.getItem('token');
+  /**
+   * Cargar ciudades, categorías y startups en paralelo
+   */
+  loadFiltersAndData() {
+    this.loading = true;
 
-    // Si no hay token, salimos directamente
-    if (!token) {
-      console.warn('No se encontró token. No se pueden cargar las categorías.');
-      this.categories = [];
-      return;
-    }
-
-    // Cabeceras correctamente tipadas
-    const headers = { Authorization: `Bearer ${token}` };
-
-    this.http.get<any[]>(endpoint, { headers }).subscribe({
-      next: (data) => {
-        if (Array.isArray(data)) {
-          this.categories = data.map((c: any) => c.nombre || 'Sin nombre');
-        } else {
-          console.warn('Formato inesperado de categorías:', data);
-          this.categories = [];
-        }
+    forkJoin({
+      ciudades: this.http.get<any[]>(this.apiCiudades).pipe(
+        catchError((err) => {
+          console.error('Error al cargar ciudades:', err);
+          return of([]);
+        })
+      ),
+      categorias: this.http.get<any[]>(this.apiCategorias).pipe(
+        catchError((err) => {
+          console.error('Error al cargar categorías:', err);
+          return of([]);
+        })
+      ),
+    }).subscribe({
+      next: ({ ciudades, categorias }) => {
+        this.ciudades = ciudades;
+        this.categorias = categorias;
+        this.buildSearchFilters();
+        this.fetchStartups({ tipo: 'STARTUP' });
       },
       error: (err) => {
-        console.error('Error al cargar categorías:', err);
-        this.categories = [];
+        console.error('Error inesperado al cargar filtros:', err);
+        this.buildSearchFilters();
+        this.fetchStartups({ tipo: 'STARTUP' });
       },
     });
   }
 
-  // Cargar startups
-  fetchStartups() {
-    const endpoint = Environment.api_url + Environment.api_emprendimientos + '/filtrar';
+  /**
+   * Construir los filtros dinámicamente con los datos del backend
+   */
+  buildSearchFilters() {
+    this.searchFilters = [
+      {
+        key: 'category',
+        label: 'Categoría',
+        options: this.categorias.map((cat) => cat.nombre),
+      },
+      {
+        key: 'location',
+        label: 'Ubicación',
+        options: this.ciudades.map(
+          (c) => `${c.nombreCiudad} (${c.provincia?.nombre || 'Sin provincia'})`
+        ),
+      },
+      {
+        key: 'type',
+        label: 'Tipo',
+        options: ['Producto', 'Servicio'],
+      },
+    ];
+  }
 
-    this.http.get<any[]>(endpoint).subscribe({
-      next: (data) => {
-        if (!Array.isArray(data)) {
-          console.warn('Formato inesperado de datos:', data);
+  /**
+   * Cargar las startups desde el servicio.
+   * Filtra solo los de tipoEmprendimientoId = 1 o 3 (Startups)
+   */
+  fetchStartups(filters?: EmprendimientosFilter) {
+    this.loading = true;
+
+    this.emprendimientoService.getEmprendimientos(filters).subscribe({
+      next: (response) => {
+        console.log('Datos recibidos:', response);
+
+        // Manejar respuesta paginada o array directo
+        let data: any[];
+        if (response?.content && Array.isArray(response.content)) {
+          data = response.content;
+        } else if (Array.isArray(response)) {
+          data = response;
+        } else {
+          console.warn('Formato inesperado de datos:', response);
           this.cardsArray = [];
+          this.filteredCards = [];
           this.loading = false;
           return;
         }
 
-        // Filtramos solo las startups
+        // Filtrar las startups (id 1 y 3)
         const startups = data.filter(
-          (s) => s.tipoEmprendimientoId === 1 && s.estadoEmprendimiento === 'APROBADO'
+          (e) =>
+            (e.tipoEmprendimientoId === 1 || e.tipoEmprendimientoId === 3) &&
+            e.estadoEmprendimiento === 'APROBADO'
         );
 
-        // Mapeamos al formato de las tarjetas
-        this.cardsArray = startups.map((s) => ({
-          id: s.id,
-          title: s.nombreComercial || 'Startup sin nombre',
-          description: `Startup aprobada ubicada en ${s.nombreCiudad || 'sin ciudad'}`,
+        console.log('Startups filtradas:', startups.length);
+
+        // Mapear a formato de tarjetas
+        this.cardsArray = startups.map((e) => ({
+          id: e.id,
+          title: e.nombreComercial || 'Startup sin nombre',
+          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobada en ${e.nombreCiudad || 'sin ciudad'}`,
           image: '/assets/img/inicio/foto5.png',
-          category: s.nombreTipoEmprendimiento?.trim() || 'Startup',
-          location: s.nombreCiudad || 'Sin ubicación',
+          category: e.nombreTipoEmprendimiento?.trim() || 'Startup',
+          location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
         }));
 
-        this.allStartups = this.cardsArray;
+        this.filteredCards = [...this.cardsArray];
+        console.log('Cards mapeadas:', this.filteredCards.length);
         this.loading = false;
       },
       error: (err) => {
         console.error('Error al cargar startups:', err);
+        this.cardsArray = [];
+        this.filteredCards = [];
         this.loading = false;
       },
     });
   }
 
+  // Filtro de búsqueda - llama al backend con los filtros
+  onSearch(payload: { query: string; [key: string]: any }) {
+    const filters: EmprendimientosFilter = {
+      tipo: 'STARTUP',
+    };
 
-  // Filtro de búsqueda
-  onSearch(payload: { query: string;[key: string]: any }) {
-    const query = payload.query?.toLowerCase() || '';
-    const selectedCategory = payload['category'] || '';
-    this.cardsArray = this.allStartups.filter((s) => {
-      const matchesQuery =
-        s.title.toLowerCase().includes(query) || s.category.toLowerCase().includes(query);
-      const matchesCategory =
-        !selectedCategory || s.category === selectedCategory;
-      return matchesQuery && matchesCategory;
-    });
+    if (payload.query?.trim()) {
+      filters.nombre = payload.query.trim();
+    }
+    if (payload['category']) {
+      filters.categoria = payload['category'];
+    }
+    if (payload['location']) {
+      // Extraer solo el nombre de la ciudad (sin la provincia entre paréntesis)
+      const locationValue = payload['location'];
+      const cityName = locationValue.split(' (')[0];
+      filters.ciudad = cityName;
+    }
+
+    this.fetchStartups(filters);
   }
 
-  // Acciones
+  // ⚙️ Acciones
   onDiscover(item: CardItem) {
-    // Navegar al detalle de la startup con su id
-    if (item && item.id) {
-      this.router.navigate(['/startups', item.id]);
-    } else {
-      console.warn('Item sin id, no se puede navegar al detalle:', item);
-    }
+    console.log('Descubrir startup:', item);
   }
 
   onToggleFavorite(item: CardItem) {
-    console.log('Toggle favorito:', item);
+    console.log('Favorito cambiado:', item);
   }
 }
