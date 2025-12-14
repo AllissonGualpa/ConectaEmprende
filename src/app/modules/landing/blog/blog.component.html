@@ -50,6 +50,15 @@
       {{ error }}
     </div>
 
+    <!-- Mostrar mensaje si no hay blogs -->
+    <div *ngIf="!cargando && !error && blogCardsArray.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+      <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2-2h4a2 2 0 012 2v12a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay blogs disponibles</h3>
+      <p class="text-gray-500">Vuelve pronto para descubrir nuevas publicaciones.</p>
+    </div>
+
     <!-- Contenido -->
     <ng-container *ngIf="!cargando && !error && blogCardsArray.length > 0">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">

@@ -45,34 +45,45 @@
     </div>
 </section>
   <section class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Badge template (fecha) y actions personalizados para eventos -->
-    <ng-template #eventBadge let-item>
-      <div class="absolute top-3 right-3">
-        <div class="bg-blue-600 text-white px-3 py-1 rounded-xl text-sm shadow">
-          {{ item.date ? (item.date | date:'d MMM') : '12 Abr' }}
+    <!-- Mensaje cuando no hay eventos -->
+    <div *ngIf="filtered.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
+      <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay eventos disponibles</h3>
+      <p class="text-gray-500">Vuelve pronto para descubrir nuevos eventos.</p>
+    </div>
+
+    <div *ngIf="filtered.length > 0">
+      <!-- Badge template (fecha) y actions personalizados para eventos -->
+      <ng-template #eventBadge let-item>
+        <div class="absolute top-3 right-3">
+          <div class="bg-blue-600 text-white px-3 py-1 rounded-xl text-sm shadow">
+            {{ item.date ? (item.date | date:'d MMM') : '12 Abr' }}
+          </div>
         </div>
-      </div>
-    </ng-template>
+      </ng-template>
 
-    <ng-template #eventActions let-item>
-      <div class="flex flex-col gap-2">
-        <a (click)="onDiscover(item)" class="text-center text-orange-500 mt-2 cursor-pointer">Ver Detalle</a>
-      </div>
-    </ng-template>
+      <ng-template #eventActions let-item>
+        <div class="flex flex-col gap-2">
+          <a (click)="onDiscover(item)" class="text-center text-orange-500 mt-2 cursor-pointer">Ver Detalle</a>
+        </div>
+      </ng-template>
 
-    <!-- empty overlay to prevent actionTemp late rendering in the image overlay -->
-    <ng-template #emptyOverlay></ng-template>
+      <!-- empty overlay to prevent actionTemp late rendering in the image overlay -->
+      <ng-template #emptyOverlay></ng-template>
 
-    <app-cards
-      [items]="filtered"
-      [pageSize]="pageSize"
-      [badgeTemplate]="eventBadge"
-      [actionTemplate]="eventActions"
-      [overlayTemplate]="emptyOverlay"
-      (discover)="onDiscover($event)"
-      (toggleFavorite)="onToggleFavorite($event)"
-      ctaLabel="Registrarse">
-    </app-cards>
+      <app-cards
+        [items]="filtered"
+        [pageSize]="pageSize"
+        [badgeTemplate]="eventBadge"
+        [actionTemplate]="eventActions"
+        [overlayTemplate]="emptyOverlay"
+        (discover)="onDiscover($event)"
+        (toggleFavorite)="onToggleFavorite($event)"
+        ctaLabel="Registrarse">
+      </app-cards>
+    </div>
 </section>
 </main>
 
