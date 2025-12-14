@@ -152,7 +152,6 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
         this.loading = false;
       }
     });
-    this.loading = false;
   }
 
   private getAuthHeaders(): HttpHeaders {

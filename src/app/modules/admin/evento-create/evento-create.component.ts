@@ -68,44 +68,80 @@ export class EventoCreateComponent {
   ngOnInit(): void {
     const data = this.dialogData;
     if (data && data.mode === 'edit' && data.event) {
-      const e = data.event;
-      const nombre = e.titulo || e.nombre || '';
-      const descripcion = e.descripcion || '';
-      const link = e.linkInscripcion || e.link || '';
-      const direccion = e.direccion || e.lugar || '';
+      this.loading = true;
+      const idEvento = data.event.id || data.event.idEvento;
+      this.eventoService.getEventByIdAdmin(idEvento).subscribe({
+        next: (e) => {
+          // Mapear campos del evento a los del formulario
+          const nombre = e.titulo || e.nombre || '';
+          const descripcion = e.descripcion || '';
+          const link = e.linkInscripcion || e.link || '';
+          const direccion = e.direccion || e.lugar || '';
 
-      let tipoVal = 'PRESENCIAL';
-      const tipoRaw = (e.tipoEvento || e.tipo || '').toString().toLowerCase();
-      if (tipoRaw.includes('pres')) tipoVal = 'PRESENCIAL';
-      else if (tipoRaw.includes('onl') || tipoRaw.includes('vir') || tipoRaw.includes('virtual')) tipoVal = 'VIRTUAL';
+          // Extraer fecha y hora desde fechaEvento (ISO)
+          let fecha: Date | string | null = null;
+          let horaInicio: string | null = null;
+          let horaFin: string | null = null;
 
-      this.form.patchValue({ nombre, descripcion, link, direccion, tipo: tipoVal });
-
-      const fechaEventoRaw = e.fechaEvento || e.fecha || '';
-      if (fechaEventoRaw) {
-        const s = String(fechaEventoRaw);
-        try {
-          const d = new Date(s);
-          if (!isNaN(d.getTime())) {
-            this.form.patchValue({ fecha: d });
-          } else {
-            this.form.patchValue({ fecha: s });
+          if (e.fechaEvento) {
+            // e.g. "2025-10-10T18:08:00"
+            const [fechaStr, horaStr] = String(e.fechaEvento).split('T');
+            if (fechaStr) {
+              fecha = new Date(e.fechaEvento);
+              // Si el input date espera string yyyy-MM-dd, puedes usar fechaStr
+              // fecha = fechaStr;
+            }
+            if (horaStr) {
+              // Solo HH:mm
+              horaInicio = horaStr.slice(0,5);
+            }
           }
-        } catch {
-          this.form.patchValue({ fecha: s });
+
+          // Si el backend provee horaFin, puedes mapearlo aquí
+          if (e.horaFin) {
+            horaFin = String(e.horaFin).slice(0,5);
+          }
+
+          let tipoVal = 'PRESENCIAL';
+          const tipoRaw = (e.tipoEvento || e.tipo || '').toString().toLowerCase();
+          if (tipoRaw.includes('pres')) tipoVal = 'PRESENCIAL';
+          else if (tipoRaw.includes('onl') || tipoRaw.includes('vir') || tipoRaw.includes('virtual')) tipoVal = 'VIRTUAL';
+
+          this.form.patchValue({
+            nombre,
+            descripcion,
+            fecha,
+            horaInicio,
+            horaFin,
+            link,
+            direccion,
+            tipo: tipoVal
+          });
+
+          if (typeof e.activo === 'boolean' && e.activo === false) {
+            this.form.patchValue({ activarEvento: false });
+          }
+
+          // Si hay imagen, solo ponemos el nombre (no el binario)
+          if (e.imagen) {
+            this.form.patchValue({ imagen: { name: e.imagen } });
+          }
+
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Evento',
+              title: 'Error al cargar el evento',
+              subtitle: 'No se pudo obtener la información del evento. Intenta de nuevo más tarde.',
+              type: 'error'
+            }
+          });
         }
-      }
-
-      if (e.horaInicio) {
-        this.form.patchValue({ horaInicio: e.horaInicio });
-      } else if (e.hora) {
-        const match = String(e.hora).match(/(\d{1,2}:\d{2})/);
-        if (match) this.form.patchValue({ horaInicio: match[1] });
-      }
-
-      if (typeof e.activo === 'boolean' && e.activo === false) {
-        this.form.patchValue({ activarEvento: false });
-      }
+      });
     }
   }
 

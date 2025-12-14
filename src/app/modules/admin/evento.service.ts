@@ -245,4 +245,16 @@ export class EventoService {
       .get(url)
       .pipe(catchError((err) => throwError(() => err)));
   }
+
+  getEventByIdAdmin(id: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/admin/${id}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http
+      .get(url, { headers })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
 }

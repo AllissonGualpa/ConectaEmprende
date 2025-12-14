@@ -1,8 +1,17 @@
 <form
   [formGroup]="form"
   (ngSubmit)="crear()"
-  class="w-full max-w-5xl bg-white rounded-xl shadow-md p-6 flex flex-col max-h-[80vh]"
+  class="w-full max-w-5xl bg-white rounded-xl shadow-md p-6 flex flex-col max-h-[80vh] relative"
 >
+  <!-- Overlay de loading centrado SOLO dentro del modal -->
+  <div *ngIf="loading" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl">
+    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span class="text-gray-500 text-sm">Cargando datos de edición...</span>
+  </div>
+
   <!-- Título -->
   <h2 class="text-2xl font-bold text-[#ED6C1C] mb-4 text-center">
     {{ dialogData?.mode === 'edit' ? 'Editar evento' : 'Crear nuevo evento' }}
@@ -134,8 +143,6 @@
       <!-- Columna derecha: imagen -->
       <div class="md:col-span-1 flex items-start justify-center">
         <div class="w-full">
-
-          
 
           <label class="block text-sm font-bold text-gray-700 mb-2">
             Imagen del evento (opcional)
