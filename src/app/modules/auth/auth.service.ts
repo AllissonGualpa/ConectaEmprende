@@ -145,4 +145,30 @@ export class AuthService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
+  editarPerfil(payload: {
+    nombre: string;
+    apellido: string;
+    genero: string;
+    correo: string;
+    fechaNacimiento: string;
+  }): Observable<any> {
+    const headers = this.getHeaders().set('Content-Type', 'application/json');
+    // Obtener el id del perfil guardado en localStorage
+    const perfil = this.getPerfilLocal();
+    const id = perfil?.id;
+    if (!id) {
+      throw new Error('No se encontró el id del usuario en el perfil local');
+    }
+    return this.http.put<any>(
+      this.apiUrlUsuarios + '/' + id,
+      payload,
+      { headers }
+    ).pipe(
+      tap(() => {
+        // Al actualizar correctamente, obtener el perfil actualizado y guardarlo en localStorage
+        this.getPerfil().subscribe();
+      })
+    );
+  }
+
 }

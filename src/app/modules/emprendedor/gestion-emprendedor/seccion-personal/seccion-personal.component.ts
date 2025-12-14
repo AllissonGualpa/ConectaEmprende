@@ -5,6 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../../../auth/auth.service';
 import { EditarPerfilComponent, EditarPerfilData } from '../editar-perfil/editar-perfil.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 interface InformacionPersonal {
   nombre: string;
@@ -50,7 +52,12 @@ export class SeccionPersonalComponent implements OnInit {
     fechaNacimiento: '',
   };
 
-  constructor(private authService: AuthService) {}
+  loading = false;
+
+  constructor(
+    private authService: AuthService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     const perfil = this.authService.getPerfilLocal();
@@ -115,19 +122,41 @@ export class SeccionPersonalComponent implements OnInit {
       genero: data.genero,
     };
 
-    const perfil = this.authService.getPerfilLocal() || {};
-    const updatedPerfil = {
-      ...perfil,
+    this.loading = true;
+    this.authService.editarPerfil({
       nombre: data.nombre,
       apellido: data.apellido,
       genero: data.genero,
       correo: data.correo,
       fechaNacimiento: data.fechaNacimiento,
-    };
-    // Actualiza aquí según tu implementación real de persistencia
-    // this.authService.setPerfilLocal(updatedPerfil);
-
-    this.showEditarPerfil = false;
+    }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.showEditarPerfil = false;
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Perfil',
+            title: 'Perfil actualizado',
+            subtitle: 'Tus datos personales han sido actualizados correctamente.',
+            type: 'success'
+          }
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.showEditarPerfil = false;
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Perfil',
+            title: 'Error al actualizar',
+            subtitle: 'No se pudo actualizar tu perfil. Por favor, inténtalo nuevamente.',
+            type: 'error'
+          }
+        });
+      }
+    });
   }
 
   onCancelarEdicion(): void {
