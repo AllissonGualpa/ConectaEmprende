@@ -10,6 +10,13 @@ export interface EmprendimientosFilter {
     page?: number;
     size?: number;
 }
+
+export interface TipoEmprendimiento {
+    id: number;
+    tipo: string;
+    subTipo: string;
+}
+
 import { Environment } from '../../environments/environment';
 import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 
@@ -73,5 +80,14 @@ export class EmprendimientoService {
         return this.http.post(`${this.baseUrlEmprendimientos}`, formData, {
             headers, // NO se setea Content-Type manualmente
         });
+    }
+
+    getTiposEmprendimiento(): Observable<TipoEmprendimiento[]> {
+        const token = localStorage.getItem('token');
+        const headers: { [header: string]: string } = token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+
+        return this.http.get<TipoEmprendimiento[]>(`${Environment.api_url}${Environment.api_tipos}`, { headers });
     }
 }

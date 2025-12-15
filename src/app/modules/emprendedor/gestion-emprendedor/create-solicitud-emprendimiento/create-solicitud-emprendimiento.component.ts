@@ -1,4 +1,3 @@
-// ...existing code...
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +11,7 @@ import {
   DeclaracionFinalDto,
   SolicitudEmprendimientoDataDto,
 } from './create-solicitud-emprendimiento.interfaces';
-import { EmprendimientoService } from '../../../emprendimiento.service';
+import { EmprendimientoService, TipoEmprendimiento } from '../../../emprendimiento.service';
 import { CiudadDto, LocationService, ProvinciaDto } from '../../../../core/services/location.service';
 import { AuthService } from '../../../auth/auth.service';
 
@@ -28,7 +27,8 @@ import { AuthService } from '../../../auth/auth.service';
 })
 export class CreateSolicitudEmprendimientoComponent implements OnInit {
     // Tipo de emprendimiento seleccionado en la sección correspondiente
-    tipoEmprendimiento: string = '';
+    tipoEmprendimiento: number = 0;
+    tiposEmprendimiento: TipoEmprendimiento[] = [];
   // --- UBICACIÓN ---
   ubicacion = {
     provincia: '',
@@ -51,6 +51,16 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       },
       error: () => {
         this.provincias = [];
+      }
+    });
+
+    // Cargar tipos de emprendimiento
+    this.emprendimientoService.getTiposEmprendimiento().subscribe({
+      next: (tipos: TipoEmprendimiento[]) => {
+        this.tiposEmprendimiento = tipos;
+      },
+      error: () => {
+        this.tiposEmprendimiento = [];
       }
     });
   }
@@ -213,9 +223,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     const fotosCount = this.multimedia.fotosProductos.length;
     return !!this.multimedia.logo &&
       fotosCount > 0 &&
-      fotosCount < 3 &&
-      !!this.multimedia.videoPresentacion &&
-      !!this.multimedia.banner;
+      fotosCount < 3;
   }
 
   // Paso 4 (ahora índice 4): métricas y participación
@@ -284,6 +292,12 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
     const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
 
+    const tipoSeleccionado = this.tiposEmprendimiento.find(t => t.id === this.tipoEmprendimiento);
+
+    console.log('Provincia seleccionada:', provinciaSeleccionada);
+    console.log('Ciudad seleccionada:', ciudadSeleccionada);
+    console.log('Tipo de emprendimiento seleccionado:', tipoSeleccionado);
+
     const emprendimientoBase: EmprendimientoDto = {
       id: emprendimientoId,
       correoComercial: this.presenciaDigital.instagram, // en tu ejemplo no está normalizado
@@ -295,10 +309,12 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
       provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
       estadoEmpredimiento: true,
-      tipoEmprendimiento: this.tipoEmprendimiento,
-      tipoEmprendimientoId: 0,
+      tipoEmprendimiento: tipoSeleccionado ? tipoSeleccionado.tipo : '',
+      tipoEmprendimientoId: this.tipoEmprendimiento,
       datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
     };
+
+    console.log(emprendimientoBase)
 
     const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
       .filter(c => c.selected)
@@ -416,7 +432,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       },
       {
         emprendimientoId: 0,
-        opcionParticipacionId: 3,
+        opcionParticipacionId: 4,
         respuesta: !!this.participacion.recibirFeedback,
         nombreOpcionParticipacion: this.normalizeText('FEEDBACK'),
       },
@@ -439,14 +455,14 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       },
       {
         emprendimientoId: 0,
-        declaracionId: 3,
+        declaracionId: 4,
         aceptada: this.declaraciones.autorizaUsoImagenes,
         fechaAceptacion: nowIso,
         nombreFirma: '',
       },
       {
         emprendimientoId: 0,
-        declaracionId: 4,
+        declaracionId: 5,
         aceptada: this.declaraciones.aceptaPoliticasCentro,
         fechaAceptacion: nowIso,
         nombreFirma: '',

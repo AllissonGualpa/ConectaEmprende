@@ -161,15 +161,16 @@ export class AuthService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  editarPerfil(payload: {
+  async editarPerfil(payload: {
     nombre: string;
     apellido: string;
     genero: string;
     correo: string;
     fechaNacimiento: string;
-  }): Observable<any> {
+  }): Promise<Observable<any>> {
     const headers = this.getHeaders().set('Content-Type', 'application/json');
     // Obtener el id del perfil guardado en localStorage
+    await this.getPerfil();
     const perfil = this.getPerfilLocal();
     const id = perfil?.id;
     if (!id) {

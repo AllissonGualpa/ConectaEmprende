@@ -310,10 +310,10 @@
             <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
               [(ngModel)]="tipoEmprendimiento"
               required>
-              <option value="" disabled selected>Seleccionar tipo</option>
-              <option value="Startup">Startup</option>
-              <option value="Servicio">Emprendimiento - Servicio</option>
-              <option value="Producto">Emprendimiento - Producto</option>
+              <option value="0" disabled selected>Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id">
+                {{ tipo.tipo === tipo.subTipo ? tipo.tipo : tipo.tipo + ' - ' + tipo.subTipo }}
+              </option>
             </select>
           </div>
         </section>

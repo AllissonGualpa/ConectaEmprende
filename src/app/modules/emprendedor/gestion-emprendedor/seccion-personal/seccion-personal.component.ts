@@ -129,33 +129,35 @@ export class SeccionPersonalComponent implements OnInit {
       genero: data.genero,
       correo: data.correo,
       fechaNacimiento: data.fechaNacimiento,
-    }).subscribe({
-      next: () => {
-        this.loading = false;
-        this.showEditarPerfil = false;
-        this.dialog.open(MensajeConfirmacionComponent, {
-          width: '420px',
-          data: {
-            subject: 'Perfil',
-            title: 'Perfil actualizado',
-            subtitle: 'Tus datos personales han sido actualizados correctamente.',
-            type: 'success'
-          }
-        });
-      },
-      error: () => {
-        this.loading = false;
-        this.showEditarPerfil = false;
-        this.dialog.open(MensajeConfirmacionComponent, {
-          width: '420px',
-          data: {
-            subject: 'Perfil',
-            title: 'Error al actualizar',
-            subtitle: 'No se pudo actualizar tu perfil. Por favor, inténtalo nuevamente.',
-            type: 'error'
-          }
-        });
-      }
+    }).then((observable) => {
+      observable.subscribe({
+        next: () => {
+          this.loading = false;
+          this.showEditarPerfil = false;
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Perfil',
+              title: 'Perfil actualizado',
+              subtitle: 'Tus datos personales han sido actualizados correctamente.',
+              type: 'success'
+            }
+          });
+        },
+        error: () => {
+          this.loading = false;
+          this.showEditarPerfil = false;
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Perfil',
+              title: 'Error al actualizar',
+              subtitle: 'No se pudo actualizar tu perfil. Por favor, inténtalo nuevamente.',
+              type: 'error'
+            }
+          });
+        }
+      });
     });
   }
 
