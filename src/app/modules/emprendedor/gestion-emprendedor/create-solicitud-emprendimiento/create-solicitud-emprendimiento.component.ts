@@ -120,6 +120,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
   // Modelo de la historia del emprendimiento (paso 3)
   historia = {
+    nombreComercial: '',
     historiaGeneral: '',
   };
 
@@ -204,9 +205,22 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     );
   }
 
-  // historia no puede ir vacía
+  // historia no puede ir vacía Y nombre comercial obligatorio
   get isHistoriaComplete(): boolean {
-    return this.historia.historiaGeneral.trim().length > 0;
+    return (
+      this.historia.nombreComercial.trim().length > 0 &&
+      this.historia.historiaGeneral.trim().length > 0
+    );
+  }
+
+  // Nueva validación: provincia y ciudad obligatorias
+  get isUbicacionComplete(): boolean {
+    return !!this.ubicacion.provincia && !!this.ubicacion.ciudad;
+  }
+
+  // Nueva validación: tipo de emprendimiento obligatorio (no 0)
+  get isTipoComplete(): boolean {
+    return !!this.tipoEmprendimiento && this.tipoEmprendimiento !== 0;
   }
 
   // todos los inputs de presencia digital deben tener contenido (no solo espacios)
@@ -266,7 +280,8 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   nextStep(): void {
     if (this.currentStep === 0 && !this.canGoNextFromStep1) return;
     if (this.currentStep === 1 && !this.isDescripcionComplete) return;
-    if (this.currentStep === 2 && (!this.isHistoriaComplete || !this.isPresenciaDigitalComplete)) return;
+    // ahora incluye validaciones de nombre comercial, presencia digital, ubicación y tipo
+    if (this.currentStep === 2 && (!this.isHistoriaComplete || !this.isPresenciaDigitalComplete || !this.isUbicacionComplete || !this.isTipoComplete)) return;
     if (this.currentStep === 3 && !this.isMultimediaComplete) return;
     if (this.currentStep === 4 && !this.isMetricasComplete) return;
 
@@ -300,11 +315,11 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
     const emprendimientoBase: EmprendimientoDto = {
       id: 0,
-      correoComercial: this.presenciaDigital.instagram, // en tu ejemplo no está normalizado
+      correoComercial: '',
       correoUees: '',
       identificacion: '',
       parienteDirecto: '',
-      nombreComercialEmprendimiento: this.descripcion.resumen, // igual al texto original
+      nombreComercialEmprendimiento: this.historia.nombreComercial, // igual al texto original
       fechaCreacion: nowIso,
       ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
       provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,

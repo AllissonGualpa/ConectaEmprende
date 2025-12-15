@@ -17,6 +17,65 @@ export interface TipoEmprendimiento {
     subTipo: string;
 }
 
+export interface EmprendimientoPublico {
+    id: number;
+    nombreComercial: string;
+    anioCreacion: string;
+    activoEmprendimiento: boolean;
+    aceptaDatosPublicos: boolean;
+    fechaCreacion: string;
+    fechaActualizacion: string | null;
+    estadoEmprendimiento: string;
+    usuarioId: number;
+    nombreUsuario: string;
+    ciudadId: number;
+    nombreCiudad: string;
+    tipoEmprendimientoId: number;
+    nombreTipoEmprendimiento: string;
+    categorias?: any[];
+    descripciones?: {
+        tipoDescripcion: string;
+        descripcion: string;
+        maxCaracteres: number;
+        obligatorio: boolean;
+        idEmprendimiento: number | null;
+        emprendimientoId: number;
+    }[];
+    presenciasDigitales?: {
+        emprendimientoId: number | null;
+        plataforma: string;
+        descripcion: string;
+    }[];
+    metricas?: {
+        emprendimientoId: number;
+        metricaId: number;
+        valor: string;
+    }[];
+    declaracionesFinales?: {
+        emprendimientoId: number;
+        declaracionId: number;
+        aceptada: boolean;
+        fechaAceptacion: string;
+        nombreFirma: string;
+    }[];
+    participacionesComunidad?: {
+        emprendimientoId: number;
+        opcionParticipacionId: number;
+        respuesta: boolean;
+        nombreOpcionParticipacion: string;
+    }[];
+    informacionRepresentante?: any;
+    multimedia?: {
+        id: number;
+        urlArchivo: string;
+        nombreActivo: string;
+        tipo: string;
+        mimeType: string | null;
+        tamanoKb: number | null;
+        fechaSubida: string | null;
+    }[];
+}
+
 import { Environment } from '../../environments/environment';
 import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 
@@ -89,5 +148,14 @@ export class EmprendimientoService {
             : {};
 
         return this.http.get<TipoEmprendimiento[]>(`${Environment.api_url}${Environment.api_tipos}`, { headers });
+    }
+
+    getEmprendimientoPublico(id: number): Observable<EmprendimientoPublico> {
+        const token = localStorage.getItem('token');
+        const headers: { [header: string]: string } = token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+
+        return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
     }
 }

@@ -142,6 +142,19 @@
             </h2>
           </div>
 
+          <!-- NUEVO: Nombre Comercial -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-800">Nombre Comercial</label>
+            <input
+              type="text"
+              class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="historia.nombreComercial"
+              placeholder="Ingrese el nombre comercial de su emprendimiento"
+              required
+            />
+          </div>
+          <!-- FIN NUEVO -->
+
           <div class="space-y-2">
             <h3 class="text-base font-semibold text-gray-800">
               Resumen general del emprendimiento
@@ -951,7 +964,7 @@
         [disabled]="
           (currentStep === 0 && !canGoNextFromStep1) ||
           (currentStep === 1 && !isDescripcionComplete) ||
-          (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete)) ||
+          (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
           (currentStep === 3 && !isMultimediaComplete) ||
           (currentStep === 4 && !isMetricasComplete)
         "
