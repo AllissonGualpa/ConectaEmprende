@@ -1,0 +1,73 @@
+<div class="min-h-screen flex justify-center items-center bg-gray-50 px-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
+
+    <!-- TÍTULO -->
+    <h2 class="text-center text-[#ED6C1C] font-semibold text-lg mb-4">
+      Encuesta de valoración de <br> Emprendimiento
+    </h2>
+
+    <!-- EMOJIS -->
+    <div class="flex justify-between mb-6 px-2">
+      <mat-icon class="text-red-500">sentiment_very_dissatisfied</mat-icon>
+      <mat-icon class="text-yellow-500">sentiment_dissatisfied</mat-icon>
+      <mat-icon class="text-yellow-400">sentiment_neutral</mat-icon>
+      <mat-icon class="text-blue-500">sentiment_satisfied</mat-icon>
+      <mat-icon class="text-green-500">sentiment_very_satisfied</mat-icon>
+    </div>
+
+    <!-- PRODUCTO -->
+    <h3 class="text-blue-600 font-semibold mb-3">PRODUCTO</h3>
+
+    <!-- SECCIONES -->
+    <ng-container *ngFor="let section of [
+      { label: 'Calidad del producto', key: 'calidad' },
+      { label: 'Empaque', key: 'empaque' },
+      { label: 'Funcionalidad', key: 'funcionalidad' },
+      { label: 'Precio', key: 'precio' }
+    ]">
+
+      <p class="text-sm font-medium mb-2">{{ section.label }}</p>
+
+      <div class="flex justify-between mb-4">
+        <button
+          *ngFor="let r of ratings"
+          (click)="setRating(section.key, r)"
+          class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 font-medium"
+          [style.backgroundColor]="selected[section.key] === r ? '#B8EEFF' : 'rgba(184, 238, 255, 0.4)'"
+          [style.border]="'2px solid #B8EEFF'"
+          [style.color]="selected[section.key] === r ? '#1e293b' : '#475569'">
+          {{ r }}
+        </button>
+      </div>
+
+    </ng-container>
+
+    <!-- RECOMENDACIÓN -->
+    <p class="text-sm font-medium mb-2">
+      ¿Qué tan probable es que recomienden este negocio a un familiar o amigo?
+    </p>
+
+    <div class="flex justify-between mb-6">
+      <button
+        *ngFor="let r of ratings"
+        (click)="setRating('recomendacion', r)"
+        class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 font-medium"
+        [style.backgroundColor]="selected.recomendacion === r ? '#B8EEFF' : 'rgba(184, 238, 255, 0.4)'"
+        [style.border]="'2px solid #B8EEFF'"
+        [style.color]="selected.recomendacion === r ? '#1e293b' : '#475569'">
+        {{ r }}
+      </button>
+    </div>
+
+    <!-- BOTÓN -->
+    <button
+      mat-raised-button
+      class="w-full rounded-xl py-2 font-medium transition-colors duration-200"
+      [style.backgroundColor]="'#ED6C1C'"
+      [style.color]="'#ffffff'"
+      (click)="submit()">
+      Enviar
+    </button>
+
+  </div>
+</div>

@@ -22,6 +22,7 @@ import { AuthGuard } from './core/services/auth.guard';
 import { AccesoDenegadoComponent } from './shared/components/acceso-denegado/acceso-denegado.component';
 import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/admin-solicitudes.component';
 import { EmprendimientoDetailComponent } from './modules/landing/emprendimiento-detail/emprendimiento-detail.component';
+import { EvaluacionComponent } from './modules/landing/evaluacion/evaluacion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -41,6 +42,8 @@ export const routes: Routes = [
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: 'eventos', component: EventosComponent },
   { path: 'eventos/:id', component: EventoDetailComponent },
+  { path: 'evaluacion', component: EvaluacionComponent },
+  { path: 'evaluacion/:id', component: EvaluacionComponent },
 
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },
