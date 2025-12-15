@@ -17,6 +17,7 @@ export class EmprendimientoDetailComponent implements OnInit {
   emprendimiento: EmprendimientoPublico | null = null;
   cargando = true;
   error: string | null = null;
+  qrCodeUrl = '';
 
   constructor(private route: ActivatedRoute, private emprendimientoService: EmprendimientoService) {}
 
@@ -24,6 +25,10 @@ export class EmprendimientoDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.cargarEmprendimiento(+id);
+      // Generar URL de evaluación
+      const evaluacionUrl = `${window.location.origin}/evaluacion/${id}`;
+      // Generar QR usando API gratuita de Google Charts (o qr-server)
+      this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
     } else {
       this.error = 'ID de emprendimiento no encontrado.';
       this.cargando = false;
@@ -44,12 +49,10 @@ export class EmprendimientoDetailComponent implements OnInit {
     });
   }
 
-  // Helper para el template: detectar URL (comienza con http/https)
   isUrl(value?: string | null): boolean {
     return !!value && (value.startsWith('http://') || value.startsWith('https://'));
   }
 
-  // Helper para el template: detectar si es número/telefónico (empieza con dígito o +)
   isPhone(value?: string | null): boolean {
     if (!value) return false;
     return /^\+?\d/.test(value.trim());
