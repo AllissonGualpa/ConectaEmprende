@@ -43,4 +43,15 @@ export class EmprendimientoDetailComponent implements OnInit {
       }
     });
   }
+
+  // Helper para el template: detectar URL (comienza con http/https)
+  isUrl(value?: string | null): boolean {
+    return !!value && (value.startsWith('http://') || value.startsWith('https://'));
+  }
+
+  // Helper para el template: detectar si es número/telefónico (empieza con dígito o +)
+  isPhone(value?: string | null): boolean {
+    if (!value) return false;
+    return /^\+?\d/.test(value.trim());
+  }
 }

@@ -10,6 +10,7 @@ import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'
 import { EmprendimientoService, EmprendimientosFilter } from '../../emprendimiento.service';
 import { Environment } from '../../../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-emprendimientos',
@@ -46,7 +47,8 @@ export class EmprendimientosComponent implements OnInit {
   constructor(
     private emprendimientoService: EmprendimientoService,
     private http: HttpClient,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -206,7 +208,8 @@ export class EmprendimientosComponent implements OnInit {
 
   // ⚙️ Acciones
   onDiscover(item: CardItem) {
-    console.log('Descubrir emprendimiento:', item);
+    // navegar a la ruta de detalle agregando el id al final de la ruta actual
+    this.router.navigate([item.id], { relativeTo: this.route });
   }
 
   onToggleFavorite(item: CardItem) {
