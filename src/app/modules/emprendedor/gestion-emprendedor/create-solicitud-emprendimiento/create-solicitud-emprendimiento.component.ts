@@ -39,6 +39,9 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
   @Output() onEmprendimientoCreated = new EventEmitter<void>();
 
+  // Nuevo output para notificar al padre que la creación fue exitosa
+  @Output() created = new EventEmitter<any>();
+
   constructor(
     private emprendimientoService: EmprendimientoService,
     private locationService: LocationService,
@@ -549,6 +552,9 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
           console.log('Emprendimiento grabado correctamente', resp);
           this.onEmprendimientoCreated.emit();
           this.loading = false;
+
+          // Emitir al componente padre para que cierre el modal y refresque
+          this.created.emit(resp);
         },
         error: (err) => {
           console.error('Error al grabar emprendimiento', err);

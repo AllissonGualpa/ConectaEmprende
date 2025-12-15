@@ -86,7 +86,11 @@
 
       <!-- Contenido scrollable -->
       <div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
-        <app-create-solicitud-emprendimiento></app-create-solicitud-emprendimiento>
+        <app-create-solicitud-emprendimiento
+          *ngIf="showCreateSolicitudModal"
+          (created)="onEmprendimientoCreated()"
+          (close)="closeCreateSolicitudModal()"
+        ></app-create-solicitud-emprendimiento>
       </div>
     </div>
   </div>
