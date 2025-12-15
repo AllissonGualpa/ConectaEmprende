@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
@@ -40,7 +41,8 @@ export class StartupsComponent implements OnInit {
 
   constructor(
     private emprendimientoService: EmprendimientoService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -189,6 +191,7 @@ export class StartupsComponent implements OnInit {
   // ⚙️ Acciones
   onDiscover(item: CardItem) {
     console.log('Descubrir startup:', item);
+    this.router.navigate(['/startups', item.id]);
   }
 
   onToggleFavorite(item: CardItem) {

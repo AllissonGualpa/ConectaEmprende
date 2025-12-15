@@ -47,8 +47,22 @@ export class StartupsDetailComponent implements OnInit {
   fetchStartupDetail(id: string) {
     const url = Environment.api_url + Environment.api_emprendimientos;
 
-    this.http.get<any[]>(url).subscribe({
-      next: (data) => {
+    this.http.get<any>(url).subscribe({
+      next: (response) => {
+        // Manejar respuesta paginada o array directo
+        let data: any[];
+        if (response?.content && Array.isArray(response.content)) {
+          data = response.content;
+        } else if (Array.isArray(response)) {
+          data = response;
+        } else {
+          console.warn('Formato inesperado de datos:', response);
+          this.error = true;
+          this.errorMessage = 'Formato de datos inesperado';
+          this.loading = false;
+          return;
+        }
+
         // Buscar la startup por ID
         const found = data.find(e => e.id.toString() === id);
 
