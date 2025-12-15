@@ -126,11 +126,12 @@ export class BlogService {
   }
 
   // Obtener artículos públicos (paginados) — usado por la landing
-  getPublicArticles(params?: { fechaInicio?: string; page?: number; size?: number }): Observable<any> {
+  getPublicArticles(params?: { fechaInicio?: string; page?: number; size?: number; idTag?: number }): Observable<any> {
     const fechaInicio = params?.fechaInicio || '2024-06-01T00:00:00';
     const page = params?.page ?? 0;
     const size = params?.size ?? 10;
-    const url = `${this.baseApiUrl}/publico/articulos?fechaInicio=${encodeURIComponent(fechaInicio)}&page=${page}&size=${size}`;
+    const idTagParam = params?.idTag ? `&idTag=${params.idTag}` : '';
+    const url = `${this.baseApiUrl}/publico/articulos?fechaInicio=${encodeURIComponent(fechaInicio)}&page=${page}&size=${size}${idTagParam}`;
     return this.http.get<any>(url, { headers: this.getOptionalHeaders() });
   }
 

@@ -59,7 +59,7 @@
                   [formControlName]="f.key"
                   class="text-sm text-gray-500 bg-transparent outline-none cursor-pointer hover:text-gray-700 transition-colors appearance-none pr-4">
                   <option value="">Seleccionar</option>
-                  <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+                  <option *ngFor="let opt of f.options" [value]="getOptionValue(opt)">{{ getOptionLabel(opt) }}</option>
                 </select>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-400 absolute right-0 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
@@ -113,7 +113,7 @@
                     [formControlName]="f.key"
                     class="w-full text-sm p-2.5 pl-9 border border-gray-200 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-200 transition-all bg-gray-50 text-gray-600 appearance-none">
                     <option value="">Seleccionar</option>
-                    <option *ngFor="let opt of f.options" [value]="opt">{{ opt }}</option>
+                    <option *ngFor="let opt of f.options" [value]="getOptionValue(opt)">{{ getOptionLabel(opt) }}</option>
                   </select>
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />

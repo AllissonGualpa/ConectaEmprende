@@ -35,12 +35,16 @@ export class BlogComponent implements OnInit {
   articulosOriginales: BlogArticulo[] = [];
   cargando = true;
   error: string | null = null;
-  tagsArray: string[] = [];
+  tagsOptions: { label: string; value: number }[] = [];
 
   // 🔹 Variables para la paginación
   currentPage = 0;
   totalPages = 0;
   pageSize = 10;
+
+  // 🔹 Variables para búsqueda y filtros
+  currentQuery = '';
+  currentTag: string = '';
 
   constructor(private router: Router, private blogService: BlogService) { }
 
@@ -53,21 +57,28 @@ export class BlogComponent implements OnInit {
   cargarTags() {
     this.blogService.getAllTags().subscribe({
       next: (data) => {
-        this.tagsArray = data.map((tag: { idTag: number; nombre: string }) => tag.nombre);
+        this.tagsOptions = data.map((tag: { idTag: number; nombre: string }) => ({
+          label: tag.nombre,
+          value: tag.idTag
+        }));
       },
       error: (err) => {
         console.error('Error al cargar tags:', err);
-        this.tagsArray = [];
+        this.tagsOptions = [];
       }
     });
   }
 
-  // Cargar artículos paginados
-  cargarArticulos(page: number = 0) {
+  // Cargar artículos paginados con búsqueda y filtros
+  cargarArticulos(page: number = 0, query: string = this.currentQuery, tag: string = this.currentTag) {
     this.cargando = true;
 
+    const params: any = { fechaInicio: '2024-06-01T00:00:00', page, size: this.pageSize};
+    if (query) params.query = query;
+    if (tag) params.idTag = tag;
+
     this.blogService
-      .getPublicArticles({ fechaInicio: '2024-06-01T00:00:00', page, size: this.pageSize })
+      .getPublicArticles(params)
       .subscribe({
         next: (response) => {
           const data = response.content || [];
@@ -134,29 +145,11 @@ export class BlogComponent implements OnInit {
     }
   }
 
-  // Filtrar artículos por búsqueda y tag
+  // Filtrar artículos por búsqueda y tag (ahora del lado del servidor)
   onSearch(payload: SearchPayload) {
-    const { query, filters } = payload;
-    let filtered = [...this.blogCardsArrayOriginal];
-
-    if (query) {
-      filtered = filtered.filter(card =>
-        card.title.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    if (filters) {
-      filters.forEach((filter: { key: string; value: any }) => {
-        if (filter.key === 'tag') {
-          filtered = filtered.filter(card => {
-            const filterValue =
-              typeof filter.value === 'string' ? filter.value : filter.value?.label;
-            return card.tags.includes(filterValue);
-          });
-        }
-      });
-    }
-
-    this.blogCardsArray = filtered;
+    const { query, tag } = payload;
+    this.currentQuery = query || '';
+    this.currentTag = tag || '';
+    this.cargarArticulos(0); // Resetear a página 0 al buscar
   }
 }

@@ -36,7 +36,7 @@ export class SearchBarComponent implements OnInit, OnDestroy, OnChanges {
   @Output() search = new EventEmitter<SearchPayload>();
 
   // dynamic filters: array of { key,label,options } no agregar nada aqui si no en el html por ejemplo el key date (plantilla)
-  @Input() filters: Array<{ key: string; label: string; options?: string[] }> = [
+  @Input() filters: Array<{ key: string; label: string; options?: any[] }> = [
     { key: 'category', label: 'Categoria', options: ['Arte y cultura', 'Salud y Bienestar', 'Tecnología'] },
     { key: 'location', label: 'Ubicación', options: ['Quito', 'Guayaquil', 'Cuenca'] },
     { key: 'type', label: 'Tipo', options: ['Producto', 'Servicio', 'Evento'] },
@@ -98,6 +98,15 @@ export class SearchBarComponent implements OnInit, OnDestroy, OnChanges {
   clear() {
     this.form.reset();
     this.submit();
+  }
+
+  // Métodos para manejar opciones (string u objeto)
+  getOptionValue(opt: any): any {
+    return typeof opt === 'string' ? opt : opt.value;
+  }
+
+  getOptionLabel(opt: any): string {
+    return typeof opt === 'string' ? opt : opt.label;
   }
 
   ngOnDestroy(): void {
