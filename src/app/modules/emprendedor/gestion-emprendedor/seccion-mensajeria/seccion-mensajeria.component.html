@@ -1,7 +1,8 @@
 <div class="relative">
   <div class="space-y-6">
     <h2 class="text-2xl font-bold text-gray-900 mb-2">Notificaciones</h2>
-    <!--Filtros-->
+
+    <!-- filtros (sin cambios visuales) -->
     <div class="flex flex-col md:flex-row md:items-end md:gap-6 gap-4 mb-6">
       <div class="flex-1">
         <label class="block text-sm text-gray-600 mb-1 md:invisible">Buscar</label>
@@ -18,35 +19,130 @@
         </div>
       </div>
     </div>
-    <div class="overflow-x-auto rounded-xl shadow">
-      <table class="min-w-full bg-white text-left text-sm font-poppins">
-        <thead>
-          <tr class="border-b text-gray-700">
-            <th class="px-4 py-3 font-semibold">ID</th>
-            <th class="px-4 py-3 font-semibold">Propietario</th>
-            <th class="px-4 py-3 font-semibold">Motivo</th>
-            <th class="px-4 py-3 font-semibold">Fecha</th>
-            <th class="px-4 py-3 font-semibold">Hora</th>
-            <th class="px-4 py-3 font-semibold">Estado</th>
-            <th class="px-4 py-3 font-semibold">Accion</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-b hover:bg-gray-50" *ngFor="let noti of notificaciones">
-            <td class="px-4 py-3">{{ noti.id }}</td>
-            <td class="px-4 py-3">{{ noti.propietario }}</td>
-            <td class="px-4 py-3">{{ noti.motivo }}</td>
-            <td class="px-4 py-3">{{ noti.fecha }}</td>
-            <td class="px-4 py-3">{{ noti.hora }}</td>
-            <td class="px-4 py-3">
-              <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs">{{ noti.estado }}</span>
-            </td>
-            <td class="px-4 py-3">
-              <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-lg shadow transition-all">ABRIR</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+
+    <!-- Indicador de carga (igual a seccion-emprendimiento) -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <span class="text-gray-500 text-sm">Cargando notificaciones...</span>
     </div>
+
+    <ng-container *ngIf="!loading">
+      <!-- Vista DESKTOP: Material table (visible en md+) -->
+      <div class="hidden md:block overflow-x-auto rounded-xl shadow">
+        <table mat-table [dataSource]="notificaciones" class="min-w-full bg-white">
+          <!-- ID -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">ID</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.id }}</td>
+          </ng-container>
+
+          <!-- Título -->
+          <ng-container matColumnDef="titulo">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Título</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.titulo }}</td>
+          </ng-container>
+
+          <!-- Mensaje -->
+          <ng-container matColumnDef="mensaje">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Mensaje</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.mensaje }}</td>
+          </ng-container>
+
+          <!-- Fecha -->
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Fecha</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ getFecha(row.fechaCreacion) }}</td>
+          </ng-container>
+
+          <!-- Hora -->
+          <ng-container matColumnDef="hora">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Hora</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ getHora(row.fechaCreacion) }}</td>
+          </ng-container>
+
+          <!-- Estado -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Estado</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">
+              <span [ngClass]="row.leida ? 'px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold' : 'px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold'">
+                {{ row.leida ? 'Leída' : 'No leída' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Acción -->
+          <ng-container matColumnDef="accion">
+            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Acción</th>
+            <td mat-cell *matCellDef="let row" class="px-4 py-3">
+              <button mat-button color="primary" class="bg-orange-500 text-white px-4 py-1 rounded" (click)="abrirNotificacion(row)">
+                Abrir
+              </button>
+            </td>
+          </ng-container>
+
+          <thead>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          </thead>
+          <tbody>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="!row.leida ? 'bg-yellow-50' : 'bg-white'" class="border-b hover:bg-gray-50"></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación Desktop -->
+      <div class="hidden md:flex items-center justify-between mt-4">
+        <div class="text-sm text-gray-600">
+          Mostrando {{ (page * size) + (notificaciones.length ? 1 : 0) }} - {{ (page * size) + notificaciones.length }} de {{ totalElements }}
+        </div>
+        <div class="flex items-center space-x-2">
+          <button class="px-3 py-1 rounded border bg-white text-sm" (click)="prevPage()" [disabled]="page === 0">Anterior</button>
+          <span class="text-sm text-gray-600">Página {{ page + 1 }} / {{ totalPages || 1 }}</span>
+          <button class="px-3 py-1 rounded border bg-white text-sm" (click)="nextPage()" [disabled]="page >= (totalPages - 1)">Siguiente</button>
+        </div>
+      </div>
+
+      <!-- Vista MÓVIL: tarjetas (visible en sm / md:hidden) -->
+      <div class="block md:hidden space-y-3">
+        <ng-container *ngFor="let n of notificaciones">
+          <mat-card class="shadow-sm" [ngClass]="!n.leida ? 'bg-yellow-50' : 'bg-white'">
+            <div class="p-4">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <h3 class="text-base font-semibold text-gray-800">{{ n.titulo }}</h3>
+                  <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ n.mensaje }}</p>
+                  <div class="mt-3 text-xs text-gray-500">
+                    <span>{{ getFecha(n.fechaCreacion) }}</span>
+                    <span class="mx-2">•</span>
+                    <span>{{ getHora(n.fechaCreacion) }}</span>
+                  </div>
+                </div>
+                <div class="ml-3 flex flex-col items-end">
+                  <button mat-icon-button (click)="abrirNotificacion(n)" class="bg-orange-500 text-white rounded-md p-2">
+                    <mat-icon>open_in_new</mat-icon>
+                  </button>
+                  <span class="text-xs mt-2" [ngClass]="n.leida ? 'text-gray-500' : 'text-yellow-700 font-semibold'">
+                    {{ n.leida ? 'Leída' : 'No leída' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </mat-card>
+        </ng-container>
+
+        <div *ngIf="notificaciones.length === 0" class="py-8 text-center text-gray-500">
+          No hay notificaciones.
+        </div>
+
+        <!-- Paginación Móvil -->
+        <div class="flex items-center justify-between mt-3">
+          <button class="px-3 py-1 rounded border bg-white text-sm" (click)="prevPage()" [disabled]="page === 0">Anterior</button>
+          <div class="text-sm text-gray-600">Página {{ page + 1 }} / {{ totalPages || 1 }}</div>
+          <button class="px-3 py-1 rounded border bg-white text-sm" (click)="nextPage()" [disabled]="page >= (totalPages - 1)">Siguiente</button>
+        </div>
+      </div>
+    </ng-container>
   </div>
 </div>
