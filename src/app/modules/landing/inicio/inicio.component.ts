@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
+import { Environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-inicio',
@@ -38,7 +39,7 @@ export class InicioComponent implements OnInit {
 
     this.loading = true;
     // Cargar categorías desde API
-    this.http.get<any[]>('http://eureka.osc-fr1.scalingo.io/v1/categorias').subscribe({
+    this.http.get<any[]>(Environment.api_url + Environment.api_categorias).subscribe({
       next: (categorias) => {
         this.categoriasDestacadas = categorias.map(cat => ({
           nombre: cat.nombre,
