@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
 import { EmprendimientoService } from '../../../emprendimiento.service';
-import { CardsComponent } from '../../../../layout/cards/cards.component';
+import { CardsComponent, CardItem } from '../../../../layout/cards/cards.component';
 import { CreateSolicitudEmprendimientoComponent } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
 
 @Component({
@@ -19,6 +19,7 @@ import { CreateSolicitudEmprendimientoComponent } from '../create-solicitud-empr
 export class SeccionEmprendimientoComponent implements OnInit {
   // Más adelante puedes inyectar servicios y manejar el listado real
   emprendimientos: any[] = [];
+  cardsArray: CardItem[] = []; // <-- agregado para mapear a tarjetas
 
   // control del modal
   showCreateSolicitudModal = false;
@@ -27,10 +28,25 @@ export class SeccionEmprendimientoComponent implements OnInit {
   constructor(private emprendimientoService: EmprendimientoService) {}
 
   ngOnInit(): void {
+    this.loadEmprendimientos();
+  }
+
+  loadEmprendimientos(): void {
     this.loading = true;
     this.emprendimientoService.getMisEmprendimientos().subscribe({
       next: (data) => {
+        console.log('Emprendimientos cargados:', data);
         this.emprendimientos = data;
+        // Mapear a formato de tarjetas, similar a emprendimientos.component.ts
+        this.cardsArray = this.emprendimientos.map((e) => ({
+          id: e.id,
+          title: e.nombreComercial || 'Emprendimiento sin nombre',
+          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad || 'sin ciudad'}`,
+          image: '/assets/img/inicio/foto5.png',
+          category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
+          location: e.nombreCiudad || 'Sin ubicación',
+          views: Math.floor(Math.random() * 20000) + 1000,
+        }));
         this.loading = false;
       },
       error: (err) => {
@@ -46,5 +62,10 @@ export class SeccionEmprendimientoComponent implements OnInit {
 
   closeCreateSolicitudModal(): void {
     this.showCreateSolicitudModal = false;
+  }
+
+  onEmprendimientoCreated(): void {
+    this.closeCreateSolicitudModal();
+    this.loadEmprendimientos();
   }
 }

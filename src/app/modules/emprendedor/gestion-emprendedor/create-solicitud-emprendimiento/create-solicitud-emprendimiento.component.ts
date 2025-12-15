@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -36,6 +36,8 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   };
   provincias: ProvinciaDto[] = [];
   ciudadesFiltradas: { id: number; nombre: string }[] = [];
+
+  @Output() onEmprendimientoCreated = new EventEmitter<void>();
 
   constructor(
     private emprendimientoService: EmprendimientoService,
@@ -286,8 +288,6 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
     const nowIso = new Date().toISOString();
 
-    const emprendimientoId = 0;
-
     // Mapear provincia y ciudad seleccionadas
     const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
     const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
@@ -299,7 +299,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     console.log('Tipo de emprendimiento seleccionado:', tipoSeleccionado);
 
     const emprendimientoBase: EmprendimientoDto = {
-      id: emprendimientoId,
+      id: 0,
       correoComercial: this.presenciaDigital.instagram, // en tu ejemplo no está normalizado
       correoUees: '',
       identificacion: '',
@@ -489,11 +489,11 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       promesas.push(prom);
     };
 
-    if (this.multimedia.logo) agregarArchivo(this.multimedia.logo, `LOGO-${emprendimientoId}.PNG`);
-    if (this.multimedia.banner) agregarArchivo(this.multimedia.banner, `BANNER-${emprendimientoId}.PNG`);
-    if (this.multimedia.videoPresentacion) agregarArchivo(this.multimedia.videoPresentacion, `VIDEO-${emprendimientoId}.MP4`);
-    if (this.multimedia.fotosProductos.length > 0) agregarArchivo(this.multimedia.fotosProductos[0], `FOTOPRODUCTO-${emprendimientoId}-_1.PNG`);
-    if (this.multimedia.fotosProductos.length > 1) agregarArchivo(this.multimedia.fotosProductos[1], `FOTOPRODUCTO-${emprendimientoId}-_2.PNG`);
+    if (this.multimedia.logo) agregarArchivo(this.multimedia.logo, `LOGO.PNG`);
+    if (this.multimedia.banner) agregarArchivo(this.multimedia.banner, `BANNER.PNG`);
+    if (this.multimedia.videoPresentacion) agregarArchivo(this.multimedia.videoPresentacion, `VIDEO.MP4`);
+    if (this.multimedia.fotosProductos.length > 0) agregarArchivo(this.multimedia.fotosProductos[0], `FOTOPRODUCTO_1.PNG`);
+    if (this.multimedia.fotosProductos.length > 1) agregarArchivo(this.multimedia.fotosProductos[1], `FOTOPRODUCTO_2.PNG`);
 
     const tiposMultimedia: string[] = [];
     if (this.multimedia.logo) tiposMultimedia.push('LOGO');
@@ -520,17 +520,19 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       };
 
     const files: File[] = [];
-    if (this.multimedia.logo) files.push(this.multimedia.logo);
-    if (this.multimedia.banner) files.push(this.multimedia.banner);
-    if (this.multimedia.videoPresentacion) files.push(this.multimedia.videoPresentacion);
-    if (this.multimedia.fotosProductos.length) {
-      files.push(...this.multimedia.fotosProductos);
-    }
+    if (this.multimedia.logo) files.push(new File([this.multimedia.logo], 'LOGO.PNG', { type: this.multimedia.logo.type }));
+    if (this.multimedia.banner) files.push(new File([this.multimedia.banner], 'BANNER.PNG', { type: this.multimedia.banner.type }));
+    if (this.multimedia.videoPresentacion) files.push(new File([this.multimedia.videoPresentacion], 'VIDEO.MP4', { type: this.multimedia.videoPresentacion.type }));
+    if (this.multimedia.fotosProductos.length > 0) files.push(new File([this.multimedia.fotosProductos[0]], 'FOTOPRODUCTO_1.PNG', { type: this.multimedia.fotosProductos[0].type }));
+    if (this.multimedia.fotosProductos.length > 1) files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
+
+    console.log(files);
 
     this.loading = true;
     this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
         next: (resp) => {
           console.log('Emprendimiento grabado correctamente', resp);
+          this.onEmprendimientoCreated.emit();
           this.loading = false;
         },
         error: (err) => {

@@ -15,18 +15,7 @@
           </div>
         </ng-template>
 
-        <!-- overlay: if a specific overlayTemplate is provided use it; otherwise show favorite button -->
-        <ng-container *ngIf="overlayTemplate; else defaultOverlay">
-          <ng-container *ngTemplateOutlet="overlayTemplate; context: { $implicit: item }"></ng-container>
-        </ng-container>
-        <ng-template #defaultOverlay>
-          <button (click)="onToggleFavorite(item, $event)"
-                  class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:scale-105 transition">
-            <svg class="w-4 h-4 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 21s-6.716-4.686-9.35-7.153C-0.004 10.595 2.692 7 6.5 7c1.796 0 3.1.864 3.5 2 .4-1.136 1.704-2 3.5-2 3.808 0 6.504 3.595 3.85 6.847C18.716 16.314 12 21 12 21z"/>
-            </svg>
-          </button>
-        </ng-template>
+        
       </div>
 
       <!-- contenido -->

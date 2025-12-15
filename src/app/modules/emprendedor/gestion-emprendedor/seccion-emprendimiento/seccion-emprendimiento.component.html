@@ -42,10 +42,10 @@
         </p>
       </div>
 
-      <div *ngIf="emprendimientos.length" >
+      <div *ngIf="cardsArray.length" >
         <app-cards
-          *ngFor="let emprendimiento of emprendimientos"
-          [items]="[emprendimiento]">
+          [items]="cardsArray"
+          [pageSize]="6">
         </app-cards>
       </div>
     </ng-container>
