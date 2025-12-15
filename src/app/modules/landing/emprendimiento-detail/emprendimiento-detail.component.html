@@ -1,0 +1,94 @@
+<app-navbar></app-navbar>
+
+<main class="py-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div *ngIf="cargando" class="flex flex-col items-center justify-center py-12">
+    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span class="text-gray-500 text-sm">Cargando emprendimiento...</span>
+  </div>
+
+  <div *ngIf="error" class="text-center py-8 text-red-500">
+    {{ error }}
+  </div>
+
+  <!-- Botón volver -->
+  <div *ngIf="!cargando" class="mb-4">
+    <a routerLink="/emprendimientos" class="inline-flex items-center px-3 py-2 rounded-md bg-white border text-sm text-gray-700 hover:bg-gray-50 shadow-sm">
+      ← Volver a Emprendimientos
+    </a>
+  </div>
+
+  <section *ngIf="!cargando && !error && emprendimiento" class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Hero -->
+    <div class="w-full h-64 md:h-80 bg-gray-100 relative">
+      <img
+        [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
+        [alt]="emprendimiento.nombreComercial"
+        class="w-full h-full object-cover"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div class="absolute left-4 bottom-4 text-white">
+        <h1 class="text-2xl md:text-3xl font-bold">{{ emprendimiento.nombreComercial }}</h1>
+        <p class="text-sm md:text-base">{{ emprendimiento.nombreCiudad }} · {{ emprendimiento.nombreTipoEmprendimiento }}</p>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 py-6 md:py-8 md:px-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Left: Descripciones principales -->
+      <div class="md:col-span-2 space-y-6">
+        <!-- Resumen (primer texto disponible) -->
+        <div *ngIf="(emprendimiento.descripciones || []).length > 0" class="prose">
+          <h2 class="text-xl font-semibold">Resumen</h2>
+          <p class="text-gray-700 whitespace-pre-line">
+            {{ (emprendimiento.descripciones || [])[0]?.descripcion }}
+          </p>
+        </div>
+
+        <!-- Otras descripciones -->
+        <div *ngFor="let desc of emprendimiento.descripciones || []" class="bg-gray-50 p-4 rounded">
+          <h3 class="font-medium">{{ desc.tipoDescripcion }}</h3>
+          <p class="text-gray-600 whitespace-pre-line">{{ desc.descripcion }}</p>
+        </div>
+
+        <!-- Presencias digitales -->
+        <div *ngIf="(emprendimiento.aceptaDatosPublicos && (emprendimiento.presenciasDigitales || []).length > 0)" class="bg-white p-4 rounded shadow-sm">
+          <h2 class="text-lg font-semibold mb-2">Presencias digitales</h2>
+          <ul class="list-none space-y-1">
+            <li *ngFor="let p of emprendimiento.presenciasDigitales || []" class="flex items-center">
+              <span class="text-sm font-medium mr-2">{{ p.plataforma }}:</span>
+              <a class="text-blue-600 text-sm" [href]="p.descripcion.startsWith('http') ? p.descripcion : null" [target]="p.descripcion.startsWith('http') ? '_blank' : null">
+                {{ p.descripcion }}
+              </a>
+              <span *ngIf="!p.descripcion.startsWith('http')" class="text-gray-700 text-sm ml-1">{{ p.descripcion }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Galería -->
+        <div *ngIf="(emprendimiento.multimedia || []).length > 0" class="space-y-3">
+          <h2 class="text-lg font-semibold">Galería</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <img *ngFor="let m of emprendimiento.multimedia || []" [src]="m.urlArchivo" [alt]="m.nombreActivo" class="w-full h-40 object-cover rounded" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Ficha lateral -->
+      <aside class="md:col-span-1 space-y-4">
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="text-lg font-semibold mb-2">Información</h3>
+          <ul class="text-sm text-gray-700 space-y-1">
+            <li><strong>Emprendedor:</strong> {{ emprendimiento.nombreUsuario }}</li>
+            <li><strong>Ciudad:</strong> {{ emprendimiento.nombreCiudad }}</li>
+            <li><strong>Tipo:</strong> {{ emprendimiento.nombreTipoEmprendimiento }}</li>
+          </ul>
+        </div>  
+      </aside>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

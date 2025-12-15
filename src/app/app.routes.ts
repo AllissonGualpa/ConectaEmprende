@@ -21,6 +21,7 @@ import { RoleGuard } from './core/services/role.guard';
 import { AuthGuard } from './core/services/auth.guard';
 import { AccesoDenegadoComponent } from './shared/components/acceso-denegado/acceso-denegado.component';
 import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/admin-solicitudes.component';
+import { EmprendimientoDetailComponent } from './modules/landing/emprendimiento-detail/emprendimiento-detail.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -33,6 +34,7 @@ export const routes: Routes = [
   // Landing pública
   { path: 'inicio', component: InicioComponent },
   { path: 'emprendimientos', component: EmprendimientosComponent },
+  { path: 'emprendimientos/:id', component: EmprendimientoDetailComponent },
   { path: 'startups', component: StartupsComponent },
   { path: 'startups/:id', component: StartupsDetailComponent },
   { path: 'blog', component: BlogComponent },
