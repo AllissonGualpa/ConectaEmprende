@@ -60,6 +60,9 @@ export class AdminEmprendimientosComponent implements OnInit {
   startIndex: number = 0;
   endIndex: number = 0;
 
+  showDesactivarModal = false;
+  emprendimientoAInactivar: any = null;
+
   private apiEmprendimientos =
     Environment.api_url + Environment.api_emprendimientos;
   private apiTipos = Environment.api_url + Environment.api_tipos;
@@ -369,12 +372,11 @@ export class AdminEmprendimientosComponent implements OnInit {
   }
 
   desactivarEmprendimiento(emp: any) {
-    const confirmado = confirm(
-      `¿Seguro que deseas inactivar el emprendimiento "${emp.nombreComercial}"?`
-    );
+    this.emprendimientoAInactivar = emp;
+    this.showDesactivarModal = true;
+  }
 
-    if (!confirmado) {
-      return;
-    }
+  confirmarDesactivarEmprendimiento() {
+    this.showDesactivarModal = false;
   }
 }

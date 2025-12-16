@@ -158,4 +158,7 @@ export class EmprendimientoService {
 
         return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
     }
+
+    //falta api para editar emprendimiento
+    //falta api para inactivar emprendimiento
 }
