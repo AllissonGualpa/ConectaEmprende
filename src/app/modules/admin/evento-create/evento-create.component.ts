@@ -38,6 +38,9 @@ export class EventoCreateComponent {
   loading = false;
   error: string | null = null;
 
+  // Nueva propiedad: URL de previsualización de la imagen (puede venir del backend o ser un objectURL)
+  imagenPreviewUrl: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<EventoCreateComponent>,
@@ -122,8 +125,15 @@ export class EventoCreateComponent {
             this.form.patchValue({ activarEvento: false });
           }
 
-          // Si hay imagen, solo ponemos el nombre (no el binario)
-          if (e.imagen) {
+          // Si hay imagen, configurar preview con la URL proveniente del backend (o con el nombre si solo se proporciona filename)
+          if (e.urlImagen) {
+            console.log('Imagen URL from backend:', e.urlImagen);
+            this.imagenPreviewUrl = e.urlImagen;
+            this.form.patchValue({ imagen: { name: e.imagen || '' } });
+          } else if (e.imagen) {
+            // Si el backend solo devuelve nombre de archivo, dejamos el nombre y ponemos preview como el mismo valor
+            // Ajusta esta construcción si tienes un endpoint específico para servar imágenes.
+            this.imagenPreviewUrl = String(e.imagen);
             this.form.patchValue({ imagen: { name: e.imagen } });
           }
 
@@ -336,8 +346,34 @@ export class EventoCreateComponent {
           type: file.type
         } 
       });
+
+      // Generar preview local (object URL)
+      try {
+        if (this.imagenPreviewUrl && this.imagenPreviewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(this.imagenPreviewUrl);
+        }
+      } catch (e) {
+        // ignore
+      }
+      this.imagenPreviewUrl = URL.createObjectURL(file);
+
       this.cdr.detectChanges();
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  // Nuevo: permite quitar la imagen previa/seleccionada
+  removeImagenSeleccionada() {
+    // limpiar preview (revocar objectURL si aplica)
+    try {
+      if (this.imagenPreviewUrl && this.imagenPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(this.imagenPreviewUrl);
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.imagenPreviewUrl = null;
+    this.form.patchValue({ imagen: null });
+    this.cdr.detectChanges();
   }
 }

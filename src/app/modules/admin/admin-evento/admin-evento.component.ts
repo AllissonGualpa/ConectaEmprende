@@ -115,7 +115,7 @@ export class AdminEventoComponent {
 
     this.eventoService
       .getAdminEvents({
-        tipoEvento: tipoEventoFilter,
+        estado: tipoEventoFilter,
         fechaInicio: fechaInicioStr,
         fechaFin: fechaFinStr,
         page: this.currentPage,

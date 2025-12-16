@@ -26,7 +26,7 @@ export class EmprendimientoDetailComponent implements OnInit {
     if (id) {
       this.cargarEmprendimiento(+id);
       // Generar URL de evaluación
-      const evaluacionUrl = `${window.location.origin}/evaluacion`;
+      const evaluacionUrl = `${window.location.origin}/evaluacion/` + id;
       // Generar QR usando API gratuita de Google Charts (o qr-server)
       this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
     } else {

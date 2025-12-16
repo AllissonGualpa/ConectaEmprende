@@ -217,7 +217,7 @@ export class EventoService {
    * Obtener eventos para el administrador con filtros y paginación.
    * Respuesta tipada con AdminEventosResponseDto.
    */
-  getAdminEvents(options?: { tipoEvento?: string; fechaInicio?: string; fechaFin?: string; page?: number; size?: number; token?: string }): Observable<AdminEventosResponseDto> {
+  getAdminEvents(options?: { estado?: string; fechaInicio?: string; fechaFin?: string; page?: number; size?: number; token?: string }): Observable<AdminEventosResponseDto> {
     const url = `${this.baseUrl}/admin`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
@@ -226,7 +226,7 @@ export class EventoService {
     }
 
     let params = new HttpParams();
-    if (options?.tipoEvento) params = params.set('tipoEvento', options.tipoEvento);
+    if (options?.estado) params = params.set('estado', String(options.estado).toLowerCase());
     if (options?.fechaInicio) params = params.set('fechaInicio', options.fechaInicio);
     if (options?.fechaFin) params = params.set('fechaFin', options.fechaFin);
     if (options?.page != null) params = params.set('page', String(options.page));
