@@ -33,16 +33,53 @@
 
             <ng-template #emptyOverlay></ng-template>
 
-            <app-cards
-                [items]="eventos"
-                    [pageSize]="3"
-                    [singleColumn]="true"
-                [badgeTemplate]="eventBadge"
-                [actionTemplate]="eventActions"
-                [overlayTemplate]="emptyOverlay"
-                (discover)="onDiscover($event)"
-                (toggleFavorite)="onToggleFavorite($event)"
-                ctaLabel="Ver Detalle">
-            </app-cards>
+            <!-- Placeholder cuando eventos === null -->
+            <ng-container *ngIf="eventos === null; else whenLoaded">
+                <div class="w-full flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <!-- icono calendario -->
+                        <svg class="mx-auto w-20 h-20 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="5" width="18" height="16" rx="2" ry="2" stroke-width="1.5"></rect>
+                          <path d="M16 3v4M8 3v4" stroke-width="1.5"></path>
+                          <path d="M3 10h18" stroke-width="1.5"></path>
+                        </svg>
+                        <h3 class="mt-4 text-lg font-semibold text-gray-700">Cargando eventos...</h3>
+                        <p class="mt-2 text-sm text-gray-500">Espere un momento mientras obtenemos los eventos.</p>
+                    </div>
+                </div>
+            </ng-container>
+
+            <!-- Cuando ya se cargó (eventos es array) -->
+            <ng-template #whenLoaded>
+                <ng-container *ngIf="eventos && eventos.length > 0; else noEvents">
+                    <app-cards
+                        [items]="eventos"
+                        [pageSize]="3"
+                        [singleColumn]="true"
+                        [badgeTemplate]="eventBadge"
+                        [actionTemplate]="eventActions"
+                        [overlayTemplate]="emptyOverlay"
+                        (discover)="onDiscover($event)"
+                        (toggleFavorite)="onToggleFavorite($event)"
+                        ctaLabel="Ver Detalle">
+                    </app-cards>
+                </ng-container>
+            </ng-template>
+
+            <!-- Mensaje cuando se cargó y no hay eventos -->
+            <ng-template #noEvents>
+                <div class="w-full flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <svg class="mx-auto w-20 h-20 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <rect x="3" y="5" width="18" height="16" rx="2" ry="2" stroke-width="1.5"></rect>
+                          <path d="M16 3v4M8 3v4" stroke-width="1.5"></path>
+                          <path d="M3 10h18" stroke-width="1.5"></path>
+                        </svg>
+                        <h3 class="mt-4 text-lg font-semibold text-gray-700">No hay eventos disponibles</h3>
+                        <p class="mt-2 text-sm text-gray-500">Vuelve pronto para descubrir nuevos eventos.</p>
+                    </div>
+                </div>
+            </ng-template>
+
         </section>
 </div>

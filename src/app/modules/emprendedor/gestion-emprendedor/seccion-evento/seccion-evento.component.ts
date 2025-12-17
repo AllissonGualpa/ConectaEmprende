@@ -20,8 +20,6 @@ export class SeccionEventoComponent {
   fechaFin: string | null = null;
   estadoSeleccionado: string = '';
 
-
-
   consultar() {
     const payload = {
       query: '',
@@ -63,7 +61,7 @@ export class SeccionEventoComponent {
         this.rawMap[String(newCard.id)] = result;
 
         // Prepend so newest appear first
-        this.eventos = [newCard, ...this.eventos];
+        this.eventos = [newCard, ...(this.eventos ?? [])];
 
         // show created dialog (same as admin)
         this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento' } });
@@ -71,8 +69,8 @@ export class SeccionEventoComponent {
     });
   }
 
-  // events list for cards
-  eventos: CardItem[] = [];
+  // events list for cards: ahora puede ser null mientras carga / indefinido
+  eventos: CardItem[] | null = null;
   // keep raw items returned by server for filtering
   private allRawItems: any[] = [];
   // keep original raw items by id so we can open edit dialog with full data
@@ -85,6 +83,9 @@ export class SeccionEventoComponent {
   }
 
   private loadEventos(): void {
+    // usar null para indicar estado "no cargado / cargando"
+    this.eventos = null;
+
     const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
     // New emprendedor endpoint is paginated; request first page with size 5
     this.eventoService.getEmprendedorEvents({ page: 0, size: 5, token }).subscribe({
@@ -107,6 +108,7 @@ export class SeccionEventoComponent {
       },
       error: (err: any) => {
         console.warn('No se pudieron cargar eventos en SeccionEvento:', err);
+        // mostrar lista vacía en caso de error (no null) para que el placeholder de "no hay eventos" se muestre si procede
         this.eventos = [];
       }
     });
