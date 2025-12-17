@@ -130,7 +130,7 @@ export class EmprendimientoService {
     grabarEmprendimiento(
         data: SolicitudEmprendimientoDataDto,
         files: File[]
-    ): Observable<EmprendimientoCrearResponse> { // <- tipado con la nueva interfaz
+    ): Observable<EmprendimientoCrearResponse> {
         const token = localStorage.getItem('token');
         const headers = new HttpHeaders(
             token ? { Authorization: `Bearer ${token}` } : {}
@@ -147,7 +147,32 @@ export class EmprendimientoService {
         });
 
         return this.http.post<EmprendimientoCrearResponse>(`${this.baseUrlEmprendimientos}`, formData, {
-            headers, // NO se setea Content-Type manualmente
+            headers,
+        });
+    }
+
+    editarEmprendimiento(
+        idEmprendimiento: number,
+        data: SolicitudEmprendimientoDataDto,
+        files: File[]
+    ): Observable<EmprendimientoCrearResponse> { 
+        const token = localStorage.getItem('token');
+        const headers = new HttpHeaders(
+            token ? { Authorization: `Bearer ${token}` } : {}
+        );
+
+        const formData = new FormData();
+
+        // Parte JSON (nombre EXACTO que espera tu API)
+        formData.append('data', JSON.stringify(data));
+
+        // Partes de archivo (campo imágenes múltiple)
+        files.forEach(file => {
+            formData.append('imagenes', file); // mismo nombre repetido para cada archivo
+        });
+
+        return this.http.put<EmprendimientoCrearResponse>(`${this.baseUrlEmprendimientos}/${idEmprendimiento}`, formData, {
+            headers,
         });
     }
 
