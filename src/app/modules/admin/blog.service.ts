@@ -39,7 +39,7 @@ export class BlogService {
     url += `&fechaInicio=${this.formatDate(inicio, false)}`;
     url += `&fechaFin=${this.formatDate(fin, true)}`;
 
-    if (tag) url += `&tag=${tag}`;
+    if (tag) url += `&idTag=${tag}`;
     if (estado) url += `&estado=${estado}`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() });
