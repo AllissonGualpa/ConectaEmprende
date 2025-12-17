@@ -1,8 +1,11 @@
 <div class="flex min-h-screen bg-gray-50">
-  <app-navbar-admin></app-navbar-admin>
+  <!-- Navbar lateral fijo -->
+  <div class="fixed left-0 top-0 h-screen z-10">
+    <app-navbar-admin></app-navbar-admin>
+  </div>
 
-  <!-- Contenido principal -->
-  <main class="flex-1 p-8 overflow-y-auto">
+  <!-- Contenido principal con margen para el navbar -->
+  <main class="flex-1 ml-64 p-8 overflow-y-auto">
     <h1 class="text-2xl font-bold mb-6">
       ¡{{ saludo }}, {{ user.name }}!
     </h1>
