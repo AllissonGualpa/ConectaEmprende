@@ -25,7 +25,10 @@
               <input 
                 matInput 
                 placeholder="Buscar blogs..." 
-                (ngModelChange)="onSearch($event)">
+                (ngModelChange)="onSearch($event)"
+                [(ngModel)]="searchTerm"
+                name="searchTerm"
+              >
             </mat-form-field>
           </div>
 

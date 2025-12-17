@@ -222,8 +222,9 @@ export class AdminBlogComponent implements OnInit {
     this.loadBlogs();
   }
 
-  onSearch(event: any): void {
-    this.searchTerm = event.target.value.toLowerCase();
+  onSearch(value: string) {
+    // Mantener compatibilidad con la lógica previa y sincronizar el searchTerm
+    this.searchTerm = value;
     this.applyFilters();
   }
 
