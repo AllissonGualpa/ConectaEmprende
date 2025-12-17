@@ -1,0 +1,990 @@
+<div class="h-full flex flex-col">
+  <!-- Header del wizard -->
+  <div class="border-b px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">
+          {{ steps[currentStep].title }}
+        </h3>
+        <p class="text-sm text-gray-500">
+          {{ steps[currentStep].description }}
+        </p>
+      </div>
+
+      <!-- Indicador de pasos -->
+      <div class="flex items-center space-x-2 text-sm text-gray-500">
+        <span>Paso {{ currentStep + 1 }} de {{ steps.length }}</span>
+      </div>
+    </div>
+
+    <!-- barra de progreso simple -->
+    <div class="mt-3 h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+      <div
+        class="h-full bg-orange-500 transition-all"
+        [style.width.%]="((currentStep + 1) / steps.length) * 100"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Contenido de cada paso (placeholder, en construcción) -->
+  <div class="flex-1 overflow-auto px-6 py-5">
+    <ng-container [ngSwitch]="currentStep">
+      <div *ngSwitchCase="0" class="flex flex-col items-center">
+        <div class="max-w-xl w-full text-center mb-8">
+          <h2 class="text-2xl font-bold text-[#1E71D8] mb-2">
+            Categorías del emprendimiento
+          </h2>
+          <p class="text-gray-500 text-base">
+            Selecciona el rubro que mejor represente tu emprendimiento
+            <br />
+            (puedes escoger hasta 2)
+          </p>
+        </div>
+
+        <div class="max-w-xl w-full space-y-4">
+          <button
+            type="button"
+            *ngFor="let cat of categories"
+            class="flex items-center space-x-3 text-left w-full"
+            (click)="toggleCategory(cat)"
+          >
+            <!-- checkbox custom -->
+            <span
+              class="inline-flex items-center justify-center w-5 h-5 rounded border"
+              [ngClass]="cat.selected
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-white border-gray-300'"
+            >
+              <span
+                *ngIf="cat.selected"
+                class="w-2.5 h-2.5 rounded-sm bg-white"
+              ></span>
+            </span>
+
+            <span class="text-gray-800 text-sm">
+              {{ cat.label }}
+            </span>
+          </button>
+
+          <p class="text-xs text-gray-400 mt-2" *ngIf="selectedCategoriesCount >= 2">
+            Ya seleccionaste 2 categorías; no puedes elegir más.
+          </p>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="1" class="space-y-8">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-[#1E71D8]">
+            Descripción del emprendimiento
+          </h2>
+        </div>
+
+        <!-- Resumen general -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            Resumen general del emprendimiento
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.resumen"
+            required
+            placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
+          ></textarea>
+        </div>
+
+        <!-- Fila de dos columnas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿Qué lo hace diferente o innovador?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.diferencial"
+              required
+              placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
+            ></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿A qué público objetivo te diriges?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.publicoObjetivo"
+              required
+              placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Propósito / misión -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            ¿Cuál es el propósito o misión como emprendedor/a?
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.proposito"
+            required
+            placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
+          ></textarea>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="2" class="space-y-12">
+        <!-- Historia del emprendimiento -->
+        <section class="space-y-4">
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-[#1E71D8]">
+              Historia del emprendimiento
+            </h2>
+          </div>
+
+          <!-- NUEVO: Nombre Comercial -->
+          <div class="space-y-2">
+            <label class="block text-sm font-semibold text-gray-800">Nombre Comercial</label>
+            <input
+              type="text"
+              class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="historia.nombreComercial"
+              placeholder="Ingrese el nombre comercial de su emprendimiento"
+              required
+            />
+          </div>
+          <!-- FIN NUEVO -->
+
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              Resumen general del emprendimiento
+            </h3>
+            <textarea
+              class="w-full min-h-[140px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="historia.historiaGeneral"
+              placeholder="Comparte la historia de tu emprendimiento: cómo nació, qué te motivó y cómo ha ido evolucionando."
+              required
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- Presencia digital y contacto -->
+        <section class="space-y-6">
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-[#1E71D8]">
+              Presencia digital y contacto
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">
+                Instagram (u otra red principal)
+              </label>
+              <input
+                type="text"
+                class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="presenciaDigital.instagram"
+                required
+                placeholder="@tuEmprendimiento"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">
+                Sitio Web (Opcional)
+              </label>
+              <input
+                type="text"
+                class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="presenciaDigital.sitioWeb"
+                placeholder="http://www.tu-emprendimiento.com"
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">
+                WhatsApp de contacto
+              </label>
+              <input
+                type="text"
+                class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="presenciaDigital.whatsapp"
+                required
+                placeholder="+593 99 123 4567 o 0991234567"
+              />
+              <!-- Mensaje de formato inválido -->
+              <p *ngIf="presenciaDigital.whatsapp && !isWhatsappValid()" class="text-xs text-red-500 mt-1">
+                Formato inválido. Use +593XXXXXXXXX o 09XXXXXXXX (Ecuador).
+              </p>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">
+                Tiktok
+              </label>
+              <input
+                type="text"
+                class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="presenciaDigital.tiktok"
+                required
+                placeholder="@tuEmprendimiento"
+              />
+            </div>
+          </div>
+
+          <!-- Acepta mostrar datos públicamente -->
+          <div class="space-y-3">
+            <p class="text-sm font-semibold text-gray-800">
+              ¿Aceptas que estos datos se muestren públicamente en la plataforma?
+            </p>
+
+            <div class="flex items-center space-x-6">
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="presenciaDigital.aceptaMostrarPublicamente
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="presenciaDigital.aceptaMostrarPublicamente"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span class="text-sm text-gray-800">Sí</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="aceptaPublico"
+                  [checked]="presenciaDigital.aceptaMostrarPublicamente"
+                  (change)="presenciaDigital.aceptaMostrarPublicamente = true"
+                />
+              </label>
+
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="!presenciaDigital.aceptaMostrarPublicamente
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="!presenciaDigital.aceptaMostrarPublicamente"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span class="text-sm text-gray-800">No</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="aceptaPublico"
+                  [checked]="!presenciaDigital.aceptaMostrarPublicamente"
+                  (change)="presenciaDigital.aceptaMostrarPublicamente = false"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+        <!-- Sección Ubicación -->
+        <section class="space-y-6">
+          <div class="text-center">
+            <h2 class="text-xl font-bold text-[#1E71D8] mb-2">Ubicación</h2>
+            <p class="text-gray-500 text-sm">Selecciona la provincia y ciudad donde opera tu emprendimiento.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">Provincia</label>
+              <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="ubicacion.provincia"
+                (change)="onProvinciaChange()"
+                required>
+                <option value="" disabled selected>Seleccionar provincia</option>
+                <option *ngFor="let prov of provincias" [value]="prov.id">{{ prov.nombre }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-800">Ciudad</label>
+              <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                [(ngModel)]="ubicacion.ciudad"
+                required>
+                <option value="" disabled selected>Seleccionar ciudad</option>
+                <option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad.id">{{ ciudad.nombre }}</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sección Tipo de Emprendimiento -->
+        <section class="space-y-6">
+          <div class="text-center">
+            <h2 class="text-xl font-bold text-[#1E71D8] mb-2">Tipo de emprendimiento</h2>
+            <p class="text-gray-500 text-sm">Selecciona el tipo de emprendimiento que mejor describe tu proyecto.</p>
+          </div>
+          <div class="max-w-md mx-auto">
+            <label class="block text-sm font-semibold text-gray-800 mb-2">Tipo</label>
+            <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="tipoEmprendimiento"
+              required>
+              <option value="0" disabled selected>Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id">
+                {{ tipo.tipo === tipo.subTipo ? tipo.tipo : tipo.tipo + ' - ' + tipo.subTipo }}
+              </option>
+            </select>
+          </div>
+        </section>
+      </div>
+
+      <div *ngSwitchCase="3" class="space-y-10">
+        <div class="text-center space-y-2">
+          <h2 class="text-2xl font-bold text-[#1E71D8]">
+            Material multimedia
+          </h2>
+          <p class="text-sm text-gray-500">
+            Adjunta los siguientes elementos para completar tu perfil.
+          </p>
+        </div>
+
+        <!-- Grid principal -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Logo -->
+          <div class="space-y-3">
+            <h3 class="text-base font-semibold text-gray-800 text-center md:text-left">
+              Logo del emprendimiento
+            </h3>
+            <p class="text-xs text-gray-500 text-center md:text-left">
+              Formato JPG o PNG, fondo blanco o transparente.
+            </p>
+
+            <label class="block relative">
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                class="hidden"
+                (change)="onLogoChange($event)"
+              />
+              <div
+                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
+              >
+                <ng-container *ngIf="multimedia.logoPreview; else logoPlaceholder">
+                  <img
+                    [src]="multimedia.logoPreview"
+                    alt="Logo preview"
+                    class="max-h-32 object-contain"
+                  />
+                  <button
+                    type="button"
+                    (click)="removeLogo()"
+                    class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                  >
+                    Quitar
+                  </button>
+                </ng-container>
+                <ng-template #logoPlaceholder>
+                  <span class="text-xs text-gray-400 text-center">
+                    Haz clic para subir el logo
+                  </span>
+                </ng-template>
+              </div>
+            </label>
+          </div>
+
+          <!-- Fotos de productos (1 o 2) -->
+          <div class="space-y-3">
+            <h3 class="text-base font-semibold text-gray-800 text-center md:text-left">
+              1 o 2 fotos de productos o servicios representativos
+            </h3>
+            <p class="text-xs text-gray-500 text-center md:text-left">
+              Imágenes en buena calidad. Puedes adjuntar hasta 2 fotos.
+            </p>
+
+            <label class="block">
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                multiple
+                class="hidden"
+                (change)="onFotosProductosChange($event)"
+              />
+              <div
+                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl p-3 bg-gray-50 hover:bg-gray-100 transition"
+              >
+                <div class="flex flex-wrap gap-3">
+                  <ng-container *ngFor="let foto of multimedia.fotosProductosPreview; let i = index">
+                    <div class="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                      <img
+                        [src]="foto"
+                        alt="Foto producto {{ i + 1 }}"
+                        class="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        (click)="removeFotoProducto(i)"
+                        class="absolute -top-1 -right-1 bg-white rounded-full shadow text-[10px] px-1 text-gray-600 hover:bg-red-500 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </ng-container>
+
+                  <!-- Mostrar “+ Añadir” solo si hay menos de 2 fotos -->
+                  <div
+                    *ngIf="multimedia.fotosProductos.length < 2"
+                    class="flex items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 text-[11px] text-gray-400"
+                  >
+                    + Añadir
+                  </div>
+                </div>
+                <p class="mt-2 text-[11px] text-gray-400">
+                  Debes subir al menos 1 foto y máximo 2. Actual: {{ multimedia.fotosProductos.length }}.
+                </p>
+              </div>
+            </label>
+          </div>
+
+          <!-- Video corto -->
+          <div class="space-y-3">
+            <h3 class="text-base font-semibold text-gray-800 text-center md:text-left">
+              Video corto de presentación
+            </h3>
+            <p class="text-xs text-gray-500 text-center md:text-left">
+              Máx. 1 minuto. Formatos recomendados: MP4.
+            </p>
+
+            <label class="block relative">
+              <input
+                type="file"
+                accept="video/mp4,video/webm"
+                class="hidden"
+                (change)="onVideoChange($event)"
+              />
+              <div
+                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
+              >
+                <ng-container *ngIf="multimedia.videoPreview; else videoPlaceholder">
+                  <video
+                    [src]="multimedia.videoPreview"
+                    class="max-h-32 rounded-lg"
+                    controls
+                  ></video>
+                  <button
+                    type="button"
+                    (click)="removeVideo()"
+                    class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                  >
+                    Quitar
+                  </button>
+                </ng-container>
+                <ng-template #videoPlaceholder>
+                  <span class="text-xs text-gray-400 text-center">
+                    Haz clic para subir un video corto de presentación
+                  </span>
+                </ng-template>
+              </div>
+            </label>
+          </div>
+
+          <!-- Banner -->
+          <div class="space-y-3">
+            <h3 class="text-base font-semibold text-gray-800 text-center md:text-left">
+              Portada personalizada (estilo banner)
+            </h3>
+            <p class="text-xs text-gray-500 text-center md:text-left">
+              Imagen horizontal en buena resolución (JPG o PNG).
+            </p>
+
+            <label class="block relative">
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                class="hidden"
+                (change)="onBannerChange($event)"
+              />
+              <div
+                class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
+              >
+                <ng-container *ngIf="multimedia.bannerPreview; else bannerPlaceholder">
+                  <img
+                    [src]="multimedia.bannerPreview"
+                    alt="Banner preview"
+                    class="w-full h-32 object-cover rounded-lg max-w-xl"
+                  />
+                  <button
+                    type="button"
+                    (click)="removeBanner()"
+                    class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                  >
+                    Quitar
+                  </button>
+                </ng-container>
+                <ng-template #bannerPlaceholder>
+                  <span class="text-xs text-gray-400 text-center">
+                    Haz clic para subir la portada tipo banner
+                  </span>
+                </ng-template>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div *ngSwitchCase="4" class="space-y-10">
+        <!-- Métricas básicas -->
+        <section class="space-y-6">
+          <h2 class="text-2xl font-bold text-[#1E71D8] text-center">
+            Métricas básicas
+          </h2>
+
+          <!-- Clientes aproximados -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div class="space-y-3">
+              <p class="font-semibold text-gray-800">
+                ¿Con cuántos clientes aproximadamente cuentas?
+              </p>
+              <div class="flex flex-wrap gap-3 text-sm">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 rounded-full border text-gray-700"
+                  [ngClass]="metricas.clientes === '1-10'
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-300 bg-white'"
+                  (click)="metricas.clientes = '1-10'"
+                >
+                  1-10
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 rounded-full border text-gray-700"
+                  [ngClass]="metricas.clientes === '11-50'
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-300 bg-white'"
+                  (click)="metricas.clientes = '11-50'"
+                >
+                  11-50
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 rounded-full border text-gray-700"
+                  [ngClass]="metricas.clientes === '51-100'
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-300 bg-white'"
+                  (click)="metricas.clientes = '51-100'"
+                >
+                  51-100
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 rounded-full border text-gray-700"
+                  [ngClass]="metricas.clientes === '100+'
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-300 bg-white'"
+                  (click)="metricas.clientes = '100+'"
+                >
+                  Más de 100
+                </button>
+              </div>
+            </div>
+
+            <!-- ¿Has generado ventas? -->
+            <div class="space-y-3">
+              <p class="font-semibold text-gray-800">
+                ¿Has generado ventas?
+              </p>
+              <div class="flex items-center gap-6 text-sm">
+                <label class="inline-flex items-center space-x-2 cursor-pointer">
+                  <span
+                    class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                    [ngClass]="metricas.haGeneradoVentas === true
+                      ? 'bg-orange-500 border-orange-500'
+                      : 'bg-white border-gray-300'"
+                  >
+                    <span
+                      *ngIf="metricas.haGeneradoVentas === true"
+                      class="w-2.5 h-2.5 rounded-sm bg-white"
+                    ></span>
+                  </span>
+                  <span>Si</span>
+                  <input
+                    type="radio"
+                    class="hidden"
+                    name="ventas"
+                    (change)="metricas.haGeneradoVentas = true"
+                  />
+                </label>
+
+                <label class="inline-flex items-center space-x-2 cursor-pointer">
+                  <span
+                    class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                    [ngClass]="metricas.haGeneradoVentas === false
+                      ? 'bg-orange-500 border-orange-500'
+                      : 'bg-white border-gray-300'"
+                  >
+                    <span
+                      *ngIf="metricas.haGeneradoVentas === false"
+                      class="w-2.5 h-2.5 rounded-sm bg-white"
+                    ></span>
+                  </span>
+                  <span>No</span>
+                  <input
+                    type="radio"
+                    class="hidden"
+                    name="ventas"
+                    (change)="metricas.haGeneradoVentas = false"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Programa de incubación -->
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800">
+              ¿Has participado en algún programa de incubación UEES?
+            </p>
+            <div class="flex flex-wrap items-center gap-4 text-sm">
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="metricas.haParticipadoIncubacion === true
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="metricas.haParticipadoIncubacion === true"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>Si</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="incubacion"
+                  (change)="metricas.haParticipadoIncubacion = true"
+                />
+              </label>
+
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="metricas.haParticipadoIncubacion === false
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="metricas.haParticipadoIncubacion === false"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>No</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="incubacion"
+                  (change)="metricas.haParticipadoIncubacion = false; metricas.nombreProgramaIncubacion = ''"
+                />
+              </label>
+
+              <div class="flex-1 min-w-[220px]" *ngIf="metricas.haParticipadoIncubacion">
+                <input
+                  type="text"
+                  class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                  [(ngModel)]="metricas.nombreProgramaIncubacion"
+                  placeholder="Indica cuál, en caso de sí"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Participación en la comunidad -->
+        <section class="space-y-6">
+          <h2 class="text-2xl font-bold text-[#1E71D8] text-center">
+            Participación en la comunidad
+          </h2>
+
+          <!-- Rankings públicos -->
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800">
+              ¿Te interesa participar en rankings públicos o destacarte como por ejemplo
+              “Emprendimiento del mes”, lo más visto u otros?
+            </p>
+            <div class="flex items-center gap-6 text-sm">
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.interesRankings === true
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.interesRankings === true"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>Si</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="rankings"
+                  (change)="participacion.interesRankings = true"
+                />
+              </label>
+
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.interesRankings === false
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.interesRankings === false"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>No</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="rankings"
+                  (change)="participacion.interesRankings = false"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Publicaciones mensuales -->
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800">
+              ¿Estarías dispuesto/a a publicar actualizaciones mensuales
+              (contenido, fotos o videos, etc.)?
+            </p>
+            <div class="flex items-center gap-6 text-sm">
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.publicacionesMensuales === true
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.publicacionesMensuales === true"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>Si</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="publicaciones"
+                  (change)="participacion.publicacionesMensuales = true"
+                />
+              </label>
+
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.publicacionesMensuales === false
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.publicacionesMensuales === false"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>No</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="publicaciones"
+                  (change)="participacion.publicacionesMensuales = false"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Feedback en el perfil -->
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800">
+              ¿Deseas recibir retroalimentación de visitantes o comentarios en tu perfil?
+            </p>
+            <div class="flex items-center gap-6 text-sm">
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.recibirFeedback === true
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.recibirFeedback === true"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>Si</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="feedback"
+                  (change)="participacion.recibirFeedback = true"
+                />
+              </label>
+
+              <label class="inline-flex items-center space-x-2 cursor-pointer">
+                <span
+                  class="inline-flex items-center justify-center w-5 h-5 rounded border"
+                  [ngClass]="participacion.recibirFeedback === false
+                    ? 'bg-orange-500 border-orange-500'
+                    : 'bg-white border-gray-300'"
+                >
+                  <span
+                    *ngIf="participacion.recibirFeedback === false"
+                    class="w-2.5 h-2.5 rounded-sm bg-white"
+                  ></span>
+                </span>
+                <span>No</span>
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="feedback"
+                  (change)="participacion.recibirFeedback = false"
+                />
+              </label>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div *ngSwitchCase="5" class="max-w-3xl mx-auto space-y-8">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-[#1E71D8]">
+            Declaraciones finales
+          </h2>
+        </div>
+
+        <div class="space-y-4 text-sm text-gray-800">
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <span
+              class="mt-1 inline-flex items-center justify-center w-4 h-4 rounded border"
+              [ngClass]="declaraciones.infoVeridica
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-white border-gray-300'"
+            >
+              <span *ngIf="declaraciones.infoVeridica" class="w-2 h-2 rounded-sm bg-white"></span>
+            </span>
+            <span>
+              Declaro que la información proporcionada es verídica.
+            </span>
+            <input
+              type="checkbox"
+              class="hidden"
+              [(ngModel)]="declaraciones.infoVeridica"
+            />
+          </label>
+
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <span
+              class="mt-1 inline-flex items-center justify-center w-4 h-4 rounded border"
+              [ngClass]="declaraciones.aceptaPublicacion
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-white border-gray-300'"
+            >
+              <span *ngIf="declaraciones.aceptaPublicacion" class="w-2 h-2 rounded-sm bg-white"></span>
+            </span>
+            <span>
+              Acepto la publicación de mi emprendimiento en la plataforma institucional UEES.
+            </span>
+            <input
+              type="checkbox"
+              class="hidden"
+              [(ngModel)]="declaraciones.aceptaPublicacion"
+            />
+          </label>
+
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <span
+              class="mt-1 inline-flex items-center justify-center w-4 h-4 rounded border"
+              [ngClass]="declaraciones.autorizaUsoImagenes
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-white border-gray-300'"
+            >
+              <span *ngIf="declaraciones.autorizaUsoImagenes" class="w-2 h-2 rounded-sm bg-white"></span>
+            </span>
+            <span>
+              Autorizo el uso de mis imágenes y material enviado para fines informativos, académicos y promocionales.
+            </span>
+            <input
+              type="checkbox"
+              class="hidden"
+              [(ngModel)]="declaraciones.autorizaUsoImagenes"
+            />
+          </label>
+
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <span
+              class="mt-1 inline-flex items-center justify-center w-4 h-4 rounded border"
+              [ngClass]="declaraciones.aceptaPoliticasCentro
+                ? 'bg-orange-500 border-orange-500'
+                : 'bg-white border-gray-300'"
+            >
+              <span *ngIf="declaraciones.aceptaPoliticasCentro" class="w-2 h-2 rounded-sm bg-white"></span>
+            </span>
+            <span>
+              Entiendo que el Centro de Emprendimiento se reserva el derecho de revisar, aprobar y retirar perfiles que no cumplan con los criterios establecidos.
+            </span>
+            <input
+              type="checkbox"
+              class="hidden"
+              [(ngModel)]="declaraciones.aceptaPoliticasCentro"
+            />
+          </label>
+        </div>
+
+        <p class="text-xs text-gray-400 text-center">
+          Debes aceptar todas las declaraciones para poder enviar tu solicitud.
+        </p>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Footer con controles de navegación -->
+  <div class="border-t px-6 py-4 flex justify-between items-center">
+    <button
+      type="button"
+      class="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-100"
+      [disabled]="isFirstStep"
+      (click)="prevStep()"
+    >
+      Atrás
+    </button>
+
+    <div class="space-x-2">
+      <button
+        *ngIf="!isLastStep"
+        type="button"
+        class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
+        [disabled]="
+          (currentStep === 0 && !canGoNextFromStep1) ||
+          (currentStep === 1 && !isDescripcionComplete) ||
+          (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
+          (currentStep === 3 && !isMultimediaComplete) ||
+          (currentStep === 4 && !isMetricasComplete)
+        "
+        (click)="nextStep()"
+      >
+        Siguiente
+      </button>
+
+      <button
+        *ngIf="isLastStep"
+        type="button"
+        class="inline-flex items-center px-6 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-60"
+        [disabled]="!isMultimediaComplete || !isMetricasComplete || !isDeclaracionesComplete"
+        (click)="finish()"
+      >
+        <span>Enviar</span>
+      </button>
+    </div>
+  </div>
+</div>
