@@ -13,8 +13,7 @@ import { Environment } from '../../../../environments/environment';
   selector: 'app-inicio',
   standalone: true,
   imports: [CommonModule, RouterLink, NavbarComponent, FooterComponent, MatButtonModule, MatIconModule],
-  templateUrl: './inicio.component.html',
-  styleUrls: ['./inicio.component.css']
+  templateUrl: './inicio.component.html'
 })
 export class InicioComponent implements OnInit {
   isLoggedIn: boolean = false;
@@ -44,7 +43,6 @@ export class InicioComponent implements OnInit {
         this.categoriasDestacadas = categorias.map(cat => ({
           nombre: cat.nombre,
           imagen: cat.urlImagen || '/assets/img/inicio/foto1.jpg',
-          anchura: 'normal',
           link: `/landing/emprendimientos?categoria=${encodeURIComponent(cat.nombre)}`
         }));
         this.loading = false;

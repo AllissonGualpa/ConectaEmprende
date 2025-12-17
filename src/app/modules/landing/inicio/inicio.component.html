@@ -2,9 +2,7 @@
 
 <main class="min-h-screen bg-white font-poppins">
   <!-- Sección Hero -->
-  <section
-    class="relative bg-center bg-cover"
-    style="background-image: url('/assets/img/inicio/fotoInicio.png');"
+  <section class="relative bg-center bg-cover" style="background-image: url('/assets/img/inicio/fotoInicio.png');"
     aria-label="Sección de bienvenida">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black/10"></div>
@@ -20,9 +18,7 @@
           ¿Tienes una idea que quieres compartir con el mundo? <br />
           Regístrate como emprendedor y haz crecer tu proyecto con nosotros.
         </p>
-        <a
-        *ngIf="!isLoggedIn"
-          routerLink="/login"
+        <a *ngIf="!isLoggedIn" routerLink="/login"
           class="inline-block mt-6 bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-md text-lg shadow font-semibold transition-all duration-300">
           Únete
         </a>
@@ -35,15 +31,15 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
 
       <!--icon1-->
-          <div>
-            <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
-              <img src="/assets/img/inicio/ideaIcon.png" alt="Idea" class="w-12 h-12 object-contain" />
-            </div>
-            <h3 class="text-xl font-semibold mb-2 font-poppins !font-poppins">Descubre emprendimientos</h3>
-            <p class="text-gray-600 text-base">
-              Descubre negocios que te pueden interesar de todos los sectores
-            </p>
-          </div>
+      <div>
+        <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
+          <img src="/assets/img/inicio/ideaIcon.png" alt="Idea" class="w-12 h-12 object-contain" />
+        </div>
+        <h3 class="text-xl font-semibold mb-2 font-poppins !font-poppins">Descubre emprendimientos</h3>
+        <p class="text-gray-600 text-base">
+          Descubre negocios que te pueden interesar de todos los sectores
+        </p>
+      </div>
 
       <!--icon2-->
       <div>
@@ -60,7 +56,7 @@
       <div>
         <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
           <img src="/assets/img/inicio/icon.png" alt="Idea" class="w-12 h-12 object-contain" />
-        </div>        
+        </div>
         <h3 class="text-xl font-semibold mb-2 font-poppins !font-poppins">Ayuda a la comunidad</h3>
         <p class="text-gray-600 text-base">
           Contribuye a la mejora continua de todos nuestros negocios
@@ -69,82 +65,92 @@
     </div>
   </section>
 
-<!--Categorias Destacadas-->
-<section id="categorias-destacadas" class="py-16 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-10">
-      <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
-        Categorías Destacadas
-      </h2>
-      <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
-    </div>
+  <!--Categorias Destacadas-->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
 
-    <!-- Loading Spinner -->
-    <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <span class="text-gray-500 text-sm">Cargando categorias...</span>
-    </div>
+      <!-- Título -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-semibold text-orange-500 font-poppins">
+          Categorías Destacadas
+        </h2>
+        <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
+      </div>
 
-    <!-- Grid de tarjetas dinámicas -->
-    <div *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <a
-        *ngFor="let cat of categoriasDestacadas"
-        routerLink="/emprendimientos"
-        [queryParams]="{ categoria: cat.nombre }"
-        class="relative rounded-xl overflow-hidden group shadow-lg"
-        [ngClass]="{
-          'sm:col-span-2': cat.anchura === 'wide'
-        }"
-      >
-        <div
-          class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"
-        ></div>
-        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="flex justify-center py-20">
+        <svg class="animate-spin h-10 w-10 text-orange-500" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        <span class="text-gray-500 text-sm">Cargando categorias...</span>
+      </div>
 
-        <div
-          class="relative p-6 flex flex-col justify-between"
-          [ngClass]="{
-            'h-48 md:h-56 lg:h-44': cat.anchura === 'normal',
-            'h-36': cat.anchura === 'wide'
-          }"
-        >
-          <div>
-            <h3 class="text-white text-lg md:text-xl font-semibold font-poppins">
+      <!-- Grid de tarjetas dinámicas -->
+      <div *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[220px]">
+
+        <!-- Categorías normales (todas excepto las dos últimas) -->
+        <a *ngFor="let cat of categoriasDestacadas.slice(0, -2)" [routerLink]="['/emprendimientos']"
+          [queryParams]="{ categoria: cat.nombre }" class="relative rounded-2xl overflow-hidden group shadow-lg">
+
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+            [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"></div>
+
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
+
+          <!-- Contenido -->
+          <div class="relative h-full p-6 flex flex-col justify-between">
+            <h3 class="text-white text-lg font-semibold">
               {{ cat.nombre }}
             </h3>
+            <div class="flex justify-end">
+              <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </div>
           </div>
+        </a>
 
-          <div class="flex justify-end">
-            <span
-              class="inline-flex items-center justify-center w-9 h-9 bg-white/95 text-gray-800 rounded-full shadow"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </span>
-          </div>
+        <!-- Contenedor para las dos últimas categorías -->
+        <div *ngIf="categoriasDestacadas.length >= 2" class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+          <a *ngFor="let cat of categoriasDestacadas.slice(-2)" [routerLink]="['/emprendimientos']"
+            [queryParams]="{ categoria: cat.nombre }"
+            class="relative rounded-2xl overflow-hidden group shadow-lg h-[220px]">
+
+            <!-- Imagen -->
+            <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+              [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"></div>
+
+            <!-- Overlay -->
+            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
+
+            <!-- Contenido -->
+            <div class="relative h-full p-6 flex flex-col justify-between">
+              <h3 class="text-white text-lg font-semibold">
+                {{ cat.nombre }}
+              </h3>
+              <div class="flex justify-end">
+                <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </a>
         </div>
-      </a>
-    </div>
-  </div>
-</section>
 
- <!--Eventos 
+      </div>
+    </div>
+  </section>
+
+  <!--Eventos 
 <section>
   <div class="text-center mb-10">
       <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
@@ -154,7 +160,7 @@
     </div>
 </section> -->
 
-<!--Emprendimiento
+  <!--Emprendimiento
 <section>
   <div class="text-center mb-10">
       <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
