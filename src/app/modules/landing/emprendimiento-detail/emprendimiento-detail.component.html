@@ -5,11 +5,12 @@
   <!-- Loading -->
   <div *ngIf="cargando" class="flex items-center justify-center min-h-[60vh]">
     <div class="text-center">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
-      <p class="text-sm text-gray-600">Cargando emprendimiento...</p>
+      <p class="text-sm text-gray-600">{{ textoCarga }}</p>
     </div>
   </div>
 
@@ -25,12 +26,13 @@
   <div *ngIf="!cargando && !error && emprendimiento" class="max-w-6xl mx-auto px-6 py-6">
 
     <!-- Botón volver -->
-    <a routerLink="/emprendimientos"
-       class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
-      <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    <a [routerLink]="esStartup ? '/startups' : '/emprendimientos'"
+      class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
+      <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Volver a Emprendimientos
+      {{ esStartup ? 'Volver a Startups' : 'Volver a Emprendimientos' }}
     </a>
 
     <!-- Header -->
@@ -39,11 +41,9 @@
 
         <!-- Imagen -->
         <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
-          <img
-            [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
-            [alt]="emprendimiento.nombreComercial"
-            class="w-full h-full object-cover"
-          />
+          <img 
+          [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
+            [alt]="emprendimiento.nombreComercial" class="w-full h-full object-cover" />
         </div>
 
         <!-- Info principal -->
@@ -72,8 +72,8 @@
       <div class="md:col-span-2 space-y-6">
 
         <!-- Descripciones -->
-        <section *ngFor="let desc of emprendimiento.descripciones || []"
-                 class="bg-white rounded-xl shadow-sm p-5">
+        <section *ngFor="let desc of emprendimiento.descripciones || []" 
+        class="bg-white rounded-xl shadow-sm p-5">
           <h2 class="text-xl font-bold text-gray-900 mb-3">
             {{ desc.tipoDescripcion }}
           </h2>
@@ -83,14 +83,14 @@
         </section>
 
         <!-- Galería -->
-        <section *ngIf="(emprendimiento.multimedia || []).length > 0"
-                 class="bg-white rounded-xl shadow-sm p-5">
+        <section *ngIf="(emprendimiento.multimedia || []).length > 0" 
+          class="bg-white rounded-xl shadow-sm p-5">
           <h2 class="text-xl font-bold text-gray-900 mb-4">Galería</h2>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <img *ngFor="let m of emprendimiento.multimedia"
-                 [src]="m.urlArchivo"
-                 [alt]="m.nombreActivo"
-                 class="w-full h-40 object-cover rounded-lg">
+            <img *ngFor="let m of emprendimiento.multimedia" 
+            [src]="m.urlArchivo" 
+            [alt]="m.nombreActivo"
+              class="w-full h-40 object-cover rounded-lg">
           </div>
         </section>
 
@@ -110,27 +110,27 @@
 
         <!-- Presencias digitales -->
         <section *ngIf="emprendimiento.aceptaDatosPublicos && (emprendimiento.presenciasDigitales || []).length > 0"
-                 class="bg-white rounded-xl shadow-sm p-5">
+          class="bg-white rounded-xl shadow-sm p-5">
           <h3 class="text-lg font-semibold mb-3">Presencias digitales</h3>
           <ul class="space-y-3 text-sm">
             <li *ngFor="let p of emprendimiento.presenciasDigitales">
               <p class="font-medium text-gray-800">{{ p.plataforma }}</p>
 
-              <a *ngIf="isUrl(p.descripcion)"
-                 [href]="p.descripcion"
-                 target="_blank"
-                 class="text-blue-600 break-all">
+              <a *ngIf="isUrl(p.descripcion)" 
+              [href]="p.descripcion" 
+              target="_blank" 
+              class="text-blue-600 break-all">
                 {{ p.descripcion }}
               </a>
 
-              <a *ngIf="!isUrl(p.descripcion) && isPhone(p.descripcion)"
-                 [href]="'tel:' + p.descripcion"
-                 class="text-blue-600">
+              <a *ngIf="!isUrl(p.descripcion) && isPhone(p.descripcion)" 
+              [href]="'tel:' + p.descripcion"
+                class="text-blue-600">
                 {{ p.descripcion }}
               </a>
 
-              <span *ngIf="!isUrl(p.descripcion) && !isPhone(p.descripcion)"
-                    class="text-gray-700">
+              <span *ngIf="!isUrl(p.descripcion) && !isPhone(p.descripcion)" 
+              class="text-gray-700">
                 {{ p.descripcion }}
               </span>
             </li>
@@ -138,13 +138,13 @@
         </section>
 
         <!-- Calificación -->
-        <section class="bg-white rounded-xl shadow-sm p-5 text-center">
+        <section *ngIf="qrCodeUrl" class="bg-white rounded-xl shadow-sm p-5 text-center">
           <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
             Califica nuestro emprendimiento
           </h3>
-          <img [src]="qrCodeUrl"
-               alt="QR Evaluación"
-               class="w-44 h-44 mx-auto border rounded-lg p-2">
+          <img [src]="qrCodeUrl" 
+          alt="QR Evaluación" 
+          class="w-44 h-44 mx-auto border rounded-lg p-2">
           <p class="text-xs text-gray-500 mt-3">
             Escanea el código QR para valorar este emprendimiento
           </p>

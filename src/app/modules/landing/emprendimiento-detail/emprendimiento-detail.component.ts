@@ -18,20 +18,28 @@ export class EmprendimientoDetailComponent implements OnInit {
   cargando = true;
   error: string | null = null;
   qrCodeUrl = '';
+  esStartup = false;
+  textoCarga = 'Cargando emprendimiento...'; // Texto por defecto
 
   constructor(private route: ActivatedRoute, private emprendimientoService: EmprendimientoService) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
+      // Verificar si viene de la página de startups (podrías usar el referer o un parámetro)
+      this.determinarTipoDesdeURL();
       this.cargarEmprendimiento(+id);
-      // Generar URL de evaluación
-      const evaluacionUrl = `${window.location.origin}/evaluacion/` + id;
-      // Generar QR usando API gratuita de Google Charts (o qr-server)
-      this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
     } else {
       this.error = 'ID de emprendimiento no encontrado.';
       this.cargando = false;
+    }
+  }
+
+  determinarTipoDesdeURL(): void {
+    const urlCompleta = window.location.pathname;
+    if (urlCompleta.includes('/startups/')) {
+      this.esStartup = true;
+      this.textoCarga = 'Cargando startup...';
     }
   }
 
@@ -39,6 +47,23 @@ export class EmprendimientoDetailComponent implements OnInit {
     this.emprendimientoService.getEmprendimientoPublico(id).subscribe({
       next: (data) => {
         this.emprendimiento = data;
+        
+        // Determinar si es startup basado en los datos reales
+        const tipo = data?.nombreTipoEmprendimiento?.toLowerCase() || '';
+        this.esStartup = tipo.includes('startup');
+        
+        // Actualizar texto de carga si es necesario
+        if (this.esStartup) {
+          this.textoCarga = 'Cargando startup...';
+        }
+        
+        // Generar QR si NO es startup
+        if (!this.esStartup) {
+          const evaluacionUrl = `${window.location.origin}/evaluacion/` + id;
+          this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
+        } else {
+          this.qrCodeUrl = '';
+        }
         this.cargando = false;
       },
       error: (err) => {
