@@ -93,8 +93,8 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   loading = false;
 
   steps = [
-    { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
     { title: 'Descripción del emprendimiento', description: 'Cuéntanos más sobre tu emprendimiento, qué lo hace único y a quién va dirigido.' },
+    { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
     { title: 'Historia y presencia digital', description: 'Comparte la historia de tu emprendimiento y cómo las personas pueden encontrarte.' },
     { title: 'Material multimedia', description: 'Adjunta logo, fotos, video y banner para completar tu perfil.' },
     { title: 'Métricas y participación', description: 'Dinos cómo va tu emprendimiento y cómo quieres participar en la comunidad.' },
@@ -192,6 +192,10 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   get selectedCategoriesCount(): number {
     return this.categories.filter(c => c.selected).length;
   }
+  get isCategoriasComplete(): boolean {
+  return this.selectedCategoriesCount > 0 && this.selectedCategoriesCount <= 2;
+}
+
 
   get canGoNextFromStep1(): boolean {
     return this.selectedCategoriesCount > 0 && this.selectedCategoriesCount <= 2;
@@ -294,25 +298,30 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     }
     cat.selected = !cat.selected;
   }
+  prevStep(): void {
+  if (this.currentStep > 0) {
+    this.currentStep--;
+  }
+}
+
 
   nextStep(): void {
-    if (this.currentStep === 0 && !this.canGoNextFromStep1) return;
-    if (this.currentStep === 1 && !this.isDescripcionComplete) return;
-    // ahora incluye validaciones de nombre comercial, presencia digital, ubicación y tipo
-    if (this.currentStep === 2 && (!this.isHistoriaComplete || !this.isPresenciaDigitalComplete || !this.isUbicacionComplete || !this.isTipoComplete)) return;
+    if (this.currentStep === 0 && !this.isDescripcionComplete) return;
+    if (this.currentStep === 1 && !this.isCategoriasComplete) return;
+    if (
+      this.currentStep === 2 &&
+      (!this.isHistoriaComplete ||
+      !this.isPresenciaDigitalComplete ||
+      !this.isUbicacionComplete ||
+      !this.isTipoComplete)
+    ) return;
     if (this.currentStep === 3 && !this.isMultimediaComplete) return;
     if (this.currentStep === 4 && !this.isMetricasComplete) return;
 
-    if (!this.isLastStep) {
-      this.currentStep++;
-    }
+  if (!this.isLastStep) {
+    this.currentStep++;
   }
-
-  prevStep(): void {
-    if (!this.isFirstStep) {
-      this.currentStep--;
-    }
-  }
+}
 
   finish(): void {
     if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {

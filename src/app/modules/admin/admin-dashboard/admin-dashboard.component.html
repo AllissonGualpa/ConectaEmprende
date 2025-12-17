@@ -239,7 +239,7 @@
             <li class="flex items-center justify-between">
               <div class="flex items-center gap-4">
                 <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                  {{ categoriaMasVista.nombre.substring(0, 2).toUpperCase() }}
+                  {{ categoriaMasVista?.nombre?.substring(0, 2)?.toUpperCase() || '??' }}
                 </div>
                 <div>
                   <div class="font-semibold">{{ categoriaMasVista.nombre }}</div>
