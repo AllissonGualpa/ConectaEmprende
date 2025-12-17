@@ -40,28 +40,34 @@ export class EventoService {
    * Crea un evento en la API.
    * data puede ser JSON o FormData (si incluye imagen binaria).
    */
-  createEvent(
-    data: any,
-    options?: { idEmprendimiento?: number; idMultimedia?: number; token?: string; isFormData?: boolean }
-  ): Observable<any> {
-    const idEmp = options?.idEmprendimiento;
-    const url = `${this.baseUrl}/crear` + (idEmp ? `?idEmprendimiento=${idEmp}` : '');
+createEvent(
+  data: any,
+  options?: { idEmprendimiento?: number; idMultimedia?: number; token?: string; isFormData?: boolean }
+): Observable<any> {
+  const idEmp = options?.idEmprendimiento;
+  const url = `${this.baseUrl}/crear` + (idEmp ? `?idEmprendimiento=${idEmp}` : '');
 
-    let headers = new HttpHeaders();
-    const token = options?.token;
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
+  let headers = new HttpHeaders();
 
-    // No seteamos Content-Type si es FormData; el browser lo hace.
-    if (!options?.isFormData) {
-      headers = headers.set('Content-Type', 'application/json');
-    }
+  const token =
+    options?.token ||
+    localStorage.getItem('token') ||
+    localStorage.getItem('accessToken') ||
+    localStorage.getItem('authToken');
 
-    return this.http.post(url, data, { headers }).pipe(
-      catchError((err) => throwError(() => err))
-    );
+  if (token) {
+    headers = headers.set('Authorization', `Bearer ${token}`);
   }
+
+  if (!options?.isFormData) {
+    headers = headers.set('Content-Type', 'application/json');
+  }
+
+  return this.http.post(url, data, { headers }).pipe(
+    catchError((err) => throwError(() => err))
+  );
+}
+
 
   /**
    * Inactiva (desactiva) un evento en la API (ADMIN).
@@ -248,6 +254,22 @@ export class EventoService {
 
   getEventByIdAdmin(id: string | number, options?: { token?: string }): Observable<any> {
     const url = `${this.baseUrl}/admin/${id}`;
+    let headers = new HttpHeaders();
+    const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http
+      .get(url, { headers })
+      .pipe(catchError((err) => throwError(() => err)));
+  }
+
+  /**
+   * Obtener un evento específico del emprendedor por ID.
+   * Endpoint: /v1/eventos/emprendedor/:idEvento
+   */
+  getEmprendedorEventById(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    const url = `${this.baseUrl}/emprendedor/${idEvento}`;
     let headers = new HttpHeaders();
     const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
     if (token) {
