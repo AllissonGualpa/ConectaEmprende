@@ -111,6 +111,7 @@ export class AdminBlogComponent implements OnInit {
         page: this.currentPage,
         size: this.pageSize,
         tag: this.selectedTag,
+        titulo: this.searchTerm,
         estado: this.selectedEstado,
         fechaInicio: this.fechaInicio,
         fechaFin: this.fechaFin,

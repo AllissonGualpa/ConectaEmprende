@@ -27,11 +27,12 @@ export class BlogService {
     page: number;
     size: number;
     tag?: string;
+    titulo?: string;
     estado?: string;
     fechaInicio?: string;
     fechaFin?: string;
   }): Observable<PaginatedResponse<AdminBlog> | AdminBlog[]> {
-    const { page, size, tag, estado, fechaInicio, fechaFin } = params;
+    const { page, size, tag, estado, titulo, fechaInicio, fechaFin } = params;
     const inicio = fechaInicio || '2024-01-01';
     const fin = fechaFin || '2025-12-31';
 
@@ -40,6 +41,7 @@ export class BlogService {
     url += `&fechaFin=${this.formatDate(fin, true)}`;
 
     if (tag) url += `&idTag=${tag}`;
+    if (titulo) url += `&titulo=${titulo}`;
     if (estado) url += `&estado=${estado}`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() });
