@@ -1,84 +1,108 @@
 <div class="w-full">
-  <div [ngClass]="singleColumn ? 'grid grid-cols-1 gap-6' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'">
-    <article *ngFor="let item of pagedItems" class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition overflow-hidden group">
-      <!-- imagen con overlay -->
+  <!-- GRID -->
+  <div
+    [ngClass]="
+      singleColumn
+        ? 'grid grid-cols-1 gap-10'
+        : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12'
+    "
+  >
+    <article
+      *ngFor="let item of pagedItems"
+      class="group flex flex-col mx-auto w-full max-w-[320px]"
+    >
+      <!-- IMAGEN -->
       <div class="relative">
-        <img [src]="item.image" alt="{{item.title}}" class="w-full h-44 object-cover" />
-        
-        <!-- badge: allow parent to provide a template -->
-        <ng-container *ngIf="badgeTemplate; else defaultBadge">
-          <ng-container *ngTemplateOutlet="badgeTemplate; context: { $implicit: item }"></ng-container>
-        </ng-container>
-        <ng-template #defaultBadge>
-          <div class="absolute top-3 left-3 bg-white/90 text-xs text-gray-700 px-2 py-1 rounded-full shadow-sm">
-            {{ item.category || 'Alimentos y Bebidas' }}
-          </div>
-        </ng-template>
+        <img
+          [src]="item.image"
+          [alt]="item.title"
+          class="w-full h-56 object-cover rounded-2xl"
+        />
 
-        
+        <!-- UBICACIÓN -->
+        <div
+          class="absolute top-3 left-3 bg-white/90 text-xs text-gray-700 px-3 py-1 rounded-full shadow-sm flex items-center gap-1"
+        >
+          <svg
+            class="w-3.5 h-3.5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z"
+            />
+          </svg>
+          {{ item.location || 'Guayaquil' }}
+        </div>
       </div>
 
-      <!-- contenido -->
-      <div class="p-5 flex flex-col min-h-[260px]">
-        <div class="flex-1">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ item.title }}</h3>
+      <!-- CONTENIDO -->
+      <div class="mt-4 flex flex-col flex-1">
+        <span
+          class="inline-block w-fit mb-2 px-3 py-1 rounded-full text-xs font-medium"
+          style="background-color:#FFF4C8; color:#C0A537"
+        >
+          {{ item.category || 'Alimentos y Bebidas' }}
+        </span>
 
-          <!-- meta row: show location if enabled, allow footerTemplate for additional meta like date -->
-          <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
-            <div *ngIf="showLocation" class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 21s-7-4.5-7-11a7 7 0 0114 0c0 6.5-7 11-7 11z" />
-                </svg>
-              <span>{{ item.location || 'Guayaquil' }}</span>
-            </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+          {{ item.title }}
+        </h3>
 
-            <ng-container *ngIf="footerTemplate; else spacer"></ng-container>
-            <ng-template #spacer></ng-template>
-          </div>
+        <p class="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4">
+          {{
+            item.description ||
+              'En este emprendimiento encontrarás productos y servicios elaborados con ingredientes frescos y de la mejor calidad.'
+          }}
+        </p>
 
-          <!-- footerTemplate: allow pages to inject date badges or extra meta inside this block -->
-          <ng-container *ngIf="footerTemplate">
-            <ng-container *ngTemplateOutlet="footerTemplate; context: { $implicit: item }"></ng-container>
-          </ng-container>
-
-          <p class="text-gray-600 text-sm leading-relaxed line-clamp-3">
-            {{ item.description || 'En este emprendimiento encontrarás productos y servicios elaborados con calidad. Descripción breve...' }}
-          </p>
-        </div>
-
-        <!-- CTA -->
-        <div class="mt-4">
-          <ng-container *ngIf="actionTemplate; else defaultCta">
-            <!-- allow actionTemplate to also render primary/secondary buttons; pass item -->
-            <ng-container *ngTemplateOutlet="actionTemplate; context: { $implicit: item }"></ng-container>
-          </ng-container>
-          <ng-template #defaultCta>
-            <button (click)="onDiscover(item)"
-                    class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg active:scale-95 transition duration-150">
-              {{ ctaLabel }}
-            </button>
-          </ng-template>
-        </div>
+        <button
+          (click)="onDiscover(item)"
+          class="mt-auto w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition active:scale-95"
+        >
+          {{ ctaLabel }}
+        </button>
       </div>
     </article>
   </div>
 
-  <!-- pagination -->
-  <div class="mt-8 flex items-center justify-center gap-3">
-    <button (click)="goTo(currentPage - 1)" [disabled]="currentPage === 1"
-            class="px-3 py-1 rounded border text-sm disabled:opacity-50">Regresar</button>
+  <!-- PAGINACIÓN -->
+  <div class="mt-12 flex items-center justify-center gap-3">
+    <button
+      (click)="goTo(currentPage - 1)"
+      [disabled]="currentPage === 1"
+      class="px-3 py-1 rounded border text-sm disabled:opacity-40"
+    >
+      Regresar
+    </button>
 
     <ng-container *ngFor="let p of [].constructor(totalPages); let i = index">
-      <button (click)="goTo(i + 1)"
-              [class.bg-orange-500]="currentPage === (i+1)"
-              [class.text-white]="currentPage === (i+1)"
-              class="w-8 h-8 rounded-full border text-sm">{{ i + 1 }}</button>
+      <button
+        (click)="goTo(i + 1)"
+        class="w-8 h-8 rounded-full border text-sm"
+        [class.bg-orange-500]="currentPage === i + 1"
+        [class.text-white]="currentPage === i + 1"
+      >
+        {{ i + 1 }}
+      </button>
     </ng-container>
 
-    <button (click)="goTo(currentPage + 1)" [disabled]="currentPage === totalPages"
-            class="px-3 py-1 rounded border text-sm disabled:opacity-50">Siguiente</button>
+    <button
+      (click)="goTo(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+      class="px-3 py-1 rounded border text-sm disabled:opacity-40"
+    >
+      Siguiente
+    </button>
   </div>
 </div>

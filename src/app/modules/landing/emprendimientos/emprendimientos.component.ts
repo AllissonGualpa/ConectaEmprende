@@ -206,7 +206,7 @@ export class EmprendimientosComponent implements OnInit {
     this.fetchEmprendimientos(filters);
   }
 
-  // ⚙️ Acciones
+  // Acciones
   onDiscover(item: CardItem) {
     // navegar a la ruta de detalle agregando el id al final de la ruta actual
     this.router.navigate([item.id], { relativeTo: this.route });
