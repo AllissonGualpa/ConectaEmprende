@@ -1,35 +1,44 @@
-// seccion-evento.component.ts (actualizado con paginación)
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar.component';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { EventoService } from '../../../admin/evento.service';
-import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { DetailsEventoComponent } from '../details-evento/details-evento.component';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { CardEventComponent, EventoCard } from '../../../../shared/components/card-event/card-event.component';
+import { CardEventComponent, EventoCard } from '../../../../../shared/components/card-event/card-event.component';
+import { EventoService } from '../../../../admin/evento.service';
+import { MensajeConfirmacionComponent } from '../../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-seccion-evento',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    SearchBarComponent, 
-    CardEventComponent, 
+    CommonModule,
+    ReactiveFormsModule,
+    CardEventComponent,
     MatDialogModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './seccion-evento.component.html',
   styleUrl: './seccion-evento.component.css'
 })
 export class SeccionEventoComponent implements OnInit {
-  fechaInicio: string | null = null;
-  fechaFin: string | null = null;
-  estadoSeleccionado: string = '';
-
+  filtrosForm: FormGroup;
+  
   eventos: any[] | null = null;
   eventosCards: EventoCard[] = [];
   eventosPaginados: EventoCard[] = [];
@@ -41,7 +50,31 @@ export class SeccionEventoComponent implements OnInit {
   pageIndex = 0;
   totalItems = 0;
 
-  constructor(private eventoService: EventoService, private dialog: MatDialog) {}
+  // Opciones de filtros
+  estadosOptions = [
+    { value: 'programado', label: 'Programado' },
+    { value: 'cancelado', label: 'Cancelado' },
+    { value: 'terminado', label: 'Terminado' }
+  ];
+
+  tiposOptions = [
+    { value: 'presencial', label: 'Presencial' },
+    { value: 'virtual', label: 'Virtual' }
+  ];
+
+  constructor(
+    private eventoService: EventoService, 
+    private dialog: MatDialog,
+    private fb: FormBuilder
+  ) {
+    this.filtrosForm = this.fb.group({
+      nombre: [''],
+      fechaInicio: [null],
+      fechaFin: [null],
+      estado: [''],
+      tipoEvento: ['']
+    });
+  }
 
   ngOnInit(): void {
     this.loadEventos();
@@ -127,6 +160,78 @@ export class SeccionEventoComponent implements OnInit {
     });
   }
 
+  aplicarFiltros() {
+    const filtros = this.filtrosForm.value;
+    
+    const filtered = (this.allRawItems || []).filter((it: any) => {
+      // Filtro por nombre
+      if (filtros.nombre) {
+        const titulo = String(it.titulo || it.nombre || '').toLowerCase();
+        if (!titulo.includes(filtros.nombre.toLowerCase())) return false;
+      }
+
+      // Filtro por fecha inicio
+      if (filtros.fechaInicio) {
+        const fechaEvento = new Date(it.fechaEvento || it.fecha);
+        const fechaInicio = new Date(filtros.fechaInicio);
+        if (fechaEvento < fechaInicio) return false;
+      }
+
+      // Filtro por fecha fin
+      if (filtros.fechaFin) {
+        const fechaEvento = new Date(it.fechaEvento || it.fecha);
+        const fechaFin = new Date(filtros.fechaFin);
+        if (fechaEvento > fechaFin) return false;
+      }
+
+      // Filtro por estado
+      if (filtros.estado) {
+        const estado = (it.estadoEvento || it.estado || '').toLowerCase();
+        if (estado !== filtros.estado.toLowerCase()) return false;
+      }
+
+      // Filtro por tipo evento
+      if (filtros.tipoEvento) {
+        const tipo = (it.tipoEvento || it.tipo || '').toLowerCase();
+        if (tipo !== filtros.tipoEvento.toLowerCase()) return false;
+      }
+
+      return true;
+    });
+
+    this.rawMap = {};
+    this.eventosCards = filtered.map((it: any) => {
+      const card = this.mapToEventoCard(it);
+      this.rawMap[String(card.id)] = it;
+      return card;
+    });
+
+    this.totalItems = this.eventosCards.length;
+    this.pageIndex = 0;
+    this.updatePaginatedItems();
+  }
+
+  limpiarFiltros() {
+    this.filtrosForm.reset({
+      nombre: '',
+      fechaInicio: null,
+      fechaFin: null,
+      estado: '',
+      tipoEvento: ''
+    });
+    
+    this.rawMap = {};
+    this.eventosCards = this.allRawItems.map((it: any) => {
+      const card = this.mapToEventoCard(it);
+      this.rawMap[String(card.id)] = it;
+      return card;
+    });
+
+    this.totalItems = this.eventosCards.length;
+    this.pageIndex = 0;
+    this.updatePaginatedItems();
+  }
+
   private loadEventos(): void {
     this.eventos = null;
 
@@ -135,7 +240,7 @@ export class SeccionEventoComponent implements OnInit {
                   localStorage.getItem('authToken') || 
                   undefined;
     
-    this.eventoService.getEmprendedorEvents({ page: 0, size: 50, token }).subscribe({
+    this.eventoService.getEmprendedorEvents({ page: 0, size: 100, token }).subscribe({
       next: (res: any) => {
         let items: any[] = [];
         if (Array.isArray(res)) items = res;
@@ -166,59 +271,6 @@ export class SeccionEventoComponent implements OnInit {
     });
   }
 
-  onSearch(payload: any) {
-    const q = String(payload?.query || '').toLowerCase().trim();
-    const dateKey = payload?.date || payload?.fechaInicio || '';
-    const typeKey = payload?.type || payload?.tipo || payload?.tipoEvento || '';
-
-    const hasQ = q.length > 0;
-    const hasDate = !!dateKey;
-    const hasType = !!typeKey;
-
-    const normalizeType = (raw: string) => {
-      const s = String(raw || '').toLowerCase();
-      if (!s) return '';
-      if (s.includes('onl') || s.includes('vir')) return 'Online';
-      if (s.includes('pres')) return 'Presencial';
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
-    };
-
-    const wantedType = normalizeType(typeKey);
-
-    const filtered = (this.allRawItems || []).filter((it: any) => {
-      if (hasQ) {
-        const title = String(it.titulo || it.nombre || '').toLowerCase();
-        if (!title.includes(q)) return false;
-      }
-
-      if (hasDate) {
-        const rawDate = it.fechaEvento || it.fecha || it.fechaEventoString || '';
-        const d = String(rawDate || '');
-        const datePart = d.includes('T') ? d.split('T')[0] : d;
-        if (!datePart || datePart !== String(dateKey)) return false;
-      }
-
-      if (hasType) {
-        const rawTipo = it.tipoEvento || it.tipo || '';
-        const tipoNorm = normalizeType(rawTipo || it.direccion || it.lugar || '');
-        if (!tipoNorm || tipoNorm !== wantedType) return false;
-      }
-
-      return true;
-    });
-
-    this.rawMap = {};
-    this.eventosCards = filtered.map((it: any) => {
-      const card = this.mapToEventoCard(it);
-      this.rawMap[String(card.id)] = it;
-      return card;
-    });
-
-    this.totalItems = this.eventosCards.length;
-    this.pageIndex = 0;
-    this.updatePaginatedItems();
-  }
-
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
@@ -239,19 +291,9 @@ export class SeccionEventoComponent implements OnInit {
       fechaEvento: it.fechaEvento || it.fecha || new Date().toISOString(),
       horario: it.horario || it.hora || '',
       lugar: it.lugar || it.direccion || '',
-      tipoEvento: it.tipoEvento || it.tipo || 'Presencial',
-      estadoEvento: it.estadoEvento || it.status || 'Programado',
+      tipoEvento: it.tipoEvento || it.tipo || 'presencial',
+      estadoEvento: it.estadoEvento || it.estado || 'programado',
       urlMultimedia: it.urlMultimedia || it.imagen || '/assets/img/emprendimiento/foto1.png'
     };
-  }
-
-  consultar() {
-    const payload = {
-      query: '',
-      fechaInicio: this.fechaInicio,
-      fechaFin: this.fechaFin,
-      estado: this.estadoSeleccionado
-    };
-    this.onSearch(payload);
   }
 }

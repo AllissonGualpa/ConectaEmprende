@@ -124,24 +124,46 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex gap-2">
+                  <!-- Botón Editar -->
                   <button
-                    mat-icon-button
-                    color="primary"
                     (click)="editarEvento(evento)"
                     title="Editar evento"
+                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
-                    <mat-icon>edit</mat-icon>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
                   </button>
-                  <!-- Icono dinámico según estado -->
+
+                  <!-- Botón Inactivar/Activar (BASURA/CHECK) - Solo si NO está cancelado ni terminado -->
                   <button
-                    mat-icon-button
-                    (click)="eliminarEvento(evento)"
-                    [color]="evento.estado.toLowerCase() === 'cancelado' ? 'primary' : 'warn'"
-                    [title]="evento.estado.toLowerCase() === 'cancelado' ? 'Activar evento' : 'Cancelar evento'"
+                    *ngIf="evento.estado.toLowerCase() !== 'cancelado' && evento.estado.toLowerCase() !== 'terminado'"
+                    (click)="inactivarEvento(evento)"
+                    [title]="evento.activo ? 'Inactivar evento' : 'Activar evento'"
+                    [class]="evento.activo 
+                      ? 'p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors' 
+                      : 'p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors'"
                   >
-                    <mat-icon>
-                      {{ evento.estado.toLowerCase() === 'cancelado' ? 'check_circle' : 'block' }}
-                    </mat-icon>
+                    <!-- Check verde si está inactivo -->
+                    <svg *ngIf="!evento.activo" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <!-- Basura roja si está activo -->
+                    <svg *ngIf="evento.activo" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                    </svg>
+
+                  </button>
+
+                  <!-- Botón Cancelar (CÍRCULO CON X NARANJA) - Solo si NO está cancelado ni terminado -->
+                  <button
+                    *ngIf="evento.estado.toLowerCase() !== 'cancelado' && evento.estado.toLowerCase() !== 'terminado'"
+                    (click)="cancelarEvento(evento)"
+                    title="Cancelar evento (permanente)"
+                    class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
                   </button>
                 </div>
               </td>
@@ -223,19 +245,33 @@
               <div>
                 <h3 class="text-lg font-semibold">
                   {{
-                    (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
-                      ? '¿Estás seguro de activar el evento seleccionado?'
-                      : '¿Estás seguro de cancelar el evento seleccionado?'
+                    eventoAEliminar?.activo
+                      ? '¿Estás seguro de inactivar el evento seleccionado?'
+                      : '¿Estás seguro de activar el evento seleccionado?'
                   }}
                 </h3>
                 <p class="text-sm text-gray-600 mt-2">
                   {{
-                    (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
-                      ? 'Esta acción activará el evento y volverá a estar disponible para los usuarios.'
-                      : 'Esta acción cancelará el evento y dejará de estar disponible para los usuarios.'
+                    eventoAEliminar?.activo
+                      ? 'Esta acción inactivará el evento temporalmente. Podrás reactivarlo después.'
+                      : 'Esta acción activará el evento y volverá a estar disponible para los usuarios.'
                   }}
                 </p>
               </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3">
+              <button class="bg-gray-200 px-4 py-2 rounded" (click)="closeDeleteDialog()">Cancelar</button>
+              <button
+                class="bg-orange-500 text-white px-4 py-2 rounded"
+                (click)="eventoAEliminar && confirmDelete(eventoAEliminar)"
+              >
+                {{
+                  eventoAEliminar?.activo
+                    ? 'Inactivar'
+                    : 'Activar'
+                }}
+              </button>
             </div>
         
             <div class="mt-6 flex justify-end gap-3">

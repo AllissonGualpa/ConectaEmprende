@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EventoService, AdminEventosResponseDto, AdminEventoItemDto } from '../evento.service';
-import { EventoCreateComponent } from '../../admin/evento-create/evento-create.component';
+import { DetailEventAdminComponent } from '../detail-event-admin/detail-event-admin.component';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 interface Evento {
@@ -373,7 +373,52 @@ export class AdminEventoComponent {
     this.abrirEditarEvento(evento);
   }
 
-  eliminarEvento(evento: Evento): void {
+  // MÉTODO CORREGIDO: inactivarEvento solo CANCELA el evento (desactiva)
+  // Es llamado por el botón de "cancelar" (círculo con línea diagonal)
+  inactivarEvento(evento: Evento): void {
+    const token = localStorage.getItem('token') || undefined;
+    const idToSend = String(evento.id).startsWith('#')
+      ? evento.id.slice(1)
+      : evento.id;
+
+    this.loading = true;
+
+    // Solo inactivar (cancelar), no hacer toggle
+    this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+      next: () => {
+        evento.activo = false;
+        evento.estado = 'Cancelado';
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Evento',
+            title: 'Evento cancelado exitosamente',
+            type: 'success',
+          },
+        });
+        this.loadEventosFromServer();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.warn('Error cancelando evento', err);
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Evento',
+            title: 'Error al cancelar el evento',
+            subtitle:
+              'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
+            type: 'error',
+          },
+        });
+        this.loading = false;
+      },
+    });
+  }
+
+  // MÉTODO CORREGIDO: cancelarEvento hace el toggle activate/inactivate
+  // Es llamado por el botón del "cubito de basura"
+  cancelarEvento(evento: Evento): void {
     this.abrirEliminarEvento(evento);
   }
 
@@ -394,6 +439,7 @@ export class AdminEventoComponent {
     this.loading = true;
 
     if (evento.activo == true) {
+      // Si está activo, inactivar
       this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
         next: () => {
           evento.activo = false;
@@ -402,7 +448,7 @@ export class AdminEventoComponent {
             width: '420px',
             data: {
               subject: 'Evento',
-              title: 'Evento cancelado',
+              title: 'Evento inactivado',
               type: 'success',
             },
           });
@@ -415,7 +461,7 @@ export class AdminEventoComponent {
             width: '420px',
             data: {
               subject: 'Evento',
-              title: 'Error al cancelar el evento',
+              title: 'Error al inactivar el evento',
               subtitle:
                 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
               type: 'error',
@@ -426,6 +472,7 @@ export class AdminEventoComponent {
         },
       });
     } else {
+      // Si está inactivo, activar
       this.eventoService.activateEvent(idToSend, { token }).subscribe({
         next: () => {
           evento.activo = true;
@@ -447,7 +494,7 @@ export class AdminEventoComponent {
             width: '420px',
             data: {
               subject: 'Evento',
-              title: 'Error al cancelar el evento',
+              title: 'Error al activar el evento',
               subtitle:
                 'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
               type: 'error',
@@ -462,7 +509,7 @@ export class AdminEventoComponent {
   }
 
   abrirEditarEvento(evento: Evento): void {
-    const ref = this.dialog.open(EventoCreateComponent, {
+    const ref = this.dialog.open(DetailEventAdminComponent, {
       width: '1000px',
       maxWidth: '95vw',
       data: { mode: 'edit', event: evento },
@@ -483,7 +530,7 @@ export class AdminEventoComponent {
   }
 
   abrirCrearEvento(): void {
-    const ref = this.dialog.open(EventoCreateComponent, {
+    const ref = this.dialog.open(DetailEventAdminComponent, {
       width: '1000px',
       maxWidth: '95vw',
       panelClass: 'evento-create-dialog',

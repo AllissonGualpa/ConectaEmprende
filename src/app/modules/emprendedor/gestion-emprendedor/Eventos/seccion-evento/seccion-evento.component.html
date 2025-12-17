@@ -1,0 +1,160 @@
+<!-- seccion-evento.component.html -->
+<div class="max-w-7xl mx-auto px-4 mt-8">
+    <h2 class="text-2xl font-bold mb-4">Gestión de eventos</h2>
+
+    <!-- Filtros con Angular Material y Formularios Reactivos -->
+    <form [formGroup]="filtrosForm" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+            
+            <!-- Buscar por nombre -->
+            <div class="lg:col-span-2">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput  placeholder="Buscar por nombre">
+                    <mat-icon matPrefix>search</mat-icon>
+                </mat-form-field>
+            </div>
+
+            <!-- Fecha Inicio -->
+            <div>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Fecha Inicio</mat-label>
+                    <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerInicio></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <!-- Fecha Fin -->
+            <div>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Fecha Fin</mat-label>
+                    <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin">
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerFin></mat-datepicker>
+                </mat-form-field>
+            </div>
+
+            <!-- Estado -->
+            <div>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Estados</mat-label>
+                    <mat-select formControlName="estado">
+                        <mat-option value="">Todos</mat-option>
+                        <mat-option *ngFor="let estado of estadosOptions" [value]="estado.value">
+                            {{ estado.label }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <!-- Tipo Evento -->
+            <div>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Tipo</mat-label>
+                    <mat-select formControlName="tipoEvento">
+                        <mat-option value="">Todos</mat-option>
+                        <mat-option *ngFor="let tipo of tiposOptions" [value]="tipo.value">
+                            {{ tipo.label }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex gap-3 mt-4">
+            <button 
+                mat-raised-button 
+                color="primary"
+                type="button"
+                (click)="aplicarFiltros()"
+                class="bg-orange-500 hover:bg-orange-600">
+                <mat-icon>search</mat-icon>
+                Consultar
+            </button>
+            
+            <button 
+                mat-stroked-button 
+                type="button"
+                (click)="limpiarFiltros()"
+                class="border-gray-300 text-gray-700 hover:bg-gray-50">
+                <mat-icon>clear</mat-icon>
+                Quitar Filtros
+            </button>
+
+            <button 
+                mat-raised-button 
+                color="accent"
+                type="button"
+                (click)="abrirCrear()"
+                class="ml-auto bg-orange-500 hover:bg-orange-600">
+                <mat-icon>add</mat-icon>
+                Crear Evento
+            </button>
+        </div>
+    </form>
+
+    <!-- Cards section -->
+    <section class="py-6">
+
+        <!-- Placeholder cuando eventos === null -->
+        <ng-container *ngIf="eventos === null; else whenLoaded">
+            <div class="w-full flex items-center justify-center py-12">
+                <div class="text-center">
+                    <svg class="mx-auto w-20 h-20 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <rect x="3" y="5" width="18" height="16" rx="2" ry="2" stroke-width="1.5"></rect>
+                      <path d="M16 3v4M8 3v4" stroke-width="1.5"></path>
+                      <path d="M3 10h18" stroke-width="1.5"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-700">Cargando eventos...</h3>
+                    <p class="mt-2 text-sm text-gray-500">Espere un momento mientras obtenemos los eventos.</p>
+                </div>
+            </div>
+        </ng-container>
+
+        <!-- Cuando ya se cargó (eventos es array) -->
+        <ng-template #whenLoaded>
+            <ng-container *ngIf="eventosCards && eventosCards.length > 0; else noEvents">
+                <div class="space-y-6">
+                    <app-card-event 
+                        *ngFor="let evento of eventosPaginados"
+                        [evento]="evento"
+                        [showActions]="true"
+                        (eliminar)="cancelarEvento($event)"
+                        (editar)="editarEventoFromCard($event)">
+                    </app-card-event>
+                </div>
+
+                <!-- Paginador -->
+                <div class="mt-8 flex justify-center">
+                    <mat-paginator 
+                        [length]="totalItems"
+                        [pageSize]="pageSize"
+                        [pageIndex]="pageIndex"
+                        [pageSizeOptions]="[5, 10, 25]"
+                        (page)="onPageChange($event)"
+                        showFirstLastButtons
+                        class="bg-white rounded-lg shadow">
+                    </mat-paginator>
+                </div>
+            </ng-container>
+        </ng-template>
+
+        <!-- Mensaje cuando se cargó y no hay eventos -->
+        <ng-template #noEvents>
+            <div class="w-full flex items-center justify-center py-12">
+                <div class="text-center">
+                    <svg class="mx-auto w-20 h-20 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <rect x="3" y="5" width="18" height="16" rx="2" ry="2" stroke-width="1.5"></rect>
+                      <path d="M16 3v4M8 3v4" stroke-width="1.5"></path>
+                      <path d="M3 10h18" stroke-width="1.5"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-semibold text-gray-700">No hay eventos disponibles</h3>
+                    <p class="mt-2 text-sm text-gray-500">Vuelve pronto para descubrir nuevos eventos.</p>
+                </div>
+            </div>
+        </ng-template>
+
+    </section>
+</div>
