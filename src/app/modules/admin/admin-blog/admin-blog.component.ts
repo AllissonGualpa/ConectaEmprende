@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,8 @@ import { Tag, AdminBlog } from '../blog.types';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { AuthService } from '../../auth/auth.service';
 import { finalize } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-blog',
@@ -35,11 +37,14 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './admin-blog.component.html',
   styleUrls: ['./admin-blog.component.css'],
 })
-export class AdminBlogComponent implements OnInit {
+export class AdminBlogComponent implements OnInit, OnDestroy {
   blogs: AdminBlog[] = [];
   filteredBlogs: AdminBlog[] = [];
   loading = false;
   searchTerm = '';
+  // Subject para búsquedas con debounce -> envía al API
+  private searchSubject: Subject<string> = new Subject<string>();
+  private searchSub?: Subscription;
 
   // Filtros
   selectedTag: string = '';
@@ -72,6 +77,19 @@ export class AdminBlogComponent implements OnInit {
   ngOnInit() {
     // 1) Primero cargamos tags sin tocar loading global
     this.loadTagsAndBlogs();
+
+    // 2) Suscribir término de búsqueda con debounce para llamar al API
+    this.searchSub = this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe((value: string) => {
+        this.searchTerm = value;
+        this.currentPage = 0; // reset paginación al buscar
+        this.loadBlogs(); // solicitar al API usando titulo = searchTerm
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSub?.unsubscribe();
   }
 
   private loadTagsAndBlogs(): void {
@@ -223,9 +241,8 @@ export class AdminBlogComponent implements OnInit {
   }
 
   onSearch(value: string) {
-    // Mantener compatibilidad con la lógica previa y sincronizar el searchTerm
-    this.searchTerm = value;
-    this.applyFilters();
+    // Emitir al Subject (debounce + llamada al API en la suscripción)
+    this.searchSubject.next(value);
   }
 
   clearFilters() {
