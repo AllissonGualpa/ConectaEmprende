@@ -11,7 +11,7 @@ import {
   DeclaracionFinalDto,
   SolicitudEmprendimientoDataDto,
 } from './create-solicitud-emprendimiento.interfaces';
-import { EmprendimientoService, TipoEmprendimiento } from '../../../emprendimiento.service';
+import { EmprendimientoCrearResponse, EmprendimientoService, TipoEmprendimiento } from '../../../emprendimiento.service';
 import { CiudadDto, LocationService, ProvinciaDto } from '../../../../core/services/location.service';
 import { AuthService } from '../../../auth/auth.service';
 
@@ -228,10 +228,10 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
   // todos los inputs de presencia digital deben tener contenido (no solo espacios)
   get isPresenciaDigitalComplete(): boolean {
-    const { instagram, sitioWeb, whatsapp, tiktok } = this.presenciaDigital;
+    const { instagram, /* sitioWeb, */ whatsapp, tiktok } = this.presenciaDigital;
     return (
       instagram.trim().length > 0 &&
-      sitioWeb.trim().length > 0 &&
+      // sitioWeb ya no es obligatorio
       whatsapp.trim().length > 0 &&
       tiktok.trim().length > 0
     );
@@ -418,11 +418,15 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
         plataforma: 'instagram',
         descripcion: this.presenciaDigital.instagram,
       },
-      {
+    ];
+    if (this.presenciaDigital.sitioWeb && this.presenciaDigital.sitioWeb.trim().length > 0) {
+      presenciasDigitales.push({
         emprendimientoId: 0,
         plataforma: 'sitio web',
         descripcion: this.presenciaDigital.sitioWeb,
-      },
+      });
+    }
+    presenciasDigitales.push(
       {
         emprendimientoId: 0,
         plataforma: 'whatsapp',
@@ -432,8 +436,8 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
         emprendimientoId: 0,
         plataforma: 'tiktok',
         descripcion: this.presenciaDigital.tiktok,
-      },
-    ];
+      }
+    );
 
     const participacionesComunidad: ParticipacionComunidadDto[] = [
       {
@@ -527,7 +531,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       const data: SolicitudEmprendimientoDataDto = {
         usuarioId,
         emprendimiento: emprendimientoBase,
-        tipoAccion: 'CREAR',
+        tipoAccion: 'BORRADOR',
         categorias: categoriasSeleccionadas,
         descripciones,
         metricas,
@@ -548,8 +552,16 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
     this.loading = true;
     this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
-        next: (resp) => {
+        next: (resp: EmprendimientoCrearResponse) => {
           console.log('Emprendimiento grabado correctamente', resp);
+          this.emprendimientoService.enviarAprobacion(resp.id).subscribe({
+            next: () => {
+              console.log('Emprendimiento enviado para aprobación');
+            },
+            error: (err) => {
+              console.error('Error al enviar emprendimiento para aprobación', err);
+            }
+          });
           this.onEmprendimientoCreated.emit();
           this.loading = false;
 

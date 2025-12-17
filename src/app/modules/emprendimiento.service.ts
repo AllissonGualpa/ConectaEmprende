@@ -16,6 +16,16 @@ export interface TipoEmprendimiento {
     tipo: string;
     subTipo: string;
 }
+export interface EmprendimientoCrearResponse {
+    mensaje: string;
+    id: number;
+}
+
+export interface EmprendimientoAprobacionResponse {
+    mensaje: string;
+    estado: string;
+    solicitudId: number;
+}
 
 export interface EmprendimientoPublico {
     id: number;
@@ -120,7 +130,7 @@ export class EmprendimientoService {
     grabarEmprendimiento(
         data: SolicitudEmprendimientoDataDto,
         files: File[]
-    ): Observable<any> {
+    ): Observable<EmprendimientoCrearResponse> { // <- tipado con la nueva interfaz
         const token = localStorage.getItem('token');
         const headers = new HttpHeaders(
             token ? { Authorization: `Bearer ${token}` } : {}
@@ -136,7 +146,7 @@ export class EmprendimientoService {
             formData.append('imagenes', file); // mismo nombre repetido para cada archivo
         });
 
-        return this.http.post(`${this.baseUrlEmprendimientos}`, formData, {
+        return this.http.post<EmprendimientoCrearResponse>(`${this.baseUrlEmprendimientos}`, formData, {
             headers, // NO se setea Content-Type manualmente
         });
     }
@@ -157,6 +167,24 @@ export class EmprendimientoService {
             : {};
 
         return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
+    }
+
+    getEmprendimientoAdmin(id: number): Observable<EmprendimientoPublico> {
+        const token = localStorage.getItem('token');
+        const headers: { [header: string]: string } = token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+
+        return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
+    }
+
+    enviarAprobacion(emprendimientoId: number) : Observable<EmprendimientoAprobacionResponse> {
+        const token = localStorage.getItem('token');
+        const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
+
+        const url = `${this.baseUrlEmprendimientos}/${emprendimientoId}/enviar-aprobacion`;
+        // body vacío según ejemplo; ajustar si la API espera algún payload
+        return this.http.post<EmprendimientoAprobacionResponse>(url, {}, { headers });
     }
 
     //falta api para editar emprendimiento
