@@ -1,104 +1,158 @@
 <app-navbar></app-navbar>
 
-<main class="py-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
-  <div *ngIf="cargando" class="flex flex-col items-center justify-center py-12">
-    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-    <span class="text-gray-500 text-sm">Cargando emprendimiento...</span>
-  </div>
+<main class="min-h-screen bg-white">
 
-  <div *ngIf="error" class="text-center py-8 text-red-500">
-    {{ error }}
-  </div>
-
-  <!-- Botón volver -->
-  <div *ngIf="!cargando" class="mb-4">
-    <a routerLink="/emprendimientos" class="inline-flex items-center px-3 py-2 rounded-md bg-white border text-sm text-gray-700 hover:bg-gray-50 shadow-sm">
-      ← Volver a Emprendimientos
-    </a>
-  </div>
-
-  <section *ngIf="!cargando && !error && emprendimiento" class="bg-white rounded-lg shadow-md overflow-hidden">
-    <!-- Hero -->
-    <div class="w-full h-64 md:h-80 bg-gray-100 relative">
-      <img
-        [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
-        [alt]="emprendimiento.nombreComercial"
-        class="w-full h-full object-cover"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-      <div class="absolute left-4 bottom-4 text-white">
-        <h1 class="text-2xl md:text-3xl font-bold">{{ emprendimiento.nombreComercial }}</h1>
-        <p class="text-sm md:text-base">{{ emprendimiento.nombreCiudad }} · {{ emprendimiento.nombreTipoEmprendimiento }}</p>
-      </div>
+  <!-- Loading -->
+  <div *ngIf="cargando" class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-sm text-gray-600">Cargando emprendimiento...</p>
     </div>
+  </div>
 
-    <!-- Content -->
-    <div class="px-6 py-6 md:py-8 md:px-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Left: Descripciones principales -->
-      <div class="md:col-span-2 space-y-6">
+  <!-- Error -->
+  <div *ngIf="error && !cargando" class="max-w-3xl mx-auto px-4 py-12 text-center">
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+      <h2 class="text-xl font-bold text-red-600 mb-2">Error</h2>
+      <p class="text-sm text-gray-700">{{ error }}</p>
+    </div>
+  </div>
 
-        <!-- Otras descripciones -->
-        <div *ngFor="let desc of emprendimiento.descripciones || []">
-          <h3 class="text-xl font-semibold">{{ desc.tipoDescripcion }}</h3>
-          <p class="text-gray-700 whitespace-pre-line">{{ desc.descripcion }}</p>
+  <!-- Contenido -->
+  <div *ngIf="!cargando && !error && emprendimiento" class="max-w-6xl mx-auto px-6 py-6">
+
+    <!-- Botón volver -->
+    <a routerLink="/emprendimientos"
+       class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
+      <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Volver a Emprendimientos
+    </a>
+
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+      <div class="grid md:grid-cols-[320px,1fr] gap-6 p-6">
+
+        <!-- Imagen -->
+        <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+          <img
+            [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
+            [alt]="emprendimiento.nombreComercial"
+            class="w-full h-full object-cover"
+          />
         </div>
 
-        <!-- Galería -->
-        <div *ngIf="(emprendimiento.multimedia || []).length > 0" class="space-y-3">
-          <h2 class="text-lg font-semibold">Galería</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <img *ngFor="let m of emprendimiento.multimedia || []" [src]="m.urlArchivo" [alt]="m.nombreActivo" class="w-full h-40 object-cover rounded" />
+        <!-- Info principal -->
+        <div class="flex flex-col justify-center space-y-4">
+          <h1 class="text-3xl font-black uppercase text-[#ED6C1C]">
+            {{ emprendimiento.nombreComercial }}
+          </h1>
+
+          <div class="flex flex-wrap gap-4 text-gray-600 text-sm">
+            <span>{{ emprendimiento.nombreCiudad }}</span>
+            <span>•</span>
+            <span>{{ emprendimiento.nombreTipoEmprendimiento }}</span>
+          </div>
+
+          <div class="text-sm text-gray-700">
+            <strong>Emprendedor:</strong> {{ emprendimiento.nombreUsuario }}
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Right: Ficha lateral -->
-      <aside class="md:col-span-1 space-y-4">
-        <div class="bg-white p-4 rounded shadow">
-          <h3 class="text-lg font-semibold mb-2">Información</h3>
+    <!-- Grid principal -->
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Columna izquierda -->
+      <div class="md:col-span-2 space-y-6">
+
+        <!-- Descripciones -->
+        <section *ngFor="let desc of emprendimiento.descripciones || []"
+                 class="bg-white rounded-xl shadow-sm p-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-3">
+            {{ desc.tipoDescripcion }}
+          </h2>
+          <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+            {{ desc.descripcion }}
+          </p>
+        </section>
+
+        <!-- Galería -->
+        <section *ngIf="(emprendimiento.multimedia || []).length > 0"
+                 class="bg-white rounded-xl shadow-sm p-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Galería</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <img *ngFor="let m of emprendimiento.multimedia"
+                 [src]="m.urlArchivo"
+                 [alt]="m.nombreActivo"
+                 class="w-full h-40 object-cover rounded-lg">
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Columna derecha -->
+      <aside class="space-y-6">
+
+        <!-- Información -->
+        <section class="bg-white rounded-xl shadow-sm p-5">
+          <h3 class="text-lg font-semibold mb-3">Información</h3>
           <ul class="text-sm text-gray-700 space-y-1">
-            <li><strong>Emprendedor:</strong> {{ emprendimiento.nombreUsuario }}</li>
             <li><strong>Ciudad:</strong> {{ emprendimiento.nombreCiudad }}</li>
             <li><strong>Tipo:</strong> {{ emprendimiento.nombreTipoEmprendimiento }}</li>
           </ul>
-        </div>
+        </section>
 
-        <!-- Presencias digitales (panel lateral) -->
-        <div *ngIf="emprendimiento.aceptaDatosPublicos && (emprendimiento.presenciasDigitales || []).length > 0" class="bg-white p-4 rounded shadow">
-          <h3 class="text-lg font-semibold mb-2">Presencias digitales</h3>
-          <ul class="text-sm text-gray-700 space-y-2">
-            <li *ngFor="let p of emprendimiento.presenciasDigitales || []" class="flex flex-col">
-              <span class="font-medium text-gray-800">{{ p.plataforma }}:</span>
-              <!-- mostrar enlace externo si tiene http -->
-              <a *ngIf="isUrl(p.descripcion)" [href]="p.descripcion" target="_blank" class="text-blue-600 truncate">
+        <!-- Presencias digitales -->
+        <section *ngIf="emprendimiento.aceptaDatosPublicos && (emprendimiento.presenciasDigitales || []).length > 0"
+                 class="bg-white rounded-xl shadow-sm p-5">
+          <h3 class="text-lg font-semibold mb-3">Presencias digitales</h3>
+          <ul class="space-y-3 text-sm">
+            <li *ngFor="let p of emprendimiento.presenciasDigitales">
+              <p class="font-medium text-gray-800">{{ p.plataforma }}</p>
+
+              <a *ngIf="isUrl(p.descripcion)"
+                 [href]="p.descripcion"
+                 target="_blank"
+                 class="text-blue-600 break-all">
                 {{ p.descripcion }}
               </a>
-              <!-- mostrar enlace telefónico si comienza con dígito -->
-              <a *ngIf="!isUrl(p.descripcion) && isPhone(p.descripcion)" [href]="'tel:' + p.descripcion" class="text-blue-600">
+
+              <a *ngIf="!isUrl(p.descripcion) && isPhone(p.descripcion)"
+                 [href]="'tel:' + p.descripcion"
+                 class="text-blue-600">
                 {{ p.descripcion }}
               </a>
-              <!-- mostrar texto plano en otros casos -->
-              <span *ngIf="!isUrl(p.descripcion) && !isPhone(p.descripcion)" class="text-gray-700">
+
+              <span *ngIf="!isUrl(p.descripcion) && !isPhone(p.descripcion)"
+                    class="text-gray-700">
                 {{ p.descripcion }}
               </span>
             </li>
           </ul>
-        </div>
+        </section>
 
-        <!-- Califica nuestro emprendimiento -->
-        <div class="bg-white p-4 rounded shadow">
-          <h3 class="text-lg font-semibold mb-3 text-center text-[#ED6C1C]">Califica nuestro emprendimiento</h3>
-          <div class="flex justify-center">
-            <img [src]="qrCodeUrl" alt="Código QR para evaluación" class="w-48 h-48 border-2 border-gray-200 rounded p-2">
-          </div>
-          <p class="text-xs text-gray-500 text-center mt-3">Escanea el código QR para valorar este emprendimiento</p>
-        </div>
+        <!-- Calificación -->
+        <section class="bg-white rounded-xl shadow-sm p-5 text-center">
+          <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
+            Califica nuestro emprendimiento
+          </h3>
+          <img [src]="qrCodeUrl"
+               alt="QR Evaluación"
+               class="w-44 h-44 mx-auto border rounded-lg p-2">
+          <p class="text-xs text-gray-500 mt-3">
+            Escanea el código QR para valorar este emprendimiento
+          </p>
+        </section>
+
       </aside>
     </div>
-  </section>
+  </div>
 </main>
 
 <app-footer></app-footer>
