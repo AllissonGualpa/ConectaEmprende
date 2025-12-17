@@ -211,8 +211,12 @@
                 class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="presenciaDigital.whatsapp"
                 required
-                placeholder="+593 99 123 4567"
+                placeholder="+593 99 123 4567 o 0991234567"
               />
+              <!-- Mensaje de formato inválido -->
+              <p *ngIf="presenciaDigital.whatsapp && !isWhatsappValid()" class="text-xs text-red-500 mt-1">
+                Formato inválido. Use +593XXXXXXXXX o 09XXXXXXXX (Ecuador).
+              </p>
             </div>
 
             <div class="space-y-2">

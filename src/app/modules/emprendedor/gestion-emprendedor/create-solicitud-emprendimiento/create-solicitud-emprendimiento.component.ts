@@ -233,8 +233,23 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       instagram.trim().length > 0 &&
       // sitioWeb ya no es obligatorio
       whatsapp.trim().length > 0 &&
+      this.isWhatsappValid() &&
       tiktok.trim().length > 0
     );
+  }
+
+  // Valida teléfono Ecuador: acepta "+593" seguido de 9 dígitos o "09" seguido de 8 dígitos
+  private validatePhoneEcuador(phone: string | null | undefined): boolean {
+    if (!phone) return false;
+    const raw = phone.replace(/\s+/g, '');
+    const rePlus = /^\+593\d{9}$/; // ejemplo: +593991234567
+    const reLocal = /^09\d{8}$/;   // ejemplo: 0991234567
+    return rePlus.test(raw) || reLocal.test(raw);
+  }
+
+  // Método usado por template para mostrar estado válido/erróneo
+  isWhatsappValid(): boolean {
+    return this.validatePhoneEcuador(this.presenciaDigital.whatsapp);
   }
 
   // Paso 3 (ahora índice 3): multimedia
