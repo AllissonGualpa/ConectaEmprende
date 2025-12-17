@@ -1,17 +1,27 @@
+// seccion-evento.component.ts (actualizado con paginación)
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { CardsComponent, CardItem } from '../../../../layout/cards/cards.component';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { EventoService } from '../../../admin/evento.service';
 import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { DetailsEventoComponent } from '../details-evento/details-evento.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { CardEventComponent, EventoCard } from '../../../../shared/components/card-event/card-event.component';
 
 @Component({
   selector: 'app-seccion-evento',
   standalone: true,
-  imports: [CommonModule, FormsModule, SearchBarComponent, CardsComponent, MatDialogModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    SearchBarComponent, 
+    CardEventComponent, 
+    MatDialogModule,
+    MatPaginatorModule
+  ],
   templateUrl: './seccion-evento.component.html',
   styleUrl: './seccion-evento.component.css'
 })
@@ -20,9 +30,16 @@ export class SeccionEventoComponent implements OnInit {
   fechaFin: string | null = null;
   estadoSeleccionado: string = '';
 
-  eventos: CardItem[] | null = null;
+  eventos: any[] | null = null;
+  eventosCards: EventoCard[] = [];
+  eventosPaginados: EventoCard[] = [];
   private allRawItems: any[] = [];
   private rawMap: Record<string, any> = {};
+
+  // Paginación
+  pageSize = 5;
+  pageIndex = 0;
+  totalItems = 0;
 
   constructor(private eventoService: EventoService, private dialog: MatDialog) {}
 
@@ -41,16 +58,23 @@ export class SeccionEventoComponent implements OnInit {
 
     ref.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.dialog.open(MensajeConfirmacionComponent, { width: '420px', data: { subject: 'Evento' } });
+        this.dialog.open(MensajeConfirmacionComponent, { 
+          width: '420px', 
+          data: { subject: 'Evento' } 
+        });
         this.loadEventos();
       }
     });
   }
 
-  editarEvento(item: CardItem) {
-    const raw = this.rawMap[String(item.id)];
+  editarEventoFromCard(evento: EventoCard) {
+    const raw = this.rawMap[String(evento.id)];
     if (!raw) {
-      console.warn('No se encontró el raw item para editar', item);
+      console.warn('No se encontró el raw item para editar', evento);
+      return;
+    }
+
+    if (evento.estadoEvento.toLowerCase().includes('cancelado')) {
       return;
     }
 
@@ -74,21 +98,44 @@ export class SeccionEventoComponent implements OnInit {
     });
   }
 
-  eliminarEvento(item: CardItem) {
-    const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
-    this.eventoService.inactivateEvent(item.id, { token }).subscribe({
-      next: () => {
-        this.loadEventos();
-      },
-      error: (err) => console.warn('Error inactivando desde seccion-evento', err)
+  cancelarEvento(evento: EventoCard) {
+    if (evento.estadoEvento.toLowerCase().includes('cancelado')) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { 
+        message: '¿Estás seguro que deseas cancelar este evento? Esta acción será irreversible.' 
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const token = localStorage.getItem('token') || 
+                      localStorage.getItem('accessToken') || 
+                      localStorage.getItem('authToken') || 
+                      undefined;
+        
+        this.eventoService.cancelEvent(evento.id!, { token }).subscribe({
+          next: () => {
+            this.loadEventos();
+          },
+          error: (err) => console.warn('Error cancelando evento:', err)
+        });
+      }
     });
   }
 
   private loadEventos(): void {
     this.eventos = null;
 
-    const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken') || undefined;
-    this.eventoService.getEmprendedorEvents({ page: 0, size: 5, token }).subscribe({
+    const token = localStorage.getItem('token') || 
+                  localStorage.getItem('accessToken') || 
+                  localStorage.getItem('authToken') || 
+                  undefined;
+    
+    this.eventoService.getEmprendedorEvents({ page: 0, size: 50, token }).subscribe({
       next: (res: any) => {
         let items: any[] = [];
         if (Array.isArray(res)) items = res;
@@ -99,15 +146,22 @@ export class SeccionEventoComponent implements OnInit {
 
         this.rawMap = {};
         this.allRawItems = (items || []).slice();
-        this.eventos = (this.allRawItems || []).map((it: any) => {
-          const card = this.mapToCard(it);
+        this.eventosCards = this.allRawItems.map((it: any) => {
+          const card = this.mapToEventoCard(it);
           this.rawMap[String(card.id)] = it;
           return card;
         });
+        
+        this.eventos = this.allRawItems;
+        this.totalItems = this.eventosCards.length;
+        this.updatePaginatedItems();
       },
       error: (err: any) => {
-        console.warn('No se pudieron cargar eventos en SeccionEvento:', err);
+        console.warn('No se pudieron cargar eventos:', err);
         this.eventos = [];
+        this.eventosCards = [];
+        this.totalItems = 0;
+        this.updatePaginatedItems();
       }
     });
   }
@@ -140,48 +194,55 @@ export class SeccionEventoComponent implements OnInit {
       if (hasDate) {
         const rawDate = it.fechaEvento || it.fecha || it.fechaEventoString || '';
         const d = String(rawDate || '');
-        const datePart = d.includes('T') ? d.split('T')[0] : (d.includes('/') ? (() => {
-          const parts = d.split('/');
-          if (parts.length===3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
-          return d;
-        })() : d);
-        if (!datePart) return false;
-        if (datePart !== String(dateKey)) return false;
+        const datePart = d.includes('T') ? d.split('T')[0] : d;
+        if (!datePart || datePart !== String(dateKey)) return false;
       }
 
       if (hasType) {
         const rawTipo = it.tipoEvento || it.tipo || '';
         const tipoNorm = normalizeType(rawTipo || it.direccion || it.lugar || '');
-        if (!tipoNorm) return false;
-        if (tipoNorm !== wantedType) return false;
+        if (!tipoNorm || tipoNorm !== wantedType) return false;
       }
 
       return true;
     });
 
     this.rawMap = {};
-    this.eventos = (filtered || []).map((it: any) => {
-      const card = this.mapToCard(it);
+    this.eventosCards = filtered.map((it: any) => {
+      const card = this.mapToEventoCard(it);
       this.rawMap[String(card.id)] = it;
       return card;
     });
+
+    this.totalItems = this.eventosCards.length;
+    this.pageIndex = 0;
+    this.updatePaginatedItems();
   }
 
-  private mapToCard(it: any): CardItem {
-    const id = it.idEvento ?? it.id ?? it._id ?? 0;
-    const title = it.titulo || it.nombre || 'Evento';
-    const description = it.descripcion || '';
-    const image = it.imagenUrl || it.imagen || '/assets/img/emprendimiento/foto1.png';
-    const location = it.lugar || it.direccion || 'Lugar por definir';
-    const date = it.fechaEvento || it.fecha || undefined;
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.updatePaginatedItems();
+  }
+
+  private updatePaginatedItems(): void {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.eventosPaginados = this.eventosCards.slice(startIndex, endIndex);
+  }
+
+  private mapToEventoCard(it: any): EventoCard {
     return {
-      id: Number(id),
-      title,
-      description,
-      image,
-      location,
-      date
-    } as CardItem;
+      id: it.idEvento ?? it.id ?? it._id ?? 0,
+      titulo: it.titulo || it.nombre || 'Evento',
+      descripcion: it.descripcion || '',
+      fechaEvento: it.fechaEvento || it.fecha || new Date().toISOString(),
+      horario: it.horario || it.hora || '',
+      lugar: it.lugar || it.direccion || '',
+      tipoEvento: it.tipoEvento || it.tipo || 'Presencial',
+      estadoEvento: it.estadoEvento || it.status || 'Programado',
+      urlMultimedia: it.urlMultimedia || it.imagen || '/assets/img/emprendimiento/foto1.png'
+    };
   }
 
   consultar() {
@@ -192,17 +253,5 @@ export class SeccionEventoComponent implements OnInit {
       estado: this.estadoSeleccionado
     };
     this.onSearch(payload);
-  }
-
-  onDiscover(item: CardItem) {
-    console.log('Discover', item);
-  }
-
-  onRegister(item: CardItem) {
-    console.log('Register', item);
-  }
-
-  onToggleFavorite(item: CardItem) {
-    console.log('Toggle favorite', item);
   }
 }

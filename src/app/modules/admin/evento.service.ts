@@ -93,10 +93,30 @@ createEvent(
    * cancelar evento event (alias of inactivate) - admin
    * endpoint: /v1/eventos/inactivar/:idEvento
    */
-  cancelEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
-    // Reuse same endpoint as inactivateEvent
-    return this.inactivateEvent(idEvento, options);
+  cancelEvent(
+    idEvento: string | number,
+    options?: { token?: string }
+  ): Observable<any> {
+    const url = `${this.baseUrl}/${idEvento}/cancelar`;
+
+    let headers = new HttpHeaders();
+
+    const token =
+      options?.token ||
+      localStorage.getItem('token') ||
+      localStorage.getItem('accessToken') ||
+      localStorage.getItem('authToken');
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    // Normalmente no se envía body para cancelar; si tu API lo requiere, pásalo aquí.
+    return this.http.put(url, {}, { headers }).pipe(
+      catchError((err) => throwError(() => err))
+    );
   }
+
 
   /**
    * Activa (reactiva) un evento en la API (ADMIN).
