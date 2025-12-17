@@ -7,294 +7,292 @@
       ¡{{ saludo }}, {{ user.name }}!
     </h1>
 
-    <!-- Tarjetas de Estadísticas -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <p class="text-gray-500">Usuarios Totales</p>
-        <h2 class="text-3xl font-bold text-blue-600">{{ stats.totalUsers | number }}</h2>
-      </div>
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <p class="text-gray-500">Emprendimientos</p>
-        <h2 class="text-3xl font-bold text-orange-600">{{ stats.emprendimientos | number }}</h2>
-      </div>
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <p class="text-gray-500">Visitas Totales</p>
-        <h2 class="text-3xl font-bold text-green-600">{{ stats.totalVisits | number }}</h2>
-      </div>
+    <!-- Mensaje de carga -->
+    <div *ngIf="isLoading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <span class="text-gray-500 text-sm">Cargando dashboard...</span>
     </div>
 
-    <!-- Gráfico grande -->
-    <div class="bg-white p-6 rounded-xl shadow-md mb-6">
-      <h3 class="text-lg font-semibold mb-4">Crecimiento con el Tiempo</h3>
-
-      <!-- Gráfico simulado (SVG) para que se vea como la imagen -->
-      <div class="relative bg-gradient-to-b from-white to-blue-50 rounded-lg border p-4">
-        <svg viewBox="0 0 960 240" class="w-full h-64">
-          <!-- Grid líneas horizontales -->
-          <g stroke="#e6edf6" stroke-width="1">
-            <line x1="0" y1="32" x2="960" y2="32"></line>
-            <line x1="0" y1="64" x2="960" y2="64"></line>
-            <line x1="0" y1="96" x2="960" y2="96"></line>
-            <line x1="0" y1="128" x2="960" y2="128"></line>
-            <line x1="0" y1="160" x2="960" y2="160"></line>
-            <line x1="0" y1="192" x2="960" y2="192"></line>
-          </g>
-
-          <!-- Área bajo la curva -->
-          <path d="M40 200 L120 170 L200 150 L280 120 L360 80 L440 60 L520 50 L600 36 L680 30 L760 22 L840 12 L920 4 L960 4 L960 240 L0 240 Z"
-                fill="#dbeafe" opacity="0.9"></path>
-
-          <!-- Línea de la curva -->
-          <path d="M40 200 L120 170 L200 150 L280 120 L360 80 L440 60 L520 50 L600 36 L680 30 L760 22 L840 12 L920 4"
-                fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-
-          <!-- Puntos destacados -->
-          <circle cx="360" cy="80" r="5" fill="#1e40af"></circle>
-          <circle cx="520" cy="50" r="5" fill="#1e40af"></circle>
-          <circle cx="760" cy="22" r="5" fill="#1e40af"></circle>
-
-          <!-- Ejes X labels (meses) -->
-          <g fill="#9ca3af" font-size="12" font-family="Inter, Arial" transform="translate(0,210)">
-            <text x="36" y="0">Ene</text>
-            <text x="116" y="0">Feb</text>
-            <text x="196" y="0">Mar</text>
-            <text x="276" y="0">Abr</text>
-            <text x="356" y="0">May</text>
-            <text x="436" y="0">Jun</text>
-            <text x="516" y="0">Jul</text>
-            <text x="596" y="0">Ago</text>
-            <text x="676" y="0">Sep</text>
-            <text x="756" y="0">Oct</text>
-          </g>
-        </svg>
-      </div>
+    <!-- Mensaje de error -->
+    <div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-200 p-6 rounded-xl mb-6">
+      <p class="text-red-600 mb-3">{{ errorMessage }}</p>
+      <button (click)="cargarDatos()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+        Reintentar
+      </button>
     </div>
 
-    <!-- Cards  -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <!-- Top Emprendimientos -->
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Top Emprendimientos</h4>
-            <p class="text-sm text-gray-500">Los más destacados</p>
-          </div>
-          <div class="text-yellow-400 text-xl font-bold">★</div>
+    <!-- Contenido del dashboard -->
+    <div *ngIf="!isLoading">
+      <!-- Tarjetas de Estadísticas -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <p class="text-gray-500">Usuarios Totales</p>
+          <h2 class="text-3xl font-bold text-blue-600">{{ stats.totalUsers | number }}</h2>
         </div>
-
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">EV</div>
-              <div>
-                <div class="font-semibold">EcoVerde</div>
-                <div class="text-sm text-gray-400">Sostenibilidad</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-yellow-400 font-bold">4.9</span>
-            </div>
-          </li>
-
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold">AF</div>
-              <div>
-                <div class="font-semibold">ArtiFlex</div>
-                <div class="text-sm text-gray-400">Arte & Diseño</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-yellow-400 font-bold">4.5</span>
-            </div>
-          </li>
-
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-sky-700 text-white flex items-center justify-center font-bold">FH</div>
-              <div>
-                <div class="font-semibold">FoodHub</div>
-                <div class="text-sm text-gray-400">Gastronomía</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-yellow-400 font-bold">4.5</span>
-            </div>
-          </li>
-        </ul>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <p class="text-gray-500">Emprendimientos</p>
+          <h2 class="text-3xl font-bold text-orange-600">{{ stats.emprendimientos | number }}</h2>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <p class="text-gray-500">Visitas Totales</p>
+          <h2 class="text-3xl font-bold text-green-600">{{ stats.totalVisits | number }}</h2>
+        </div>
       </div>
 
-      <!-- Emprendimientos Menos Vistos -->
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Emprendimientos Menos Vistos</h4>
-            <p class="text-sm text-gray-500">Requieren atención</p>
-          </div>
-          <div class="text-red-500 text-xl font-bold">👁️</div>
+      <!-- Gráfico grande -->
+      <div class="bg-white p-6 rounded-xl shadow-md mb-6">
+        <h3 class="text-lg font-semibold mb-4">Crecimiento con el Tiempo</h3>
+        <div class="relative bg-gradient-to-b from-white to-blue-50 rounded-lg border p-4">
+          <svg viewBox="0 0 960 240" class="w-full h-64">
+            <!-- Grid líneas horizontales -->
+            <g stroke="#e6edf6" stroke-width="1">
+              <line x1="0" y1="32" x2="960" y2="32"></line>
+              <line x1="0" y1="64" x2="960" y2="64"></line>
+              <line x1="0" y1="96" x2="960" y2="96"></line>
+              <line x1="0" y1="128" x2="960" y2="128"></line>
+              <line x1="0" y1="160" x2="960" y2="160"></line>
+              <line x1="0" y1="192" x2="960" y2="192"></line>
+            </g>
+            <!-- Área bajo la curva -->
+            <path d="M40 200 L120 170 L200 150 L280 120 L360 80 L440 60 L520 50 L600 36 L680 30 L760 22 L840 12 L920 4 L960 4 L960 240 L0 240 Z"
+                  fill="#dbeafe" opacity="0.9"></path>
+            <!-- Línea de la curva -->
+            <path d="M40 200 L120 170 L200 150 L280 120 L360 80 L440 60 L520 50 L600 36 L680 30 L760 22 L840 12 L920 4"
+                  fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <!-- Puntos destacados -->
+            <circle cx="360" cy="80" r="5" fill="#1e40af"></circle>
+            <circle cx="520" cy="50" r="5" fill="#1e40af"></circle>
+            <circle cx="760" cy="22" r="5" fill="#1e40af"></circle>
+            <!-- Ejes X labels (meses) -->
+            <g fill="#9ca3af" font-size="12" font-family="Inter, Arial" transform="translate(0,210)">
+              <text x="36" y="0">Ene</text>
+              <text x="116" y="0">Feb</text>
+              <text x="196" y="0">Mar</text>
+              <text x="276" y="0">Abr</text>
+              <text x="356" y="0">May</text>
+              <text x="436" y="0">Jun</text>
+              <text x="516" y="0">Jul</text>
+              <text x="596" y="0">Ago</text>
+              <text x="676" y="0">Sep</text>
+              <text x="756" y="0">Oct</text>
+            </g>
+          </svg>
         </div>
-
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold">BF</div>
-              <div>
-                <div class="font-semibold">BookFlex</div>
-                <div class="text-sm text-gray-400">Educación</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-              <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>23 vistas</span>
-            </div>
-          </li>
-
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold">GP</div>
-              <div>
-                <div class="font-semibold">GreenPets</div>
-                <div class="text-sm text-gray-400">Mascotas</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-              <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>31 vistas</span>
-            </div>
-          </li>
-
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold">SM</div>
-              <div>
-                <div class="font-semibold">SmartHome</div>
-                <div class="text-sm text-gray-400">Hogar</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-              <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>40 vistas</span>
-            </div>
-          </li>
-        </ul>
       </div>
-    </div>
 
-    <!-- Segunda fila: Mejor y Peor Valorados -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Emprendimientos Mejor Valorados -->
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Emprendimientos Mejor Valorados</h4>
-            <p class="text-sm text-gray-500">Mayor puntuación</p>
+      <!-- Cards Primera Fila -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Top Emprendimientos -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Top Emprendimientos</h4>
+              <p class="text-sm text-gray-500">Los más destacados</p>
+            </div>
+            <div class="text-yellow-400 text-xl font-bold">★</div>
           </div>
-          <div class="text-yellow-400 text-xl font-bold">★</div>
-        </div>
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">EV</div>
-              <div>
-                <div class="font-semibold">EcoVerde</div>
-                <div class="text-sm text-gray-400">Sostenibilidad</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-yellow-400 font-bold">4.9</span>
-            </div>
-          </li>
-          <!-- ...más items dinmicos... -->
-        </ul>
-      </div>
-      <!--Emprendimientos Peor Valorados-->
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Emprendimientos Peor Valorados</h4>
-            <p class="text-sm text-gray-500">Menor puntuación</p>
-          </div>
-          <div class="text-gray-400 text-xl font-bold">★</div>
-        </div>
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">BF</div>
-              <div>
-                <div class="font-semibold">BookFlex</div>
-                <div class="text-sm text-gray-400">Educación</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-red-400 font-bold">2.1</span>
-            </div>
-          </li>
-          <!-- ...más items dinámicos... -->
-        </ul>
-      </div>
-    </div>
 
-    <!-- Tercera fila: Categoría Más Vistas -->
-    <div class="grid grid-cols-1 gap-6 mt-6">
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Categoría Más Vistas</h4>
-            <p class="text-sm text-gray-500">La categoría con más visitas</p>
-          </div>
-          <div class="text-blue-500 text-xl font-bold">🏆</div>
-        </div>
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">GA</div>
-              <div>
-                <div class="font-semibold">Gastronomía</div>
-                <div class="text-sm text-gray-400">{{  'Ejemplo' }}</div>
+          <ul class="space-y-4">
+            <li *ngFor="let emp of topEmprendimientos; let i = index" 
+                class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div [class]="getAvatarColor(i) + ' w-10 h-10 rounded-full text-white flex items-center justify-center font-bold'">
+                  {{ emp.iniciales }}
+                </div>
+                <div>
+                  <div class="font-semibold">{{ emp.nombre }}</div>
+                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
+                </div>
               </div>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-              <span class="font-bold text-blue-500">{{ 120 }}</span>
-              <span>vistas</span>
-            </div>
-          </li>
-          <!-- ...más items dinámicos... -->
-        </ul>
-      </div>
-    </div>
+              <div class="flex items-center gap-2">
+                <span class="text-blue-600 font-bold">{{ emp.visitas || 0 }} vistas</span>
+              </div>
+            </li>
+          </ul>
 
-    <!-- Cuarta fila: Preguntas de Autoevaluación -->
-    <div class="grid grid-cols-1 gap-6 mt-6">
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h4 class="text-lg font-semibold">Preguntas de Autoevaluación</h4>
-            <p class="text-sm text-gray-500">Promedio por pregunta</p>
+          <p *ngIf="topEmprendimientos.length === 0" class="text-gray-400 text-center py-4">
+            No hay datos disponibles
+          </p>
+        </div>
+
+        <!-- Emprendimientos Menos Vistos -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Emprendimientos Menos Vistos</h4>
+              <p class="text-sm text-gray-500">Requieren atención</p>
+            </div>
+            <div class="text-red-500 text-xl font-bold">👁️</div>
           </div>
-          <div class="text-indigo-500 text-xl font-bold">📝</div>
+
+          <ul class="space-y-4">
+            <li *ngFor="let emp of emprendimientosMenosVistos; let i = index" 
+                class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div [class]="getAvatarColor(i + 3) + ' w-10 h-10 rounded-full text-white flex items-center justify-center font-bold'">
+                  {{ emp.iniciales }}
+                </div>
+                <div>
+                  <div class="font-semibold">{{ emp.nombre }}</div>
+                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>{{ emp.visitas }} vistas</span>
+              </div>
+            </li>
+          </ul>
+
+          <p *ngIf="emprendimientosMenosVistos.length === 0" class="text-gray-400 text-center py-4">
+            No hay datos disponibles
+          </p>
         </div>
-        <!-- Filtros -->
-        <div class="flex flex-col md:flex-row gap-4 mb-4">
-          <select class="border rounded px-3 py-2 text-sm" >
-            <option value="">Todos los emprendimientos</option> <!--aqui va el ngFor y aqui se filtra por los emprendimientos-->
-            <!-- <option *ngFor="let emp of emprendimientos" [value]="emp.id">{{ emp.nombre }}</option> -->
-          </select>
-          <input type="date" class="border rounded px-3 py-2 text-sm"  />
+      </div>
+
+      <!-- Segunda fila: Mejor y Peor Valorados -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Emprendimientos Mejor Valorados -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Emprendimientos Mejor Valorados</h4>
+              <p class="text-sm text-gray-500">Mayor puntuación</p>
+            </div>
+            <div class="text-yellow-400 text-xl font-bold">★</div>
+          </div>
+          <ul class="space-y-4">
+            <li *ngFor="let emp of emprendimientosMejorValorados; let i = index" 
+                class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
+                  {{ emp.iniciales }}
+                </div>
+                <div>
+                  <div class="font-semibold">{{ emp.nombre }}</div>
+                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-yellow-400 font-bold">{{ emp.calificacion | number:'1.1-1' }}</span>
+              </div>
+            </li>
+          </ul>
+
+          <p *ngIf="emprendimientosMejorValorados.length === 0" class="text-gray-400 text-center py-4">
+            No hay datos disponibles
+          </p>
         </div>
-        <ul class="space-y-4">
-          <li class="flex items-center justify-between">
-            <span class="font-medium">¿Qué crees que pudo haber causado esta experiencia negativa?</span>
-            <span class="font-bold text-indigo-600">{{ '3.8' }}</span>
-          </li>
-          <li class="flex items-center justify-between">
-            <span class="font-medium">¿Qué acciones estás planeando tomar para mejorar esta situación?</span>
-            <span class="font-bold text-indigo-600">{{  '4.2' }}</span>
-          </li>
-          <li class="flex items-center justify-between">
-            <span class="font-medium">¿Cuál de estas áreas estás priorizando actualmente en tu emprendimiento?</span>
-            <span class="font-bold text-indigo-600">{{ '4.0' }}</span>
-          </li>
-        </ul>
+
+        <!-- Emprendimientos Peor Valorados -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Emprendimientos Peor Valorados</h4>
+              <p class="text-sm text-gray-500">Menor puntuación</p>
+            </div>
+            <div class="text-gray-400 text-xl font-bold">★</div>
+          </div>
+          <ul class="space-y-4">
+            <li *ngFor="let emp of emprendimientosPeorValorados; let i = index" 
+                class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
+                  {{ emp.iniciales }}
+                </div>
+                <div>
+                  <div class="font-semibold">{{ emp.nombre }}</div>
+                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-red-400 font-bold">{{ emp.calificacion | number:'1.1-1' }}</span>
+              </div>
+            </li>
+          </ul>
+
+          <p *ngIf="emprendimientosPeorValorados.length === 0" class="text-gray-400 text-center py-4">
+            No hay datos disponibles
+          </p>
+        </div>
+      </div>
+
+      <!-- Tercera fila: Categoría Más Vistas -->
+      <div class="grid grid-cols-1 gap-6 mb-6">
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Categoría Más Vistas</h4>
+              <p class="text-sm text-gray-500">La categoría con más visitas</p>
+            </div>
+            <div class="text-blue-500 text-xl font-bold">🏆</div>
+          </div>
+          <ul class="space-y-4" *ngIf="categoriaMasVista">
+            <li class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                  {{ categoriaMasVista.nombre.substring(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="font-semibold">{{ categoriaMasVista.nombre }}</div>
+                  <div class="text-sm text-gray-400">{{ categoriaMasVista.ejemplo || 'Categoría destacada' }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <span class="font-bold text-blue-500">{{ categoriaMasVista.visitas | number }}</span>
+                <span>vistas</span>
+              </div>
+            </li>
+          </ul>
+
+          <p *ngIf="!categoriaMasVista" class="text-gray-400 text-center py-4">
+            No hay datos disponibles
+          </p>
+        </div>
+      </div>
+
+      <!-- Cuarta fila: Preguntas de Autoevaluación -->
+      <div class="grid grid-cols-1 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold">Preguntas de Autoevaluación</h4>
+              <p class="text-sm text-gray-500">Promedio por pregunta</p>
+            </div>
+            <div class="text-indigo-500 text-xl font-bold">📝</div>
+          </div>
+          
+          <!-- Filtros -->
+          <div class="flex flex-col md:flex-row gap-4 mb-4">
+            <select class="border rounded px-3 py-2 text-sm flex-1" 
+                    [(ngModel)]="filtroEmprendimiento"
+                    (change)="aplicarFiltros()">
+              <option [value]="null">Todos los emprendimientos</option>
+              <option *ngFor="let emp of todosEmprendimientos" [value]="emp.id">{{ emp.nombre }}</option>
+            </select>
+            <input type="date" 
+                   class="border rounded px-3 py-2 text-sm flex-1" 
+                   [(ngModel)]="filtroFecha"
+                   (change)="aplicarFiltros()" />
+          </div>
+
+          <ul class="space-y-4">
+            <li *ngFor="let pregunta of preguntasAutoevaluacion" 
+                class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <span class="font-medium">{{ pregunta.pregunta }}</span>
+              <span class="font-bold text-indigo-600">{{ pregunta.promedio | number:'1.1-1' }}</span>
+            </li>
+          </ul>
+
+          <p *ngIf="preguntasAutoevaluacion.length === 0" class="text-gray-400 text-center py-4">
+            No hay datos disponibles para las preguntas de autoevaluación
+          </p>
+        </div>
       </div>
     </div>
   </main>
