@@ -29,7 +29,7 @@
   <!-- Contenido de cada paso (placeholder, en construcción) -->
   <div class="flex-1 overflow-auto px-6 py-5">
     <ng-container [ngSwitch]="currentStep">
-      <div *ngSwitchCase="0" class="flex flex-col items-center">
+      <div *ngSwitchCase="1" class="flex flex-col items-center">
         <div class="max-w-xl w-full text-center mb-8">
           <h2 class="text-2xl font-bold text-[#1E71D8] mb-2">
             Categorías del emprendimiento
@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <div *ngSwitchCase="1" class="space-y-8">
+      <div *ngSwitchCase="0" class="space-y-8">
         <div class="text-center">
           <h2 class="text-2xl font-bold text-[#1E71D8]">
             Descripción del emprendimiento
@@ -965,8 +965,8 @@
         type="button"
         class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
         [disabled]="
-          (currentStep === 0 && !canGoNextFromStep1) ||
-          (currentStep === 1 && !isDescripcionComplete) ||
+          (currentStep === 0 && !isDescripcionComplete) ||
+          (currentStep === 1 && !isCategoriasComplete) ||
           (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
           (currentStep === 3 && !isMultimediaComplete) ||
           (currentStep === 4 && !isMetricasComplete)
