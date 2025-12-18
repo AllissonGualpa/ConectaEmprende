@@ -144,6 +144,7 @@
         <app-edit-solicitud-emprendimiento
           *ngIf="showEditSolicitudModal && selectedEditId !== null"
           [emprendimientoId]="selectedEditId"
+          [soloLectura]="true"
           (updated)="onEmprendimientoUpdated()"
           (close)="closeEditSolicitudModal()"
         ></app-edit-solicitud-emprendimiento>

@@ -12,25 +12,23 @@ import { Router } from '@angular/router';
   standalone: true,
   imports: [
     CommonModule,
-    CardsComponent, // agregar componente de cards
-    CreateSolicitudEmprendimientoComponent, // modal de creación
-    EditSolicitudEmprendimientoComponent // componente de edición de Emprendimiento
+    CardsComponent,
+    CreateSolicitudEmprendimientoComponent,
+    EditSolicitudEmprendimientoComponent
   ],
   templateUrl: './seccion-emprendimiento.component.html',
   styleUrls: ['./seccion-emprendimiento.component.css']
 })
 export class SeccionEmprendimientoComponent implements OnInit {
-  // Más adelante puedes inyectar servicios y manejar el listado real
   emprendimientos: any[] = [];
-  cardsArray: CardItem[] = []; // <-- agregado para mapear a tarjetas
+  cardsArray: CardItem[] = [];
 
-  // control del modal
   showCreateSolicitudModal = false;
-  showEditSolicitudModal = false; // control del modal de edición
-  selectedEditId: number | null = null; // id seleccionado para edición
-  loading = false; // <-- loading agregado
+  showEditSolicitudModal = false;
+  selectedEditId: number | null = null;
+  loading = false;
 
-  constructor(private emprendimientoService: EmprendimientoService,  private router: Router) {}
+  constructor(private emprendimientoService: EmprendimientoService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadEmprendimientos();
@@ -57,7 +55,6 @@ export class SeccionEmprendimientoComponent implements OnInit {
       next: (data) => {
         console.log('Emprendimientos cargados:', data);
         this.emprendimientos = data;
-        // Mapear a formato de tarjetas, similar a emprendimientos.component.ts
         this.cardsArray = this.emprendimientos.map((e) => ({
           id: e.id,
           title: e.nombreComercial || 'Emprendimiento sin nombre',
@@ -66,7 +63,8 @@ export class SeccionEmprendimientoComponent implements OnInit {
           category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
           location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
-          status: this.mapEstado(e.estadoEmprendimiento)
+          status: this.mapEstado(e.estadoEmprendimiento),
+          rawStatus: e.estadoEmprendimiento // CORREGIDO: ahora con 'S' mayúscula
         }));
         this.loading = false;
       },
@@ -85,12 +83,19 @@ export class SeccionEmprendimientoComponent implements OnInit {
     this.showCreateSolicitudModal = false;
   }
 
-  // Abrir modal de edición pasando el CardItem o su id
-  openEditSolicitudModal(itemOrId: any): void {
-    // itemOrId puede ser el CardItem emitido por app-cards o solo un id
-    const id = typeof itemOrId === 'number' ? itemOrId : itemOrId?.id;
-    this.selectedEditId = id ?? null;
-    this.showEditSolicitudModal = !!this.selectedEditId;
+  openEditSolicitudModal(item: CardItem): void {
+    const estadosBloqueados = [
+      'PENDIENTE_APROBACION',
+      'RECHAZADO'
+    ];
+
+    if (item.rawStatus && estadosBloqueados.includes(item.rawStatus)) {
+      alert('No puedes editar un emprendimiento en revisión o rechazado.');
+      return;
+    }
+
+    this.selectedEditId = item.id;
+    this.showEditSolicitudModal = true;
   }
 
   closeEditSolicitudModal(): void {
@@ -98,7 +103,6 @@ export class SeccionEmprendimientoComponent implements OnInit {
     this.showEditSolicitudModal = false;
   }
 
-  // Cuando se actualiza un emprendimiento en el modal de edición recargar lista
   onEmprendimientoUpdated(): void {
     this.closeEditSolicitudModal();
     this.loadEmprendimientos();
@@ -108,9 +112,8 @@ export class SeccionEmprendimientoComponent implements OnInit {
     this.closeCreateSolicitudModal();
     this.loadEmprendimientos();
   }
+
   onRoadmapClick(item: any) {
-    
     this.router.navigate(['emprendedor/roadmap', item.id]);
-    
   }
 }

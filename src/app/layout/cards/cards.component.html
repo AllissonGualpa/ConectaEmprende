@@ -88,11 +88,15 @@
         </p>
 
         <button
-          (click)="onDiscover(item)"
-          class="mt-auto w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition active:scale-95"
-        >
-          {{ ctaLabel }}
-        </button>
+        (click)="!isEditDisabled(item) && onDiscover(item)"
+        [disabled]="isEditDisabled(item)"
+        [title]="isEditDisabled(item) ? 'No puedes editar un emprendimiento en revisión o rechazado.' : ''"
+        class="mt-auto w-full py-2 rounded-lg transition
+              bg-orange-500 hover:bg-orange-600 text-white
+              disabled:bg-gray-300 disabled:text-gray-500
+              disabled:cursor-not-allowed disabled:hover:bg-gray-300">
+              {{ ctaLabel }}
+            </button>
       </div>
     </article>
   </div>

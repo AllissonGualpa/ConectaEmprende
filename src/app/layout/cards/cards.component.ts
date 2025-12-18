@@ -13,6 +13,7 @@ export interface CardItem {
   views?: number;
   favorites?: number;
   status?: string; //aprobado, pendiente, rechazado
+  rawStatus?:string;
 }
 
 @Component({
@@ -76,4 +77,9 @@ export class CardsComponent {
   onRoadmap(item: CardItem) {
     this.roadmap.emit(item);
   }
+  isEditDisabled(item: any): boolean {
+  return item?.rawStatus === 'PENDIENTE'
+      || item?.rawStatus === 'PENDIENTE_APROBACION'
+      || item?.rawStatus === 'RECHAZADO';
+}
 }
