@@ -23,81 +23,110 @@
 
       <!-- Filtros -->
       <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-          <!-- Buscador -->
-          <div class="md:col-span-1">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-icon matPrefix class="text-gray-400">search</mat-icon>
-              <input matInput placeholder="Buscar..." [(ngModel)]="searchText" (ngModelChange)="applyFilters()">
-            </mat-form-field>
+        <form [formGroup]="filtrosForm" class="space-y-4">
+          <!-- Primera fila de filtros -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <!-- Buscar por título -->
+            <div class="lg:col-span-2">
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Buscar</mat-label>
+                <input matInput placeholder="Buscar por título" formControlName="titulo">
+                <mat-icon matPrefix class="text-gray-400">search</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <!-- Fecha Inicio -->
+            <div>
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Fecha Inicio</mat-label>
+                <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio">
+                <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+                <mat-datepicker #pickerInicio></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <!-- Fecha Fin -->
+            <div>
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Fecha Fin</mat-label>
+                <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin">
+                <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+                <mat-datepicker #pickerFin></mat-datepicker>
+              </mat-form-field>
+            </div>
+
+            <!-- Estado -->
+            <div>
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Estado</mat-label>
+                <mat-select formControlName="estado">
+                  <mat-option value="">Todos</mat-option>
+                  <mat-option *ngFor="let estado of estadosOptions" [value]="estado.value">
+                    {{ estado.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Tipo Evento -->
+            <div>
+              <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Tipo</mat-label>
+                <mat-select formControlName="tipoEvento">
+                  <mat-option value="">Todos</mat-option>
+                  <mat-option *ngFor="let tipo of tiposOptions" [value]="tipo.value">
+                    {{ tipo.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
           </div>
 
-          <!-- Fecha Inicio -->
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <input matInput [matDatepicker]="pickerInicio" placeholder="30/07/2025" [(ngModel)]="fechaInicio" (dateChange)="applyFilters()" (ngModelChange)="applyFilters()">
-              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-              <mat-datepicker #pickerInicio></mat-datepicker>
-            </mat-form-field>
+          <!-- Segunda fila: Selector de Emprendimiento -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-1">
+              <app-all-emprendimiento-selector
+                formControlName="idEmprendimiento"
+                label="Emprendimiento"
+                placeholder="Seleccione un emprendimiento"
+                (emprendimientoSelected)="onEmprendimientoSelected($event)">
+              </app-all-emprendimiento-selector>
+            </div>
           </div>
 
-          <!-- Fecha Fin -->
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <input matInput [matDatepicker]="pickerFin" placeholder="30/07/2025" [(ngModel)]="fechaFin" (dateChange)="applyFilters()" (ngModelChange)="applyFilters()">
-              <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
-              <mat-datepicker #pickerFin></mat-datepicker>
-            </mat-form-field>
+          <!-- Botones de acción -->
+          <div class="flex gap-3 mt-4">
+            <button 
+              mat-raised-button 
+              type="button"
+              (click)="aplicarFiltros()"
+              class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow-sm font-medium flex items-center gap-2 transition-colors duration-200">
+              <mat-icon>search</mat-icon>
+              Consultar
+            </button>
+            
+            <button 
+              mat-stroked-button 
+              type="button"
+              (click)="limpiarFiltros()"
+              class="border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-2 rounded-md font-medium flex items-center gap-2 transition-colors duration-200">
+              <mat-icon>clear</mat-icon>
+              Quitar Filtros
+            </button>
+
+            <button 
+              mat-raised-button 
+              type="button"
+              (click)="abrirCrearEvento()"
+              class="ml-auto bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow-sm font-medium flex items-center gap-2 transition-colors duration-200">
+              <mat-icon>add</mat-icon>
+              Crear Evento
+            </button>
           </div>
-
-          <!--estados-->
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Estados</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select
-                placeholder="Seleccionar estado"
-                [(ngModel)]="estadoSeleccionado"
-                (selectionChange)="applyFilters()"
-              >
-                <mat-option value="">Todos</mat-option>
-                <!-- estos valores deben coincidir con e.estado en TS -->
-                <mat-option value="Programado">Programado</mat-option>
-                <mat-option value="Terminado">Terminado</mat-option>
-                <mat-option value="Cancelado">Cancelado</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!--boton-->
-    <div class="flex gap-2 items-end">
-      <button
-        class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-1 transition-colors duration-200">
-        <i class="fa-solid fa-rotate-right"></i>
-        Consultar
-      </button>
-
-      <button
-        class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-1 transition-colors duration-200"
-        (click)="abrirCrearEvento()">
-        <i class="fa-solid fa-plus"></i>
-        Crear
-      </button>
-    </div>
-        </div>
-        <!-- Row below filters: Limpiar filtros -->
-        <div class="flex justify-end mt-3">
-          <button
-            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-1 transition-colors duration-200"
-            (click)="clearFilters()">
-            <i class="fa-solid fa-ban"></i>
-            Limpiar filtros
-          </button>
-        </div>
+        </form>
       </div>
 
-      <!--tabla personalizada usando Tailwind (no CSS) -->
+      <!--tabla personalizada usando Tailwind -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <table class="w-full table-auto">
           <thead>
@@ -138,7 +167,7 @@
                   <!-- Botón Inactivar/Activar (BASURA/CHECK) - Solo si NO está cancelado ni terminado -->
                   <button
                     *ngIf="evento.estado.toLowerCase() !== 'cancelado' && evento.estado.toLowerCase() !== 'terminado'"
-                    (click)="inactivarEvento(evento)"
+                    (click)="cancelarEvento(evento)"
                     [title]="evento.activo ? 'Inactivar evento' : 'Activar evento'"
                     [class]="evento.activo 
                       ? 'p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors' 
@@ -150,19 +179,18 @@
                     </svg>
                     <!-- Basura roja si está activo -->
                     <svg *ngIf="evento.activo" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
-
                   </button>
 
-                  <!-- Botón Cancelar (CÍRCULO CON X NARANJA) - Solo si NO está cancelado ni terminado -->
+                  <!-- Botón Cancelar (CÍRCULO CON X) - Solo si NO está cancelado ni terminado -->
                   <button
                     *ngIf="evento.estado.toLowerCase() !== 'cancelado' && evento.estado.toLowerCase() !== 'terminado'"
-                    (click)="cancelarEvento(evento)"
+                    (click)="inactivarEvento(evento)"
                     title="Cancelar evento (permanente)"
                     class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
                     </svg>
                   </button>
                 </div>
@@ -178,7 +206,7 @@
           </tbody>
         </table>
 
-        <!-- Paginación estilo admin-blog, LOCAL -->
+        <!-- Paginación -->
         <div
           class="flex-shrink-0 px-6 py-6 bg-gray-50 border-t border-gray-200 text-center"
           *ngIf="!loading && totalElements > 0"
@@ -232,7 +260,7 @@
         </div>
 
         <!-- Dialog de eliminación -->
-        <div *ngIf="eventoAEliminar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div *ngIf="eventoAEliminar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
             <ng-container *ngTemplateOutlet="deleteDialog; context: { evento: eventoAEliminar }"></ng-container>
           </div>
@@ -261,29 +289,15 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-              <button class="bg-gray-200 px-4 py-2 rounded" (click)="closeDeleteDialog()">Cancelar</button>
+              <button class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition-colors" (click)="closeDeleteDialog()">Cancelar</button>
               <button
-                class="bg-orange-500 text-white px-4 py-2 rounded"
+                class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors"
                 (click)="eventoAEliminar && confirmDelete(eventoAEliminar)"
               >
                 {{
                   eventoAEliminar?.activo
                     ? 'Inactivar'
                     : 'Activar'
-                }}
-              </button>
-            </div>
-        
-            <div class="mt-6 flex justify-end gap-3">
-              <button class="bg-gray-200 px-4 py-2 rounded" (click)="closeDeleteDialog()">Cancelar</button>
-              <button
-                class="bg-orange-500 text-white px-4 py-2 rounded"
-                (click)="eventoAEliminar && confirmDelete(eventoAEliminar)"
-              >
-                {{
-                  (eventoAEliminar?.estado || '').toString().toLowerCase() === 'cancelado'
-                    ? 'Activar'
-                    : 'Desactivar'
                 }}
               </button>
             </div>

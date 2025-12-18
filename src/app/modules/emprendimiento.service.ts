@@ -186,13 +186,23 @@ export class EmprendimientoService {
     }
 
     getEmprendimientoPublico(id: number): Observable<EmprendimientoPublico> {
-        const token = localStorage.getItem('token');
-        const headers: { [header: string]: string } = token
-            ? { Authorization: `Bearer ${token}` }
-            : {};
+    let token: string | null = null;
 
-        return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
+    // Solo usar localStorage en navegador
+    if (typeof window !== 'undefined' && window.localStorage) {
+        token = localStorage.getItem('token');
     }
+
+    const headers: { [header: string]: string } = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+    return this.http.get<EmprendimientoPublico>(
+        `${this.baseUrlEmprendimientos}/${id}/publico`,
+        { headers }
+    );
+    }
+
 
     getEmprendimientoAdmin(id: number): Observable<EmprendimientoPublico> {
         const token = localStorage.getItem('token');

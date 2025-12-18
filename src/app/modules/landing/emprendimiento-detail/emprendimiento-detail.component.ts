@@ -35,44 +35,45 @@ export class EmprendimientoDetailComponent implements OnInit {
     }
   }
 
-  determinarTipoDesdeURL(): void {
-    const urlCompleta = window.location.pathname;
-    if (urlCompleta.includes('/startups/')) {
-      this.esStartup = true;
-      this.textoCarga = 'Cargando startup...';
-    }
-  }
+determinarTipoDesdeURL(): void {
+  if (typeof window === 'undefined') return; // evita usar window en servidor
 
-  cargarEmprendimiento(id: number): void {
-    this.emprendimientoService.getEmprendimientoPublico(id).subscribe({
-      next: (data) => {
-        this.emprendimiento = data;
-        
-        // Determinar si es startup basado en los datos reales
-        const tipo = data?.nombreTipoEmprendimiento?.toLowerCase() || '';
-        this.esStartup = tipo.includes('startup');
-        
-        // Actualizar texto de carga si es necesario
-        if (this.esStartup) {
-          this.textoCarga = 'Cargando startup...';
-        }
-        
-        // Generar QR si NO es startup
-        if (!this.esStartup) {
-          const evaluacionUrl = `${window.location.origin}/evaluacion/` + id;
-          this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
-        } else {
-          this.qrCodeUrl = '';
-        }
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.error = 'Error al cargar el emprendimiento.';
-        this.cargando = false;
-        console.error(err);
-      }
-    });
+  const urlCompleta = window.location.pathname;
+  if (urlCompleta.includes('/startups/')) {
+    this.esStartup = true;
+    this.textoCarga = 'Cargando startup...';
   }
+}
+
+cargarEmprendimiento(id: number): void {
+  this.emprendimientoService.getEmprendimientoPublico(id).subscribe({
+    next: (data) => {
+      this.emprendimiento = data;
+
+      const tipo = data?.nombreTipoEmprendimiento?.toLowerCase() || '';
+      this.esStartup = tipo.includes('startup');
+
+      if (this.esStartup) {
+        this.textoCarga = 'Cargando startup...';
+      }
+
+      if (!this.esStartup && typeof window !== 'undefined') {
+        const evaluacionUrl = `${window.location.origin}/evaluacion/${id}`;
+        this.qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
+      } else {
+        this.qrCodeUrl = '';
+      }
+
+      this.cargando = false;
+    },
+    error: (err) => {
+      this.error = 'Error al cargar el emprendimiento.';
+      this.cargando = false;
+      console.error(err);
+    }
+  });
+}
+
 
   isUrl(value?: string | null): boolean {
     return !!value && (value.startsWith('http://') || value.startsWith('https://'));

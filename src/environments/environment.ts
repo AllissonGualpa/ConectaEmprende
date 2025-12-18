@@ -12,5 +12,6 @@ export const Environment = {
     api_usuarios: '/v1/usuarios',
     api_provincia:'/v1/provincia',
     api_ciudades:'/v1/ciudad',
+    api_formularios:'/v1/formularios',
     version: 'development'
 };

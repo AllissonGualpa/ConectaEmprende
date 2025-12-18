@@ -12,7 +12,6 @@ import { EventoDetailComponent } from './modules/landing/evento-detail/evento-de
 import { AdminBlogComponent } from './modules/admin/admin-blog/admin-blog.component';
 import { BlogCreateComponent } from './modules/admin/blog-create/blog-create.component';
 import { BlogDetailComponent } from './modules/landing/blog-detail/blog-detail.component';
-import { AdminEventoComponent } from './modules/admin/admin-evento/admin-evento.component';
 import { AdminEmprendimientosComponent } from './modules/admin/admin-emprendimientos/admin-emprendimientos.component';
 import { GestionEmprendedor } from './modules/emprendedor/gestion-emprendedor/gestion-emprendedor.component';
 import { RoadmapComponent } from './modules/landing/roadmap/roadmap.component';
@@ -23,6 +22,7 @@ import { AccesoDenegadoComponent } from './shared/components/acceso-denegado/acc
 import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/admin-solicitudes.component';
 import { EmprendimientoDetailComponent } from './modules/landing/emprendimiento-detail/emprendimiento-detail.component';
 import { EvaluacionComponent } from './modules/landing/evaluacion/evaluacion.component';
+import { AdminEventoComponent } from './modules/admin/eventoAdmin/admin-evento/admin-evento.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },

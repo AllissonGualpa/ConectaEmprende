@@ -11,8 +11,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { AllEmprendimientoSelectorComponent } from '../../../shared/all-emprendimiento-selector/all-emprendimiento-selector.component';
-import { EventoService } from '../evento.service';
+import { AllEmprendimientoSelectorComponent } from '../../../../shared/all-emprendimiento-selector/all-emprendimiento-selector.component';
+import { EventoService } from '../../evento.service';
 
 export interface EventoDialogData {
   mode: 'create' | 'edit';
