@@ -4,12 +4,7 @@
     <h2 class="text-2xl font-semibold text-gray-800">
       {{ isEditMode ? 'Editar Evento' : 'Crear Nuevo Evento' }}
     </h2>
-    <button 
-      mat-icon-button 
-      (click)="onCancel()"
-      type="button"
-      class="text-gray-500 hover:text-gray-700"
-    >
+    <button mat-icon-button (click)="onCancel()" type="button" class="text-gray-500 hover:text-gray-700">
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -23,31 +18,22 @@
   <div class="flex-1 overflow-y-auto">
     <form [formGroup]="eventoForm" (ngSubmit)="onSubmit()">
       <div class="flex flex-col lg:flex-row">
-        
+
         <!-- Left Side - Form Fields -->
         <div class="flex-1 p-6">
           <div class="space-y-4">
-            
+
             <!-- Selector de Emprendimiento -->
             <div class="w-full">
-              <app-emprendimiento-selector
-                formControlName="idEmprendimiento"
-                label="Emprendimiento"
-                placeholder="Selecciona un emprendimiento"
-                [required]="true"
-              ></app-emprendimiento-selector>
+              <app-emprendimiento-selector formControlName="idEmprendimiento" label="Emprendimiento"
+                placeholder="Selecciona un emprendimiento" [required]="true"></app-emprendimiento-selector>
             </div>
 
             <!-- Título del Evento -->
             <div class="w-full">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Nombre del evento</mat-label>
-                <mat-icon matIconPrefix>event</mat-icon>
-                <input 
-                  matInput 
-                  formControlName="titulo" 
-                  placeholder="Ej: Feria de Joyería"
-                >
+                <mat-icon matPrefix class="text-gray-500">event</mat-icon>
+                <input matInput formControlName="titulo" placeholder="Nombre del evento">
                 <mat-error *ngIf="f['titulo'].hasError('required')">
                   El nombre del evento es requerido
                 </mat-error>
@@ -60,14 +46,9 @@
             <!-- Descripción -->
             <div class="w-full">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Descripción</mat-label>
-                <mat-icon matIconPrefix>description</mat-icon>
-                <textarea 
-                  matInput 
-                  formControlName="descripcion"
-                  rows="4"
-                  placeholder="Describe tu evento..."
-                ></textarea>
+                <mat-icon matPrefix class="text-gray-500">description</mat-icon>
+                <textarea matInput formControlName="descripcion" rows="4"
+                  placeholder="Descripción del evento"></textarea>
                 <mat-error *ngIf="f['descripcion'].hasError('required')">
                   La descripción es requerida
                 </mat-error>
@@ -80,15 +61,10 @@
                 <!-- Fecha -->
                 <div class="w-full">
                   <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Fecha</mat-label>
-                    <mat-icon matIconPrefix>event</mat-icon>
-                    <input 
-                      matInput 
-                      [matDatepicker]="picker"
-                      formControlName="fechaEvento"
-                      placeholder="DD/MM/YYYY"
-                    >
-                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-icon matPrefix class="text-gray-500">event</mat-icon>
+                    <input matInput [matDatepicker]="picker" formControlName="fechaEvento"
+                      placeholder="Fecha del evento">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                     <mat-datepicker #picker></mat-datepicker>
                     <mat-error *ngIf="f['fechaEvento'].hasError('required')">
                       La fecha es requerida
@@ -99,14 +75,8 @@
                 <!-- Hora Inicio -->
                 <div class="w-full">
                   <mat-form-field appearance="outline" class="w-full">
-                    <mat-label>Hora inicio</mat-label>
-                    <mat-icon matIconPrefix>schedule</mat-icon>
-                    <input 
-                      matInput 
-                      type="time"
-                      formControlName="horaInicio"
-                      placeholder="00:00"
-                    >
+                    <mat-icon matPrefix class="text-gray-500">schedule</mat-icon>
+                    <input matInput type="time" formControlName="horaInicio" placeholder="Hora inicio">
                     <mat-error *ngIf="f['horaInicio'].hasError('required')">
                       Hora requerida
                     </mat-error>
@@ -118,13 +88,9 @@
             <!-- Tipo de Evento -->
             <div class="w-full">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Tipo</mat-label>
-                <mat-icon matIconPrefix>category</mat-icon>
-                <mat-select formControlName="tipoEvento">
-                  <mat-option 
-                    *ngFor="let tipo of tiposEvento" 
-                    [value]="tipo.value"
-                  >
+                <mat-icon matPrefix class="text-gray-500">category</mat-icon>
+                <mat-select formControlName="tipoEvento" placeholder="Tipo de evento">
+                  <mat-option *ngFor="let tipo of tiposEvento" [value]="tipo.value">
                     <div class="flex items-center gap-2">
                       <mat-icon class="text-gray-500">
                         {{ tipo.value === 'presencial' ? 'place' : 'videocam' }}
@@ -142,13 +108,8 @@
             <!-- Lugar (solo si es presencial) -->
             <div class="w-full" *ngIf="eventoForm.get('tipoEvento')?.value === 'presencial'">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Lugar</mat-label>
-                <mat-icon matIconPrefix>location_on</mat-icon>
-                <input 
-                  matInput 
-                  formControlName="lugar"
-                  placeholder="Dirección del evento"
-                >
+                <mat-icon matPrefix class="text-gray-500">location_on</mat-icon>
+                <input matInput formControlName="lugar" placeholder="Lugar del evento">
                 <mat-error *ngIf="f['lugar'].hasError('required')">
                   El lugar es requerido para eventos presenciales
                 </mat-error>
@@ -158,18 +119,11 @@
             <!-- Link de Inscripción -->
             <div class="w-full">
               <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Link de inscripción</mat-label>
-                <mat-icon matIconPrefix>link</mat-icon>
-                <input 
-                  matInput 
-                  formControlName="linkInscripcion"
-                  type="url"
-                  placeholder="https://..."
-                >
+                <mat-icon matPrefix class="text-gray-500">link</mat-icon>
+                <input matInput formControlName="linkInscripcion" type="url" placeholder="Link de inscripción">
                 <mat-hint>URL donde los usuarios pueden inscribirse</mat-hint>
               </mat-form-field>
             </div>
-
           </div>
         </div>
 
@@ -177,33 +131,24 @@
         <div class="w-full lg:w-96 p-6 bg-gray-50 border-t lg:border-t-0 lg:border-l border-gray-200">
           <div class="lg:sticky lg:top-6">
             <h3 class="text-lg font-semibold text-gray-700 mb-4">Imagen del evento</h3>
-            
+
             <!-- Preview Area -->
-            <div class="relative aspect-square w-full bg-white border-2 border-dashed border-gray-300 rounded-lg overflow-hidden mb-4">
-              
+            <div
+              class="relative aspect-square w-full bg-white border-2 border-dashed border-gray-300 rounded-lg overflow-hidden mb-4">
+
               <!-- Image Preview -->
               <div *ngIf="imagenPreviewUrl" class="relative w-full h-full">
-                <img 
-                  [src]="imagenPreviewUrl" 
-                  alt="Preview" 
-                  class="w-full h-full object-cover"
-                >
-                <button
-                  mat-icon-button
-                  type="button"
-                  (click)="removeImage()"
-                  class="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
-                >
+                <img [src]="imagenPreviewUrl" alt="Preview" class="w-full h-full object-cover">
+                <button mat-icon-button type="button" (click)="removeImage()"
+                  class="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
 
               <!-- Upload Placeholder -->
-              <div 
-                *ngIf="!imagenPreviewUrl" 
+              <div *ngIf="!imagenPreviewUrl"
                 class="flex flex-col items-center justify-center h-full text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
-                (click)="fileInput.click()"
-              >
+                (click)="fileInput.click()">
                 <mat-icon class="text-6xl mb-2">add_photo_alternate</mat-icon>
                 <p class="text-sm font-medium">Haz clic para subir una imagen</p>
                 <p class="text-xs mt-1">PNG, JPG hasta 5MB</p>
@@ -211,36 +156,18 @@
             </div>
 
             <!-- Hidden File Input -->
-            <input
-              #fileInput
-              type="file"
-              accept="image/*"
-              (change)="onFileSelected($event)"
-              class="hidden"
-            >
+            <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden">
 
             <!-- Upload Button -->
-            <button
-              *ngIf="!imagenPreviewUrl"
-              mat-raised-button
-              color="primary"
-              type="button"
-              (click)="fileInput.click()"
-              class="w-full"
-            >
+            <button *ngIf="!imagenPreviewUrl" mat-raised-button color="primary" type="button"
+              (click)="fileInput.click()" class="w-full">
               <mat-icon>cloud_upload</mat-icon>
               Seleccionar Imagen
             </button>
 
             <!-- Change Image Button -->
-            <button
-              *ngIf="imagenPreviewUrl"
-              mat-stroked-button
-              color="primary"
-              type="button"
-              (click)="fileInput.click()"
-              class="w-full"
-            >
+            <button *ngIf="imagenPreviewUrl" mat-stroked-button color="primary" type="button"
+              (click)="fileInput.click()" class="w-full">
               <mat-icon>edit</mat-icon>
               Cambiar Imagen
             </button>
@@ -257,21 +184,12 @@
 
   <!-- Footer Actions -->
   <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-    <button
-      mat-stroked-button
-      type="button"
-      (click)="onCancel()"
-      [disabled]="isLoading"
-    >
+    <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">
       Cancelar
     </button>
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      (click)="onSubmit()"
+    <button mat-raised-button color="primary" type="submit" (click)="onSubmit()"
       [disabled]="eventoForm.invalid || isLoading"
-    >
+      class="text-white">
       <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
       <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
       {{ isEditMode ? 'Guardar Cambios' : 'Crear Evento' }}
