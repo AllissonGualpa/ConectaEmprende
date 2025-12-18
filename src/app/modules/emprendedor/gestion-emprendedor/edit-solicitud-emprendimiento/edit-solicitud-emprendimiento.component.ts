@@ -38,6 +38,10 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   // Nuevo output para notificar al padre que la creación fue exitosa
   @Output() created = new EventEmitter<any>();
 
+  // Nuevos outputs requeridos por el admin template
+  @Output() updated = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
+
   constructor(
     private emprendimientoService: EmprendimientoService,
     private locationService: LocationService,
@@ -714,6 +718,9 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
 
           // Emitir al componente padre para que cierre el modal y refresque
           this.created.emit(resp);
+
+          // Nuevo: notificar como "updated" para integración con parent
+          this.updated.emit();
         },
         error: (err) => {
           console.error('Error al grabar emprendimiento', err);
@@ -794,5 +801,10 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   removeBanner(): void {
     this.multimedia.banner = null;
     this.multimedia.bannerPreview = '';
+  }
+
+  // helper público para que el componente pueda emitir cierre si tiene botón interno
+  closeModalFromChild(): void {
+    this.close.emit();
   }
 }

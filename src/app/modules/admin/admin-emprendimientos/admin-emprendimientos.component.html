@@ -267,4 +267,28 @@
       </div>
     </div>
   </ng-container>
+
+  <!-- Modal inline para editar solicitud de emprendimiento -->
+  <ng-container *ngIf="showEditSolicitudModal && selectedEditId !== null">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div class="bg-white rounded-xl shadow-lg w-full max-w-5xl mx-4 h-[80vh] flex flex-col overflow-hidden">
+        <!-- Cabecera del modal -->
+        <div class="px-6 py-4 border-b flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Editar solicitud de emprendimiento</h3>
+          <button (click)="closeEditSolicitudModal()" class="text-gray-500 hover:text-gray-700">Cerrar ✕</button>
+        </div>
+
+        <!-- Contenido scrollable -->
+        <div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
+          <!-- Pasar el id seleccionado al componente de edición -->
+          <app-edit-solicitud-emprendimiento
+            [emprendimientoId]="selectedEditId"
+            (updated)="onEmprendimientoUpdated()"
+            (close)="closeEditSolicitudModal()"
+          ></app-edit-solicitud-emprendimiento>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
 </div>

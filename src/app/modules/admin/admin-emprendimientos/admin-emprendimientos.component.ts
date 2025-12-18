@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule }     from '@angular/material/button';
 import { MatIconModule }       from '@angular/material/icon';
 import { AuthService } from '../../auth/auth.service';
+import { EditSolicitudEmprendimientoComponent } from '../../emprendedor/gestion-emprendedor/edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
 
 @Component({
   selector: 'app-admin-emprendimientos',
@@ -30,11 +31,12 @@ import { AuthService } from '../../auth/auth.service';
     MatInputModule,
     MatSelectModule,
     MatDatepickerModule,
+    EditSolicitudEmprendimientoComponent,
     MatNativeDateModule,
     MatButtonModule,
     MatIconModule,
   ],
-  templateUrl: './admin-emprendimientos.component.html',
+  templateUrl: './admin-emprendimientos.component.html'
 })
 export class AdminEmprendimientosComponent implements OnInit {
   emprendimientos: any[] = [];
@@ -62,6 +64,10 @@ export class AdminEmprendimientosComponent implements OnInit {
 
   showDesactivarModal = false;
   emprendimientoAInactivar: any = null;
+
+  // Nuevo estado para modal inline
+  showEditSolicitudModal: boolean = false;
+  selectedEditId: number | null = null;
 
   private apiEmprendimientos =
     Environment.api_url + Environment.api_emprendimientos;
@@ -368,7 +374,23 @@ export class AdminEmprendimientosComponent implements OnInit {
   }
 
   editarEmprendimiento(emp: any) {
-    this.router.navigate(['/admin/emprendimientos/edit', emp.id]);
+    // Mostrar modal inline y pasar id
+    const id = emp?.id ?? emp?.emprendimientoId ?? emp?._id ?? null;
+    this.selectedEditId = id ? Number(id) : null;
+    this.showEditSolicitudModal = true;
+  }
+
+  // llamado cuando el componente hijo emite (updated)
+  onEmprendimientoUpdated() {
+    this.showEditSolicitudModal = false;
+    this.selectedEditId = null;
+    this.loadData();
+  }
+
+  // cerrar modal desde el hijo (close)
+  closeEditSolicitudModal() {
+    this.showEditSolicitudModal = false;
+    this.selectedEditId = null;
   }
 
   desactivarEmprendimiento(emp: any) {
