@@ -14,6 +14,8 @@ import {
 import { EmprendimientoCrearResponse, EmprendimientoService, TipoEmprendimiento } from '../../../emprendimiento.service';
 import { CiudadDto, LocationService, ProvinciaDto } from '../../../../core/services/location.service';
 import { AuthService } from '../../../auth/auth.service';
+import { CategoriaService } from '../../../admin/categoria.service';
+import { Categoria } from '../../../../models/categoria.interface';
 
 @Component({
   selector: 'app-create-solicitud-emprendimiento',
@@ -42,10 +44,14 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   // Nuevo output para notificar al padre que la creación fue exitosa
   @Output() created = new EventEmitter<any>();
 
+  // Reemplazamos la lista quemada por un array que guarda id, label y selected
+  categories: { id: number; label: string; selected: boolean }[] = [];
+
   constructor(
     private emprendimientoService: EmprendimientoService,
     private locationService: LocationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private categoriaService: CategoriaService, // nuevo
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +72,16 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       },
       error: () => {
         this.tiposEmprendimiento = [];
+      }
+    });
+
+    // Cargar categorías desde la API
+    this.categoriaService.getCategorias().subscribe({
+      next: (cats: Categoria[]) => {
+        this.categories = cats.map(c => ({ id: c.id, label: c.nombre, selected: false }));
+      },
+      error: () => {
+        this.categories = [];
       }
     });
   }
@@ -100,18 +116,6 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     { title: 'Métricas y participación', description: 'Dinos cómo va tu emprendimiento y cómo quieres participar en la comunidad.' },
     { title: 'Declaraciones finales', description: 'Confirma las declaraciones necesarias para enviar tu solicitud.' },
   ];
-
-  categories = [
-    'Alimentos y bebidas',
-    'Moda y accesorios',
-    'Salud y bienestar',
-    'Educación y formación',
-    'Tecnología y software',
-    'Arte y cultura',
-    'Servicios profesionales',
-    'Sustentabilidad y medio ambiente',
-    'Otro',
-  ].map(label => ({ label, selected: false }));
 
   // Modelo de la descripción del emprendimiento (paso 2)
   descripcion = {
@@ -292,7 +296,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       d.aceptaPoliticasCentro;
   }
 
-  toggleCategory(cat: { label: string; selected: boolean }): void {
+  toggleCategory(cat: { id: number; label: string; selected: boolean }): void {
     if (!cat.selected && this.selectedCategoriesCount >= 2) {
       return;
     }
@@ -360,11 +364,11 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
     const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
       .filter(c => c.selected)
-      .map((c, index) => ({
+      .map((c) => ({
         emprendimiento: emprendimientoBase,
         categoria: {
-          id: index + 1,
-          nombre: this.normalizeText(c.label), // TECNOLOGIA Y SOFTWARE, ARTE Y CULTURA, etc.
+          id: c.id, // usar id que viene del API
+          nombre: this.normalizeText(c.label),
           descripcion: '',
           urlImagen: '',
           idMultimedia: 0,
@@ -572,7 +576,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     if (this.multimedia.fotosProductos.length > 0) files.push(new File([this.multimedia.fotosProductos[0]], 'FOTOPRODUCTO_1.PNG', { type: this.multimedia.fotosProductos[0].type }));
     if (this.multimedia.fotosProductos.length > 1) files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
 
-    console.log(files);
+    console.log(data);
 
     this.loading = true;
     this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
