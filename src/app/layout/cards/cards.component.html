@@ -45,11 +45,11 @@
           {{ item.location || 'Guayaquil' }}
         </div>
 
-        <!-- BOTÓN ROADMAP (en la imagen) -->
+        <!-- roadmap -->
         <button
           *ngIf="showRoadmapButton"
           (click)="onRoadmap(item)"
-          class="absolute top-3 right-3 bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-4 py-2 rounded-lg transition active:scale-95 shadow-md"
+          class="absolute top-3 right-3 bg-white/90 hover:bg-orange-400 text-gray-700 text-xs px-4 py-2 rounded-full transition active:scale-95 shadow-md"
         >
           {{ roadmapLabel }}
         </button>
@@ -57,12 +57,24 @@
 
       <!-- CONTENIDO -->
       <div class="mt-4 flex flex-col flex-1">
-        <span
-          class="inline-block w-fit mb-2 px-3 py-1 rounded-full text-xs font-medium"
-          style="background-color:#FFF4C8; color:#C0A537"
-        >
-          {{ item.category || 'Alimentos y Bebidas' }}
-        </span>
+         <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <span
+            class="inline-block px-3 py-1 rounded-full text-xs font-medium"
+            style="background-color:#FFF4C8; color:#C0A537"
+          >
+            {{ item.category || 'Alimentos y Bebidas' }}
+          </span>
+
+          <span
+            *ngIf="showStatus && item.status"
+            class="inline-block px-3 py-1 rounded-full text-xs font-medium"
+            [ngClass]="{
+              'bg-green-100 text-green-700': item.status === 'Aprobado' || item.status === 'En revisión',
+              'bg-red-100 text-red-700': item.status === 'Rechazado' || item.status === 'Borrador'
+            }">
+            {{ item.status }}
+          </span>
+        </div>
 
         <h3 class="text-lg font-semibold text-gray-900 mb-2">
           {{ item.title }}
@@ -85,7 +97,7 @@
     </article>
   </div>
 
-  <!-- PAGINACIÓN -->
+  <!-- PAGINACION -->
   <div class="mt-12 flex items-center justify-center gap-3">
     <button
       (click)="goTo(currentPage - 1)"

@@ -36,6 +36,21 @@ export class SeccionEmprendimientoComponent implements OnInit {
     this.loadEmprendimientos();
   }
 
+  mapEstado(estado: string): string {
+    switch (estado) {
+      case 'APROBADO':
+        return 'Aprobado';
+      case 'PENDIENTE_APROBACION':
+        return 'En revisión';
+      case 'RECHAZADO':
+        return 'Rechazado';
+      case 'BORRADOR':
+        return 'Borrador';
+      default:
+        return estado;
+    }
+  }
+
   loadEmprendimientos(): void {
     this.loading = true;
     this.emprendimientoService.getMisEmprendimientos().subscribe({
@@ -51,6 +66,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
           category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
           location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
+          status: this.mapEstado(e.estadoEmprendimiento)
         }));
         this.loading = false;
       },

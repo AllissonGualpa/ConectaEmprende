@@ -12,6 +12,7 @@ export interface CardItem {
   date?: string | Date;
   views?: number;
   favorites?: number;
+  status?: string; //aprobado, pendiente, rechazado
 }
 
 @Component({
@@ -37,6 +38,8 @@ export class CardsComponent {
   @Input() ctaLabel = 'Descubrir';
   @Input() showRoadmapButton = false;  // Nuevo: controla si se muestra el botón Roadmap
   @Input() roadmapLabel = 'Roadmap';   // Nuevo: texto del botón Roadmap
+  @Input() showStatus = false;
+
 
   @Output() discover = new EventEmitter<CardItem>();
   @Output() toggleFavorite = new EventEmitter<CardItem>();
@@ -70,7 +73,6 @@ export class CardsComponent {
     this.toggleFavorite.emit(item);
   }
 
-  // Nuevo método para emitir evento Roadmap
   onRoadmap(item: CardItem) {
     this.roadmap.emit(item);
   }
