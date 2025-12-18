@@ -23,6 +23,7 @@ import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/adm
 import { EmprendimientoDetailComponent } from './modules/landing/emprendimiento-detail/emprendimiento-detail.component';
 import { EvaluacionComponent } from './modules/landing/evaluacion/evaluacion.component';
 import { AdminEventoComponent } from './modules/admin/eventoAdmin/admin-evento/admin-evento.component';
+import { AutoevaluacionComponent } from './modules/landing/autoevaluacion/autoevaluacion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -45,6 +46,8 @@ export const routes: Routes = [
   { path: 'evaluacion', component: EvaluacionComponent },
   { path: 'evaluacion/:id', component: EvaluacionComponent },
   {path: 'roadmap', component: RoadmapComponent},
+  { path: 'autoevaluacion/:id', component: AutoevaluacionComponent },
+
 
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },

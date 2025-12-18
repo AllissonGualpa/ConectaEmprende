@@ -27,18 +27,46 @@ export class SolicitudService {
     content: Solicitud[];
     pageable: { length: number; lastPage: number; page: number; size: number };
   } | Solicitud[]> {
-    // Endpoint indicado: solo pendientes
     let url = `${this.baseApiUrl}/admin/pendientes`;
     return this.http.get<any>(url, { headers: this.getHeaders() });
   }
 
-  cambiarEstadoSolicitud(
-    idSolicitud: number,
-    nuevoEstado: 'APROBADA' | 'RECHAZADA',
-    userId: number
-  ): Observable<null> {
-    // TODO: ajustar al endpoint real de tu backend
-    const url = `${this.baseApiUrl}/admin/${idSolicitud}/estado?nuevoEstado=${nuevoEstado}&idUsuario=${userId}`;
-    return this.http.put<null>(url, {}, { headers: this.getHeaders() });
+  aprobarSolicitud(solicitudId: number): Observable<{
+    mensaje: string;
+    solicitudId: number;
+  }> {
+    const url = `${this.baseApiUrl}/admin/${solicitudId}/aprobar`;
+    return this.http.post<any>(url, {}, { headers: this.getHeaders() });
+  }
+
+  rechazarSolicitud(
+    solicitudId: number,
+    motivo: string
+  ): Observable<{
+    mensaje: string;
+    solicitudId: number;
+  }> {
+    const url = `${this.baseApiUrl}/admin/${solicitudId}/rechazar`;
+    const body = { motivo };
+    return this.http.post<any>(url, body, { headers: this.getHeaders() });
+  }
+
+  enviarObservaciones(
+    solicitudId: number,
+    observaciones: string
+  ): Observable<{
+    mensaje: string;
+    solicitudId: number;
+  }> {
+    const url = `${this.baseApiUrl}/admin/${solicitudId}/observaciones`;
+    const body = { observaciones };
+    return this.http.post<any>(url, body, { headers: this.getHeaders() });
+  }
+
+  enviarSolicitudEmprendimiento(emprendimientoId: number): Observable<{
+    emprendimientoId?: number;
+  }> {
+    const url = `${this.baseApiUrl}/emprendimiento/${emprendimientoId}/enviar`;
+    return this.http.post<any>(url, {}, { headers: this.getHeaders() });
   }
 }

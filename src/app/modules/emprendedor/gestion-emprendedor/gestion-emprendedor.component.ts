@@ -6,9 +6,9 @@ import { SeccionPersonalComponent } from './seccion-personal/seccion-personal.co
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FormsModule } from '@angular/forms';
 import { SeccionEmprendimientoComponent } from './seccion-emprendimiento/seccion-emprendimiento.component';
-import { SeccionMensajeriaComponent } from './seccion-mensajeria/seccion-mensajeria.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SeccionEventoComponent } from './Eventos/seccion-evento/seccion-evento.component';
+import { SeccionMensajeriaComponent } from '../mensajeria/seccion-mensajeria/seccion-mensajeria.component';
 
 @Component({
   selector: 'app-gestion-emprendedor',

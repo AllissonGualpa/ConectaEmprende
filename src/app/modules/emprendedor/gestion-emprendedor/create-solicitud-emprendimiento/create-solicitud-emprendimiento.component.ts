@@ -327,282 +327,285 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   }
 }
 
-  finish(): void {
-    if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {
-      return;
+ finish(): void {
+  console.log('🎯 [INICIO] Ejecutando finish()');
+  
+  if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {
+    console.warn('❌ Validaciones incompletas');
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
+  const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+  const tipoSeleccionado = this.tiposEmprendimiento.find(t => t.id === this.tipoEmprendimiento);
+
+  console.log('📍 Datos seleccionados:', { provinciaSeleccionada, ciudadSeleccionada, tipoSeleccionado });
+
+  const emprendimientoBase: EmprendimientoDto = {
+    id: 0,
+    correoComercial: '',
+    correoUees: '',
+    identificacion: '',
+    parienteDirecto: '',
+    nombreComercialEmprendimiento: this.historia.nombreComercial,
+    fechaCreacion: nowIso,
+    ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
+    provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
+    estadoEmpredimiento: true,
+    tipoEmprendimiento: tipoSeleccionado ? tipoSeleccionado.tipo : '',
+    tipoEmprendimientoId: this.tipoEmprendimiento,
+    datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
+  };
+
+  const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
+    .filter(c => c.selected)
+    .map((c) => ({
+      emprendimiento: emprendimientoBase,
+      categoria: {
+        id: c.id,
+        nombre: this.normalizeText(c.label),
+        descripcion: '',
+        urlImagen: '',
+        idMultimedia: 0,
+      },
+      nombreCategoria: this.normalizeText(c.label),
+    }));
+
+  const descripciones: DescripcionDto[] = [
+    {
+      tipoDescripcion: this.normalizeText('RESUMEN'),
+      descripcion: this.descripcion.resumen,
+      maxCaracteres: 500,
+      obligatorio: true,
+      idEmprendimiento: 0,
+      emprendimientoId: 0,
+    },
+    {
+      tipoDescripcion: this.normalizeText('DIFERENCIAL'),
+      descripcion: this.descripcion.diferencial,
+      maxCaracteres: 1000,
+      obligatorio: true,
+      idEmprendimiento: 0,
+      emprendimientoId: 0,
+    },
+    {
+      tipoDescripcion: this.normalizeText('PUBLICO OBJETIVO'),
+      descripcion: this.descripcion.publicoObjetivo,
+      maxCaracteres: 1000,
+      obligatorio: true,
+      idEmprendimiento: 0,
+      emprendimientoId: 0,
+    },
+    {
+      tipoDescripcion: this.normalizeText('PROPOSITO'),
+      descripcion: this.descripcion.proposito,
+      maxCaracteres: 1000,
+      obligatorio: true,
+      idEmprendimiento: 0,
+      emprendimientoId: 0,
+    },
+    {
+      tipoDescripcion: this.normalizeText('HISTORIA'),
+      descripcion: this.historia.historiaGeneral,
+      maxCaracteres: 2000,
+      obligatorio: true,
+      idEmprendimiento: 0,
+      emprendimientoId: 0,
+    },
+  ];
+
+  const metricas: MetricaDto[] = [
+    {
+      emprendimientoId: 0,
+      metricaId: 1,
+      valor: this.metricas.clientes,
+    },
+    {
+      emprendimientoId: 0,
+      metricaId: 2,
+      valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO',
+    },
+    {
+      emprendimientoId: 0,
+      metricaId: 3,
+      valor: this.metricas.haParticipadoIncubacion
+        ? (this.metricas.nombreProgramaIncubacion || 'SI')
+        : 'NO',
+    },
+  ];
+
+  const presenciasDigitales: PresenciaDigitalDto[] = [
+    {
+      emprendimientoId: 0,
+      plataforma: 'instagram',
+      descripcion: this.presenciaDigital.instagram,
+    },
+  ];
+  
+  if (this.presenciaDigital.sitioWeb && this.presenciaDigital.sitioWeb.trim().length > 0) {
+    presenciasDigitales.push({
+      emprendimientoId: 0,
+      plataforma: 'sitio web',
+      descripcion: this.presenciaDigital.sitioWeb,
+    });
+  }
+  
+  presenciasDigitales.push(
+    {
+      emprendimientoId: 0,
+      plataforma: 'whatsapp',
+      descripcion: this.presenciaDigital.whatsapp,
+    },
+    {
+      emprendimientoId: 0,
+      plataforma: 'tiktok',
+      descripcion: this.presenciaDigital.tiktok,
     }
+  );
 
-    const nowIso = new Date().toISOString();
+  const participacionesComunidad: ParticipacionComunidadDto[] = [
+    {
+      emprendimientoId: 0,
+      opcionParticipacionId: 1,
+      respuesta: !!this.participacion.interesRankings,
+      nombreOpcionParticipacion: this.normalizeText('RANKINGS'),
+    },
+    {
+      emprendimientoId: 0,
+      opcionParticipacionId: 2,
+      respuesta: !!this.participacion.publicacionesMensuales,
+      nombreOpcionParticipacion: this.normalizeText('PUBLICACIONESMENSUALES'),
+    },
+    {
+      emprendimientoId: 0,
+      opcionParticipacionId: 4,
+      respuesta: !!this.participacion.recibirFeedback,
+      nombreOpcionParticipacion: this.normalizeText('FEEDBACK'),
+    },
+  ];
 
-    // Mapear provincia y ciudad seleccionadas
-    const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
-    const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+  const declaracionesFinales: DeclaracionFinalDto[] = [
+    {
+      emprendimientoId: 0,
+      declaracionId: 1,
+      aceptada: this.declaraciones.infoVeridica,
+      fechaAceptacion: nowIso,
+      nombreFirma: '',
+    },
+    {
+      emprendimientoId: 0,
+      declaracionId: 2,
+      aceptada: this.declaraciones.aceptaPublicacion,
+      fechaAceptacion: nowIso,
+      nombreFirma: '',
+    },
+    {
+      emprendimientoId: 0,
+      declaracionId: 4,
+      aceptada: this.declaraciones.autorizaUsoImagenes,
+      fechaAceptacion: nowIso,
+      nombreFirma: '',
+    },
+    {
+      emprendimientoId: 0,
+      declaracionId: 5,
+      aceptada: this.declaraciones.aceptaPoliticasCentro,
+      fechaAceptacion: nowIso,
+      nombreFirma: '',
+    },
+  ];
 
-    const tipoSeleccionado = this.tiposEmprendimiento.find(t => t.id === this.tipoEmprendimiento);
+  const tiposMultimedia: string[] = [];
+  if (this.multimedia.logo) tiposMultimedia.push('LOGO');
+  if (this.multimedia.fotosProductos.length > 0) tiposMultimedia.push('FOTOSPRODUCTOS');
+  if (this.multimedia.banner) tiposMultimedia.push('BANNER');
+  if (this.multimedia.videoPresentacion) tiposMultimedia.push('VIDEO');
 
-    console.log('Provincia seleccionada:', provinciaSeleccionada);
-    console.log('Ciudad seleccionada:', ciudadSeleccionada);
-    console.log('Tipo de emprendimiento seleccionado:', tipoSeleccionado);
+  const usuarioLocal = this.authService.getPerfilLocal();
+  const usuarioId = usuarioLocal && usuarioLocal.id ? usuarioLocal.id : 0;
 
-    const emprendimientoBase: EmprendimientoDto = {
-      id: 0,
-      correoComercial: '',
-      correoUees: '',
-      identificacion: '',
-      parienteDirecto: '',
-      nombreComercialEmprendimiento: this.historia.nombreComercial, // igual al texto original
-      fechaCreacion: nowIso,
-      ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
-      provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
-      estadoEmpredimiento: true,
-      tipoEmprendimiento: tipoSeleccionado ? tipoSeleccionado.tipo : '',
-      tipoEmprendimientoId: this.tipoEmprendimiento,
-      datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
-    };
+  console.log('👤 Usuario ID:', usuarioId);
 
-    console.log(emprendimientoBase)
+  const data: SolicitudEmprendimientoDataDto = {
+    usuarioId,
+    emprendimiento: emprendimientoBase,
+    tipoAccion: 'CREAR', // Mantener CREAR
+    categorias: categoriasSeleccionadas,
+    descripciones,
+    metricas,
+    presenciasDigitales,
+    participacionesComunidad,
+    declaracionesFinales,
+    tiposMultimedia,
+  };
 
-    const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
-      .filter(c => c.selected)
-      .map((c) => ({
-        emprendimiento: emprendimientoBase,
-        categoria: {
-          id: c.id, // usar id que viene del API
-          nombre: this.normalizeText(c.label),
-          descripcion: '',
-          urlImagen: '',
-          idMultimedia: 0,
-        },
-        nombreCategoria: this.normalizeText(c.label),
-      }));
+  const files: File[] = [];
+  if (this.multimedia.logo) {
+    files.push(new File([this.multimedia.logo], 'LOGO.PNG', { type: this.multimedia.logo.type }));
+  }
+  if (this.multimedia.banner) {
+    files.push(new File([this.multimedia.banner], 'BANNER.PNG', { type: this.multimedia.banner.type }));
+  }
+  if (this.multimedia.videoPresentacion) {
+    files.push(new File([this.multimedia.videoPresentacion], 'VIDEO.MP4', { type: this.multimedia.videoPresentacion.type }));
+  }
+  if (this.multimedia.fotosProductos.length > 0) {
+    files.push(new File([this.multimedia.fotosProductos[0]], 'FOTOPRODUCTO_1.PNG', { type: this.multimedia.fotosProductos[0].type }));
+  }
+  if (this.multimedia.fotosProductos.length > 1) {
+    files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
+  }
 
-    const descripciones: DescripcionDto[] = [
-      {
-        tipoDescripcion: this.normalizeText('RESUMEN'),
-        descripcion: this.descripcion.resumen,
-        maxCaracteres: 500,
-        obligatorio: true,
-        idEmprendimiento: 0,
-        emprendimientoId: 0,
-      },
-      {
-        tipoDescripcion: this.normalizeText('DIFERENCIAL'),
-        descripcion: this.descripcion.diferencial,
-        maxCaracteres: 1000,
-        obligatorio: true,
-        idEmprendimiento: 0,
-        emprendimientoId: 0,
-      },
-      {
-        // PUBLICO OBJETIVO (sin tilde y en mayúsculas)
-        tipoDescripcion: this.normalizeText('PUBLICO OBJETIVO'),
-        descripcion: this.descripcion.publicoObjetivo,
-        maxCaracteres: 1000,
-        obligatorio: true,
-        idEmprendimiento: 0,
-        emprendimientoId: 0,
-      },
-      {
-        tipoDescripcion: this.normalizeText('PROPOSITO'),
-        descripcion: this.descripcion.proposito,
-        maxCaracteres: 1000,
-        obligatorio: true,
-        idEmprendimiento: 0,
-        emprendimientoId: 0,
-      },
-      {
-        tipoDescripcion: this.normalizeText('HISTORIA'),
-        descripcion: this.historia.historiaGeneral,
-        maxCaracteres: 2000,
-        obligatorio: true,
-        idEmprendimiento: 0,
-        emprendimientoId: 0,
-      },
-    ];
+  console.log('📦 Data a enviar:', data);
+  console.log('📁 Archivos:', files.map(f => f.name));
 
-    const metricas: MetricaDto[] = [
-      {
-        emprendimientoId: 0,
-        metricaId: 1,
-        valor: this.metricas.clientes, // en tu ejemplo es "100+" tal cual
-      },
-      {
-        emprendimientoId: 0,
-        metricaId: 2,
-        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO',
-      },
-      {
-        emprendimientoId: 0,
-        metricaId: 3,
-        valor: this.metricas.haParticipadoIncubacion
-          ? (this.metricas.nombreProgramaIncubacion || 'SI')
-          : 'NO',
-      },
-    ];
-
-    const presenciasDigitales: PresenciaDigitalDto[] = [
-      {
-        emprendimientoId: 0,
-        plataforma: 'instagram',
-        descripcion: this.presenciaDigital.instagram,
-      },
-    ];
-    if (this.presenciaDigital.sitioWeb && this.presenciaDigital.sitioWeb.trim().length > 0) {
-      presenciasDigitales.push({
-        emprendimientoId: 0,
-        plataforma: 'sitio web',
-        descripcion: this.presenciaDigital.sitioWeb,
-      });
-    }
-    presenciasDigitales.push(
-      {
-        emprendimientoId: 0,
-        plataforma: 'whatsapp',
-        descripcion: this.presenciaDigital.whatsapp,
-      },
-      {
-        emprendimientoId: 0,
-        plataforma: 'tiktok',
-        descripcion: this.presenciaDigital.tiktok,
-      }
-    );
-
-    const participacionesComunidad: ParticipacionComunidadDto[] = [
-      {
-        emprendimientoId: 0,
-        opcionParticipacionId: 1,
-        respuesta: !!this.participacion.interesRankings,
-        nombreOpcionParticipacion: this.normalizeText('RANKINGS'),
-      },
-      {
-        emprendimientoId: 0,
-        opcionParticipacionId: 2,
-        respuesta: !!this.participacion.publicacionesMensuales,
-        nombreOpcionParticipacion: this.normalizeText('PUBLICACIONESMENSUALES'),
-      },
-      {
-        emprendimientoId: 0,
-        opcionParticipacionId: 4,
-        respuesta: !!this.participacion.recibirFeedback,
-        nombreOpcionParticipacion: this.normalizeText('FEEDBACK'),
-      },
-    ];
-
-    const declaracionesFinales: DeclaracionFinalDto[] = [
-      {
-        emprendimientoId: 0,
-        declaracionId: 1,
-        aceptada: this.declaraciones.infoVeridica,
-        fechaAceptacion: nowIso,
-        nombreFirma: '',
-      },
-      {
-        emprendimientoId: 0,
-        declaracionId: 2,
-        aceptada: this.declaraciones.aceptaPublicacion,
-        fechaAceptacion: nowIso,
-        nombreFirma: '',
-      },
-      {
-        emprendimientoId: 0,
-        declaracionId: 4,
-        aceptada: this.declaraciones.autorizaUsoImagenes,
-        fechaAceptacion: nowIso,
-        nombreFirma: '',
-      },
-      {
-        emprendimientoId: 0,
-        declaracionId: 5,
-        aceptada: this.declaraciones.aceptaPoliticasCentro,
-        fechaAceptacion: nowIso,
-        nombreFirma: '',
-      },
-    ];
-
-    // Convertir archivos a base64 y agregarlos al array imagenes
-    const imagenes: { nombre: string, binary: string, tipo: string }[] = [];
-    const promesas: Promise<void>[] = [];
-
-    const agregarArchivo = (file: File, nombre: string) => {
-      const prom = new Promise<void>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          imagenes.push({
-            nombre,
-            binary: (reader.result as string).split(',')[1],
-            tipo: file.type
-          });
-          resolve();
-        };
-        reader.readAsDataURL(file);
-      });
-      promesas.push(prom);
-    };
-
-    if (this.multimedia.logo) agregarArchivo(this.multimedia.logo, `LOGO.PNG`);
-    if (this.multimedia.banner) agregarArchivo(this.multimedia.banner, `BANNER.PNG`);
-    if (this.multimedia.videoPresentacion) agregarArchivo(this.multimedia.videoPresentacion, `VIDEO.MP4`);
-    if (this.multimedia.fotosProductos.length > 0) agregarArchivo(this.multimedia.fotosProductos[0], `FOTOPRODUCTO_1.PNG`);
-    if (this.multimedia.fotosProductos.length > 1) agregarArchivo(this.multimedia.fotosProductos[1], `FOTOPRODUCTO_2.PNG`);
-
-    const tiposMultimedia: string[] = [];
-    if (this.multimedia.logo) tiposMultimedia.push('LOGO');
-    if (this.multimedia.fotosProductos.length > 0) tiposMultimedia.push('FOTOSPRODUCTOS');
-    if (this.multimedia.banner) tiposMultimedia.push('BANNER');
-    if (this.multimedia.videoPresentacion) tiposMultimedia.push('VIDEO');
-
-    this.loading = true;
-    Promise.all(promesas).then(() => {
-      // Obtener usuarioId desde localStorage
-      const usuarioLocal = this.authService.getPerfilLocal();
-      const usuarioId = usuarioLocal && usuarioLocal.id ? usuarioLocal.id : 0;
-      const data: SolicitudEmprendimientoDataDto = {
-        usuarioId,
-        emprendimiento: emprendimientoBase,
-        tipoAccion: 'BORRADOR',
-        categorias: categoriasSeleccionadas,
-        descripciones,
-        metricas,
-        presenciasDigitales,
-        participacionesComunidad,
-        declaracionesFinales,
-        tiposMultimedia,
-      };
-
-    const files: File[] = [];
-    if (this.multimedia.logo) files.push(new File([this.multimedia.logo], 'LOGO.PNG', { type: this.multimedia.logo.type }));
-    if (this.multimedia.banner) files.push(new File([this.multimedia.banner], 'BANNER.PNG', { type: this.multimedia.banner.type }));
-    if (this.multimedia.videoPresentacion) files.push(new File([this.multimedia.videoPresentacion], 'VIDEO.MP4', { type: this.multimedia.videoPresentacion.type }));
-    if (this.multimedia.fotosProductos.length > 0) files.push(new File([this.multimedia.fotosProductos[0]], 'FOTOPRODUCTO_1.PNG', { type: this.multimedia.fotosProductos[0].type }));
-    if (this.multimedia.fotosProductos.length > 1) files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
-
-    console.log(data);
-
-    this.loading = true;
-    this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
-        next: (resp: EmprendimientoCrearResponse) => {
-          console.log('Emprendimiento grabado correctamente', resp);
-          this.emprendimientoService.enviarAprobacion(resp.id).subscribe({
-            next: () => {
-              console.log('Emprendimiento enviado para aprobación');
-            },
-            error: (err) => {
-              console.error('Error al enviar emprendimiento para aprobación', err);
-            }
-          });
-          this.onEmprendimientoCreated.emit();
+  this.loading = true;
+  
+  // PASO 1: Grabar emprendimiento
+  this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
+    next: (resp: EmprendimientoCrearResponse) => {
+      console.log('✅ PASO 1 COMPLETADO - Emprendimiento creado con ID:', resp.id);
+      
+      // PASO 2: Enviar a aprobación
+      console.log('🔄 PASO 2 - Enviando a aprobación el emprendimiento:', resp.id);
+      
+      this.emprendimientoService.enviarAprobacion(resp.id).subscribe({
+        next: (solicitudResp) => {
+          console.log('✅ PASO 2 COMPLETADO - Solicitud de aprobación creada:', solicitudResp);
+          console.log('✅ TODO EL PROCESO COMPLETADO EXITOSAMENTE');
+          
           this.loading = false;
-
-          // Emitir al componente padre para que cierre el modal y refresque
+          this.onEmprendimientoCreated.emit();
           this.created.emit(resp);
         },
         error: (err) => {
-          console.error('Error al grabar emprendimiento', err);
+          console.error('❌ ERROR EN PASO 2 (enviarAprobacion):', err);
+          console.error('📊 Status:', err.status);
+          console.error('📝 Message:', err.message);
+          console.error('🔍 Error completo:', err);
+          
           this.loading = false;
-        },
+          
+          // Aún así notificamos que el emprendimiento se creó
+          // (aunque no se envió a aprobación)
+          alert('El emprendimiento se creó pero hubo un error al enviarlo a aprobación. Por favor, contacta a soporte.');
+          this.onEmprendimientoCreated.emit();
+          this.created.emit(resp);
+        }
       });
-    });
-  }
+    },
+    error: (err) => {
+      console.error('❌ ERROR EN PASO 1 (grabarEmprendimiento):', err);
+      console.error('📊 Status:', err.status);
+      console.error('📝 Message:', err.message);
+      console.error('🔍 Error completo:', err);
+      
+      this.loading = false;
+      alert('Hubo un error al crear el emprendimiento. Por favor, intenta nuevamente.');
+    },
+  });
+}
 
   // Manejo de carga de archivos
   onLogoChange(event: Event): void {

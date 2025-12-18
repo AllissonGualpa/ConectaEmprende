@@ -15,17 +15,19 @@ import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-co
 import { SolicitudService } from './solicitud.service';
 import { AuthService } from '../../auth/auth.service';
 import { ModalWrapperEditSolicitudComponent } from '../../../shared/components/modal-wrapper-edit-solicitud/modal-wrapper-edit-solicitud.component';
+import { ModalObservacionesSolicitudComponent } from '../../shared/components/modal-observaciones-solicitud/modal-observaciones-solicitud.component';
 
 // Interface ajustada al backend real
 export interface Solicitud {
   id: number;
   estado: string;
   observaciones: string;
-  fechaSolicitud: string; // o Date si luego haces parse
+  fechaSolicitud: string;
   fechaRespuesta: string | null;
   emprendimientoId: number;
   usuarioId: number;
   usuarioAdministradorId: number | null;
+  nombreComercial?: string;
 }
 
 @Component({
@@ -39,7 +41,6 @@ export interface Solicitud {
     MatDatepickerModule,
     MatNativeDateModule,
     MatFormFieldModule,
-    // no es necesario importar el componente hijo aquí, se abre dentro del modal wrapper
     ModalWrapperEditSolicitudComponent,
     MatInputModule,
     MatButtonModule,
@@ -207,7 +208,6 @@ export class AdminSolicitudesComponent implements OnInit {
     this.loadSolicitudes();
   }
 
-  // Cambiar firma y cuerpo
   onSearch(event: any) {
     this.searchTerm = (event?.target?.value || '').toLowerCase();
     this.applyFilters();
@@ -216,8 +216,6 @@ export class AdminSolicitudesComponent implements OnInit {
   // Tabs
   setTab(index: number) {
     this.selectedTab = index;
-    // aquí más adelante puedes cambiar endpoint según el tab seleccionado
-    // por ahora solo recargamos
     this.currentPage = 0;
     this.loadSolicitudes();
   }
@@ -293,11 +291,9 @@ export class AdminSolicitudesComponent implements OnInit {
 
     const idParaVer = solicitud.emprendimientoId ?? solicitud.id ?? null;
     if (!idParaVer) {
-      // fallback por seguridad
       return;
     }
 
-    // Abrir el wrapper modal (contiene botón cerrar en la cabecera y el componente hijo)
     const dialogRef = this.dialog.open(ModalWrapperEditSolicitudComponent, {
       width: '900px',
       maxHeight: '90vh',
@@ -305,7 +301,6 @@ export class AdminSolicitudesComponent implements OnInit {
       data: { emprendimientoId: idParaVer, soloLectura: true }
     });
 
-    // Opcional: reaccionar cuando se cierre el modal (por ejemplo, recargar lista)
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'updated' || result === 'saved') {
         this.loadSolicitudes();
@@ -313,58 +308,153 @@ export class AdminSolicitudesComponent implements OnInit {
     });
   }
 
-  cambiarEstado(solicitud: Solicitud, nuevoEstado: 'APROBADA' | 'RECHAZADA') {
+  /**
+   * Aprobar solicitud
+   */
+  aprobarSolicitud(solicitud: Solicitud) {
     if (!solicitud.id) return;
 
     const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
       width: '420px',
       data: {
-        subject: 'Solicitud',
-        title: `¿Confirmas marcar como ${nuevoEstado.toLowerCase()} la solicitud #${
-          solicitud.id
-        }?`,
-        subtitle:
-          nuevoEstado === 'APROBADA'
-            ? 'Esta acción aprobará la solicitud.'
-            : 'Esta acción rechazará la solicitud.',
+        subject: 'Aprobar Solicitud',
+        title: `¿Confirmas aprobar la solicitud #${solicitud.id}?`,
+        subtitle: 'Esta acción aprobará la solicitud del emprendimiento.',
         type: 'info',
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
         this.loading = true;
-        const userId = 1; // TODO: reemplaza por el id real del usuario logueado
-        this.solicitudService
-          .cambiarEstadoSolicitud(solicitud.id, nuevoEstado, userId)
-          .subscribe({
-            next: () => {
-              this.dialog.open(MensajeConfirmacionComponent, {
-                width: '420px',
-                data: {
-                  subject: 'Solicitud',
-                  title: `Solicitud ${nuevoEstado.toLowerCase()} exitosamente`,
-                  type: 'success',
-                },
-              });
-              this.loadSolicitudes();
-            },
-            error: (err) => {
-              console.error(`Error al cambiar estado de solicitud:`, err);
-              this.dialog.open(MensajeConfirmacionComponent, {
-                width: '420px',
-                data: {
-                  subject: 'Solicitud',
-                  title: `Error al cambiar el estado de la solicitud`,
-                  subtitle:
-                    'No se pudo completar la operación. Por favor, inténtalo nuevamente.',
-                  type: 'error',
-                },
-              });
-              this.loading = false;
-            },
-          });
+        this.solicitudService.aprobarSolicitud(solicitud.id).subscribe({
+          next: (response) => {
+            this.dialog.open(MensajeConfirmacionComponent, {
+              width: '420px',
+              data: {
+                subject: 'Solicitud Aprobada',
+                title: 'Solicitud aprobada exitosamente',
+                subtitle: response.mensaje || 'La solicitud ha sido aprobada.',
+                type: 'success',
+              },
+            });
+            this.loadSolicitudes();
+          },
+          error: (err) => {
+            console.error('Error al aprobar solicitud:', err);
+            this.dialog.open(MensajeConfirmacionComponent, {
+              width: '420px',
+              data: {
+                subject: 'Error',
+                title: 'Error al aprobar la solicitud',
+                subtitle: err.error?.error || 'No se pudo completar la operación.',
+                type: 'error',
+              },
+            });
+            this.loading = false;
+          },
+        });
       }
     });
   }
+
+rechazarSolicitud(solicitud: Solicitud) {
+  if (!solicitud.id) return;
+
+  // Abrir modal para capturar motivo
+  const dialogRef = this.dialog.open(ModalObservacionesSolicitudComponent, {
+    width: '600px',
+    disableClose: true,
+    data: {
+      tipo: 'rechazar',
+      solicitudId: solicitud.id,
+      nombreEmprendimiento: solicitud.emprendimientoId // o el nombre real si lo tienes
+    }
+  });
+
+  dialogRef.afterClosed().subscribe((resultado) => {
+    if (resultado) {
+      this.loading = true;
+      this.solicitudService.rechazarSolicitud(solicitud.id, resultado.texto).subscribe({
+        next: (response) => {
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Solicitud Rechazada',
+              title: 'Solicitud rechazada exitosamente',
+              subtitle: response.mensaje || 'La solicitud ha sido rechazada.',
+              type: 'success',
+            },
+          });
+          this.loadSolicitudes();
+        },
+        error: (err) => {
+          console.error('Error al rechazar solicitud:', err);
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Error',
+              title: 'Error al rechazar la solicitud',
+              subtitle: err.error?.error || 'No se pudo completar la operación.',
+              type: 'error',
+            },
+          });
+          this.loading = false;
+        },
+      });
+    }
+  });
 }
+
+/**
+ * Enviar observaciones
+ */
+enviarObservaciones(solicitud: Solicitud) {
+  if (!solicitud.id) return;
+
+  // Abrir modal para capturar observaciones
+  const dialogRef = this.dialog.open(ModalObservacionesSolicitudComponent, {
+    width: '600px',
+    disableClose: true,
+    data: {
+      tipo: 'observaciones',
+      solicitudId: solicitud.id,
+      nombreEmprendimiento: solicitud.emprendimientoId // o el nombre real si lo tienes
+    }
+  });
+
+  dialogRef.afterClosed().subscribe((resultado) => {
+    if (resultado) {
+      this.loading = true;
+      this.solicitudService.enviarObservaciones(solicitud.id, resultado.texto).subscribe({
+        next: (response) => {
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Observaciones Enviadas',
+              title: 'Observaciones enviadas exitosamente',
+              subtitle: response.mensaje || 'Las observaciones han sido enviadas.',
+              type: 'success',
+            },
+          });
+          this.loadSolicitudes();
+        },
+        error: (err) => {
+          console.error('Error al enviar observaciones:', err);
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Error',
+              title: 'Error al enviar observaciones',
+              subtitle: err.error?.error || 'No se pudo completar la operación.',
+              type: 'error',
+            },
+          });
+          this.loading = false;
+        },
+      });
+    }
+  });
+
+
+}}

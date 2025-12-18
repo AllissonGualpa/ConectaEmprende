@@ -1,0 +1,107 @@
+<div class="relative bg-white rounded-lg overflow-hidden">
+  <!-- Header -->
+  <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r"
+       [ngClass]="data.tipo === 'rechazar' ? 'from-red-50 to-red-100' : 'from-orange-50 to-orange-100'">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center"
+           [ngClass]="data.tipo === 'rechazar' ? 'bg-red-100' : 'bg-orange-100'">
+        <mat-icon [class]="iconoColor" class="text-3xl">{{ icono }}</mat-icon>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">{{ titulo }}</h2>
+        <p class="text-sm text-gray-600">{{ subtitulo }}</p>
+      </div>
+    </div>
+    <button mat-icon-button (click)="onCancel()" class="text-gray-500 hover:text-gray-700">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Información del emprendimiento -->
+  <div *ngIf="data.nombreEmprendimiento" 
+       class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+    <div class="flex items-center gap-2 text-sm text-gray-700">
+      <mat-icon class="text-gray-500 text-base">business</mat-icon>
+      <span class="font-medium">Emprendimiento:</span>
+      <span class="text-gray-900">{{ data.nombreEmprendimiento }}</span>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6">
+    <div class="space-y-4">
+      <!-- Campo de texto -->
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>{{ labelTexto }}</mat-label>
+        <textarea
+          matInput
+          formControlName="texto"
+          [placeholder]="placeholderTexto"
+          rows="6"
+          maxlength="500"
+          class="resize-none"
+        ></textarea>
+        <mat-hint align="start">
+          <span *ngIf="textoControl?.invalid && textoControl?.touched" 
+                class="text-red-600">
+            {{ getErrorMessage() }}
+          </span>
+        </mat-hint>
+        <mat-hint align="end">
+          <span [ngClass]="caracteresRestantes < 50 ? 'text-orange-600' : 'text-gray-500'">
+            {{ caracteresRestantes }} caracteres restantes
+          </span>
+        </mat-hint>
+        <mat-error *ngIf="textoControl?.invalid">
+          {{ getErrorMessage() }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Mensaje informativo -->
+      <div class="flex items-start gap-3 p-4 rounded-lg"
+           [ngClass]="data.tipo === 'rechazar' ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'">
+        <mat-icon [ngClass]="data.tipo === 'rechazar' ? 'text-red-500' : 'text-orange-500'" 
+                  class="text-xl mt-0.5">
+          info
+        </mat-icon>
+        <div class="flex-1 text-sm">
+          <p [ngClass]="data.tipo === 'rechazar' ? 'text-red-800' : 'text-orange-800'" 
+             class="font-medium mb-1">
+            {{ data.tipo === 'rechazar' ? 'Importante' : 'Recuerda' }}
+          </p>
+          <p [ngClass]="data.tipo === 'rechazar' ? 'text-red-700' : 'text-orange-700'">
+            {{ data.tipo === 'rechazar' 
+              ? 'Esta acción rechazará permanentemente la solicitud. El usuario recibirá una notificación con el motivo proporcionado.'
+              : 'El usuario recibirá una notificación y podrá modificar su solicitud según las observaciones indicadas.' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex justify-end gap-3 mt-6">
+      <button
+        type="button"
+        mat-stroked-button
+        (click)="onCancel()"
+        class="px-6"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        mat-raised-button
+        [disabled]="form.invalid || isSubmitting"
+        [ngClass]="data.tipo === 'rechazar' 
+          ? 'bg-red-600 hover:bg-red-700 text-white' 
+          : 'bg-orange-600 hover:bg-orange-700 text-white'"
+        class="px-6"
+      >
+        <span class="flex items-center gap-2">
+          <mat-icon class="text-base">{{ data.tipo === 'rechazar' ? 'cancel' : 'send' }}</mat-icon>
+          {{ data.tipo === 'rechazar' ? 'Rechazar Solicitud' : 'Enviar Observaciones' }}
+        </span>
+      </button>
+    </div>
+  </form>
+</div>
