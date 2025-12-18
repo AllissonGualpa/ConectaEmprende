@@ -55,7 +55,7 @@ export class ValoracionService {
      * Endpoint: /v1/formularios/tipo/:tipoFormulario
      */
    getFormularioByTipo(
-        tipoFormulario: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO'
+        tipoFormulario: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO' | 'AUTOEVALUACION'
     ): Observable<FormularioDto> {
         const url = `${this.baseUrl}/tipo/${tipoFormulario}`;
         
