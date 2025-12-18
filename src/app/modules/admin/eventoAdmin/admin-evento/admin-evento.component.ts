@@ -16,6 +16,7 @@ import { NavbarAdminComponent } from '../../../../layout/navbar-admin/navbar-adm
 import { AdminEventoItemDto, AdminEventosResponseDto, EventoService } from '../../evento.service';
 import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { AllEmprendimientoSelectorComponent } from '../../../../shared/all-emprendimiento-selector/all-emprendimiento-selector.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface Evento {
   id: string;
@@ -85,7 +86,6 @@ export class AdminEventoComponent implements OnInit {
   ];
 
   eventos: Evento[] = [];
-  eventoAEliminar: Evento | null = null;
 
   // Opciones para los selectores
   estadosOptions = [
@@ -156,7 +156,6 @@ export class AdminEventoComponent implements OnInit {
 
     const formValues = this.filtrosForm.value;
 
-    // Preparar parámetros de filtros
     const params: any = {
       page: this.currentPage,
       size: this.pageSize,
@@ -404,6 +403,24 @@ export class AdminEventoComponent implements OnInit {
 
   // Método para cancelar permanentemente (círculo con X naranja)
   inactivarEvento(evento: Evento): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: '¿Cancelar evento?',
+        message: `¿Estás seguro de que deseas cancelar el evento "${evento.nombre}"? Esta acción es permanente.`,
+        confirmText: 'Sí, cancelar',
+        cancelText: 'No, volver'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.ejecutarCancelacionPermanente(evento);
+      }
+    });
+  }
+
+  private ejecutarCancelacionPermanente(evento: Evento): void {
     const token = localStorage.getItem('token') || undefined;
     const idToSend = String(evento.id).startsWith('#')
       ? evento.id.slice(1)
@@ -445,18 +462,29 @@ export class AdminEventoComponent implements OnInit {
 
   // Método para toggle activate/inactivate (basura roja/check verde)
   cancelarEvento(evento: Evento): void {
-    this.abrirEliminarEvento(evento);
+    const accion = evento.activo ? 'inactivar' : 'activar';
+    const accionTitulo = evento.activo ? 'Inactivar' : 'Activar';
+    
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: `¿${accionTitulo} evento?`,
+        message: evento.activo 
+          ? `¿Estás seguro de que deseas inactivar el evento "${evento.nombre}"? Podrás reactivarlo después.`
+          : `¿Estás seguro de que deseas activar el evento "${evento.nombre}"? Volverá a estar disponible para los usuarios.`,
+        confirmText: `Sí, ${accion}`,
+        cancelText: 'Cancelar'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.ejecutarToggleActivacion(evento);
+      }
+    });
   }
 
-  abrirEliminarEvento(evento: Evento): void {
-    this.eventoAEliminar = evento;
-  }
-
-  closeDeleteDialog(): void {
-    this.eventoAEliminar = null;
-  }
-
-  confirmDelete(evento: Evento): void {
+  private ejecutarToggleActivacion(evento: Evento): void {
     const token = localStorage.getItem('token') || undefined;
     const idToSend = String(evento.id).startsWith('#')
       ? evento.id.slice(1)
@@ -478,7 +506,6 @@ export class AdminEventoComponent implements OnInit {
               type: 'success',
             },
           });
-          this.closeDeleteDialog();
           this.loading = false;
         },
         error: (err) => {
@@ -493,7 +520,6 @@ export class AdminEventoComponent implements OnInit {
               type: 'error',
             },
           });
-          this.closeDeleteDialog();
           this.loading = false;
         },
       });
@@ -511,7 +537,6 @@ export class AdminEventoComponent implements OnInit {
               type: 'success',
             },
           });
-          this.closeDeleteDialog();
           this.loading = false;
         },
         error: (err) => {
@@ -526,7 +551,6 @@ export class AdminEventoComponent implements OnInit {
               type: 'error',
             },
           });
-          this.closeDeleteDialog();
           this.loading = false;
         },
       });

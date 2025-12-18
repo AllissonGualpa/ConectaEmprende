@@ -24,7 +24,6 @@
       </div>
 
       <!-- Filtros -->
-      <!-- Filtros -->
       <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <form [formGroup]="filtrosForm">
           <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
@@ -118,8 +117,7 @@
         </form>
       </div>
 
-
-      <!--tabla personalizada usando Tailwind -->
+      <!-- Tabla personalizada usando Tailwind -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <table class="w-full table-auto">
           <thead>
@@ -244,51 +242,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Dialog de eliminación -->
-        <div *ngIf="eventoAEliminar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
-            <ng-container *ngTemplateOutlet="deleteDialog; context: { evento: eventoAEliminar }"></ng-container>
-          </div>
-        </div>
-
-        <ng-template #deleteDialog let-evento>
-          <div class="p-6">
-            <div class="flex items-start gap-4">
-              <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-700">!</div>
-              <div>
-                <h3 class="text-lg font-semibold">
-                  {{
-                  eventoAEliminar?.activo
-                  ? '¿Estás seguro de inactivar el evento seleccionado?'
-                  : '¿Estás seguro de activar el evento seleccionado?'
-                  }}
-                </h3>
-                <p class="text-sm text-gray-600 mt-2">
-                  {{
-                  eventoAEliminar?.activo
-                  ? 'Esta acción inactivará el evento temporalmente. Podrás reactivarlo después.'
-                  : 'Esta acción activará el evento y volverá a estar disponible para los usuarios.'
-                  }}
-                </p>
-              </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-              <button class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                (click)="closeDeleteDialog()">Cancelar</button>
-              <button class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors"
-                (click)="eventoAEliminar && confirmDelete(eventoAEliminar)">
-                {{
-                eventoAEliminar?.activo
-                ? 'Inactivar'
-                : 'Activar'
-                }}
-              </button>
-            </div>
-          </div>
-        </ng-template>
-
       </div>
     </div>
   </main>
