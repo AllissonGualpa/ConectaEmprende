@@ -1,5 +1,5 @@
 <!-- card-event.component.html -->
-<div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row mb-6">  
+<div class="bg-gray-50 rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row mb-6">  
   <!-- Imagen con fecha -->
   <div class="relative w-full md:w-48 h-48 md:h-auto flex-shrink-0">
     <img 
@@ -23,43 +23,62 @@
       <h3 class="text-xl font-bold text-gray-800 mb-2">{{ evento.titulo }}</h3>
       <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ evento.descripcion }}</p>
       
-      <!-- Detalles -->
-      <div class="space-y-2 mb-4">
-        <div *ngIf="evento.fechaEvento" class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <span>Fecha: {{ evento.fechaEvento }}</span>
+      <!-- Detalles en grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <!-- Columna izquierda -->
+        <div class="space-y-2">
+          <!-- Horario -->
+          <div class="flex items-center text-sm text-gray-700">
+            <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="font-medium">Horario:</span>
+            <span class="ml-1">{{ obtenerHora(evento.fechaEvento) }}</span>
+          </div>
+          
+          <!-- Modalidad -->
+          <div class="flex items-center text-sm text-gray-700">
+            <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span class="font-medium">Modalidad:</span>
+            <span class="ml-1">{{ evento.tipoEvento }}</span>
+          </div>
+          
+          <!-- Estado -->
+          <div class="flex items-center text-sm">
+            <span class="px-3 py-1 rounded-full text-xs font-medium uppercase" [ngClass]="estadoClass">
+              {{ evento.estadoEvento }}
+            </span>
+          </div>
         </div>
         
-        <div *ngIf="evento.lugar" class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-          </svg>
-          <span>Lugar: {{ evento.lugar }}</span>
-        </div>
-        
-        <div class="flex items-center text-sm text-gray-600">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <span>Modalidad: {{ evento.tipoEvento }}</span>
-        </div>
-        
-        <div class="flex items-center text-sm">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-          </svg>
-          <span class="px-3 py-1 rounded-full text-xs font-medium uppercase" [ngClass]="estadoClass">
-            {{ evento.estadoEvento }}
-          </span>
+        <!-- Columna derecha -->
+        <div class="space-y-2">
+          <!-- Lugar -->
+          <div *ngIf="evento.lugar" class="flex items-center text-sm text-gray-700">
+            <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span class="font-medium">Lugar:</span>
+            <span class="ml-1">{{ evento.lugar }}</span>
+          </div>
+          
+          <!-- Fecha -->
+          <div *ngIf="evento.fechaEvento" class="flex items-center text-sm text-gray-700">
+            <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span class="font-medium">Fecha:</span>
+            <span class="ml-1">{{ obtenerFechaFormateada(evento.fechaEvento) }}</span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Acciones -->
-    <div *ngIf="showActions" class="flex items-center gap-3 mt-4">
+    <div *ngIf="showActions" class="flex items-center justify-end gap-3 mt-4">
       <button 
         (click)="onCancelar()" 
         [disabled]="isEventoCancelado"

@@ -30,7 +30,7 @@ export class CardEventComponent {
   get estadoClass(): string {
     const estado = this.evento.estadoEvento.toLowerCase();
     if (estado.includes('programado')) return 'bg-green-100 text-green-700';
-    if (estado.includes('finalizado')) return 'bg-blue-100 text-blue-700';
+    if (estado.includes('finalizado') || estado.includes('terminado')) return 'bg-gray-100 text-gray-700';
     if (estado.includes('cancelado')) return 'bg-red-100 text-red-700';
     return 'bg-gray-100 text-gray-700';
   }
@@ -46,6 +46,21 @@ export class CardEventComponent {
       dia: date.getDate().toString().padStart(2, '0'),
       mes: meses[date.getMonth()]
     };
+  }
+
+  obtenerHora(fecha: string): string {
+    const date = new Date(fecha);
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
+  }
+
+  obtenerFechaFormateada(fecha: string): string {
+    const date = new Date(fecha);
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const año = date.getFullYear();
+    return `${dia}/${mes}/${año}`;
   }
 
   onCancelar(): void {
