@@ -1,5 +1,23 @@
 <app-navbar></app-navbar>
 
+<!--boton de volver-->
+<div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6">
+  <button 
+    class="group inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-lg shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md hover:border-gray-300 active:scale-95" 
+    (click)="goBack()"
+  >
+    <svg 
+      class="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-1" 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    <span class="font-medium text-sm">Volver a mi perfil</span>
+  </button>
+</div>
+
 <section class="roadmap-container">
   <h2 class="roadmap-title">Conoce a Luci, tu guía inteligente para emprender</h2>
   

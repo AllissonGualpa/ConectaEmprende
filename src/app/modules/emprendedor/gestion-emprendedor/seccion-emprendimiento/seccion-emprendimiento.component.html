@@ -50,6 +50,7 @@
           [ctaLabel]="'Editar'"
           [showRoadmapButton]="true"  
           [roadmapLabel]="'Roadmap'"  
+          [showStatus]="true"
           (discover)="openEditSolicitudModal($event)"
           (roadmap)="onRoadmapClick($event)"
         >
@@ -143,6 +144,7 @@
         <app-edit-solicitud-emprendimiento
           *ngIf="showEditSolicitudModal && selectedEditId !== null"
           [emprendimientoId]="selectedEditId"
+          [soloLectura]="true"
           (updated)="onEmprendimientoUpdated()"
           (close)="closeEditSolicitudModal()"
         ></app-edit-solicitud-emprendimiento>
