@@ -139,6 +139,9 @@ export class RoadmapComponent implements OnInit {
     // Prevenir scroll del body cuando el modal está abierto
     document.body.style.overflow = 'hidden';
   }
+  goBack() {
+    this.router.navigate(['/emprendedor/gestion']);
+  }
 
   closeModal(): void {
     this.showModal = false;
