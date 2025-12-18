@@ -25,6 +25,8 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     tipoEmprendimiento: number = 0;
     tiposEmprendimiento: TipoEmprendimiento[] = [];
     @Input() emprendimientoId: number = 0;
+    // Nuevo input para modo solo lectura
+    @Input() soloLectura: boolean = false;
     // Emprendimiento cargado desde la API según el id recibido
     emprendimientoLoaded: EmprendimientoPublico | null = null;
   // --- UBICACIÓN ---
@@ -96,11 +98,12 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     }
   }
 
-  private loadEmprendimiento(): void {
+  public loadEmprendimiento(): void {
     if (!this.emprendimientoId) {
       this.emprendimientoLoaded = null;
       return;
     }
+    console.log('Cargando emprendimiento con ID:', this.emprendimientoId);
     this.loading = true;
     this.emprendimientoService.getEmprendimientoAdmin(this.emprendimientoId).subscribe({
       next: (resp: EmprendimientoPublico) => {
@@ -244,6 +247,9 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   onProvinciaChange() {
+    // En modo solo lectura no permitimos cambios en ubicación
+    if (this.soloLectura) return;
+
     this.ubicacion.ciudad = '';
     if (!this.ubicacion.provincia) {
       this.ciudadesFiltradas = [];
@@ -454,6 +460,9 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   toggleCategory(cat: { id: number; label: string; selected: boolean }): void {
+    // En modo solo lectura no permitimos modificar selección de categorías
+    if (this.soloLectura) return;
+
     if (!cat.selected && this.selectedCategoriesCount >= 2) {
       return;
     }
@@ -462,9 +471,15 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   
 
   nextStep(): void {
+    // Modo solo lectura: permitir avanzar libremente (sin validaciones), un paso hacia adelante
+    if (this.soloLectura) {
+      this.currentStep = Math.min(this.steps.length - 1, this.currentStep + 1);
+      return;
+    }
+
+    // Comportamiento normal con validaciones
     if (this.currentStep === 0 && !this.isDescripcionComplete) return;
     if (this.currentStep === 1 && !this.isCategoriasComplete) return;
-    // ahora incluye validaciones de nombre comercial, presencia digital, ubicación y tipo
     if (this.currentStep === 2 && (!this.isHistoriaComplete || !this.isPresenciaDigitalComplete || !this.isUbicacionComplete || !this.isTipoComplete)) return;
     if (this.currentStep === 3 && !this.isMultimediaComplete) return;
     if (this.currentStep === 4 && !this.isMetricasComplete) return;
@@ -474,13 +489,39 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     }
   }
 
+  // Método público para saltar a cualquier paso (útil para navegación en modo revisión)
+  goToStep(index: number): void {
+    if (index < 0 || index >= this.steps.length) return;
+
+    // En modo solo lectura permitir salto directo a cualquier paso
+    if (this.soloLectura) {
+      this.currentStep = index;
+      return;
+    }
+
+    // En modo normal permitir sólo navegación adyacente (comportamiento existente)
+    if (Math.abs(this.currentStep - index) <= 1) {
+      this.currentStep = index;
+    }
+  }
+
   prevStep(): void {
+    // En modo solo lectura permitir retroceder libremente
+    if (this.soloLectura) {
+      this.currentStep = Math.max(0, this.currentStep - 1);
+      return;
+    }
+
+    // Comportamiento normal
     if (this.currentStep > 0) {
-    this.currentStep--;
+      this.currentStep--;
     }
   }
 
   finish(): void {
+    // En modo solo lectura no se envía ni guarda nada
+    if (this.soloLectura) return;
+
     if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {
       return;
     }
@@ -754,6 +795,7 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
 
   // Manejo de carga de archivos
   onLogoChange(event: Event): void {
+    if (this.soloLectura) return;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -764,6 +806,7 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   onFotosProductosChange(event: Event): void {
+    if (this.soloLectura) return;
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files || []);
     if (!files.length) return;
@@ -786,11 +829,13 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   removeFotoProducto(index: number): void {
+    if (this.soloLectura) return;
     this.multimedia.fotosProductos.splice(index, 1);
     this.multimedia.fotosProductosPreview.splice(index, 1);
   }
 
   onVideoChange(event: Event): void {
+    if (this.soloLectura) return;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -801,6 +846,7 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   onBannerChange(event: Event): void {
+    if (this.soloLectura) return;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -811,16 +857,19 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   removeLogo(): void {
+    if (this.soloLectura) return;
     this.multimedia.logo = null;
     this.multimedia.logoPreview = '';
   }
 
   removeVideo(): void {
+    if (this.soloLectura) return;
     this.multimedia.videoPresentacion = null;
     this.multimedia.videoPreview = '';
   }
 
   removeBanner(): void {
+    if (this.soloLectura) return;
     this.multimedia.banner = null;
     this.multimedia.bannerPreview = '';
   }
@@ -828,5 +877,30 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   // helper público para que el componente pueda emitir cierre si tiene botón interno
   closeModalFromChild(): void {
     this.close.emit();
+  }
+
+  // Nuevo helper público para habilitar el botón "Siguiente"
+  canNext(): boolean {
+    // Si ya está en el último paso no permitir siguiente
+    if (this.isLastStep) return false;
+
+    // En modo solo lectura permitir avanzar libremente (mientras no sea último)
+    if (this.soloLectura) return true;
+
+    // Modo normal: aplicar validaciones por paso (coincide con lógica de nextStep)
+    switch (this.currentStep) {
+      case 0:
+        return this.isDescripcionComplete;
+      case 1:
+        return this.isCategoriasComplete;
+      case 2:
+        return this.isHistoriaComplete && this.isPresenciaDigitalComplete && this.isUbicacionComplete && this.isTipoComplete;
+      case 3:
+        return this.isMultimediaComplete;
+      case 4:
+        return this.isMetricasComplete;
+      default:
+        return true;
+    }
   }
 }

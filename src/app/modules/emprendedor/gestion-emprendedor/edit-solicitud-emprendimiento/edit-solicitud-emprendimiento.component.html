@@ -1,4 +1,13 @@
-<div class="h-full flex flex-col">
+<div class="h-full flex flex-col relative">
+  <!-- Nuevo: overlay de loading mientras se precargan los datos -->
+  <div *ngIf="loading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span class="text-gray-500 text-sm">Cargando emprendimiento...</span>
+  </div>
+
   <!-- Header del wizard -->
   <div class="border-b px-6 py-4">
     <div class="flex items-center justify-between">
@@ -46,7 +55,8 @@
             type="button"
             *ngFor="let cat of categories"
             class="flex items-center space-x-3 text-left w-full"
-            (click)="toggleCategory(cat)"
+            (click)="soloLectura ? goToStep(1) : toggleCategory(cat)"
+            [disabled]="soloLectura ? false : null"
           >
             <!-- checkbox custom -->
             <span
@@ -89,6 +99,7 @@
             [(ngModel)]="descripcion.resumen"
             required
             placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
+            [disabled]="soloLectura"
           ></textarea>
         </div>
 
@@ -103,6 +114,7 @@
               [(ngModel)]="descripcion.diferencial"
               required
               placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
+              [disabled]="soloLectura"
             ></textarea>
           </div>
 
@@ -115,6 +127,7 @@
               [(ngModel)]="descripcion.publicoObjetivo"
               required
               placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
+              [disabled]="soloLectura"
             ></textarea>
           </div>
         </div>
@@ -129,6 +142,7 @@
             [(ngModel)]="descripcion.proposito"
             required
             placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
+            [disabled]="soloLectura"
           ></textarea>
         </div>
       </div>
@@ -151,6 +165,7 @@
               [(ngModel)]="historia.nombreComercial"
               placeholder="Ingrese el nombre comercial de su emprendimiento"
               required
+              [disabled]="soloLectura"
             />
           </div>
           <!-- FIN NUEVO -->
@@ -164,6 +179,7 @@
               [(ngModel)]="historia.historiaGeneral"
               placeholder="Comparte la historia de tu emprendimiento: cómo nació, qué te motivó y cómo ha ido evolucionando."
               required
+              [disabled]="soloLectura"
             ></textarea>
           </div>
         </section>
@@ -187,6 +203,7 @@
                 [(ngModel)]="presenciaDigital.instagram"
                 required
                 placeholder="@tuEmprendimiento"
+                [disabled]="soloLectura"
               />
             </div>
 
@@ -199,6 +216,7 @@
                 class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="presenciaDigital.sitioWeb"
                 placeholder="http://www.tu-emprendimiento.com"
+                [disabled]="soloLectura"
               />
             </div>
 
@@ -212,6 +230,7 @@
                 [(ngModel)]="presenciaDigital.whatsapp"
                 required
                 placeholder="+593 99 123 4567 o 0991234567"
+                [disabled]="soloLectura"
               />
               <!-- Mensaje de formato inválido -->
               <p *ngIf="presenciaDigital.whatsapp && !isWhatsappValid()" class="text-xs text-red-500 mt-1">
@@ -229,6 +248,7 @@
                 [(ngModel)]="presenciaDigital.tiktok"
                 required
                 placeholder="@tuEmprendimiento"
+                [disabled]="soloLectura"
               />
             </div>
           </div>
@@ -259,6 +279,7 @@
                   name="aceptaPublico"
                   [checked]="presenciaDigital.aceptaMostrarPublicamente"
                   (change)="presenciaDigital.aceptaMostrarPublicamente = true"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -281,6 +302,7 @@
                   name="aceptaPublico"
                   [checked]="!presenciaDigital.aceptaMostrarPublicamente"
                   (change)="presenciaDigital.aceptaMostrarPublicamente = false"
+                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -298,7 +320,8 @@
               <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="ubicacion.provincia"
                 (change)="onProvinciaChange()"
-                required>
+                required
+                [disabled]="soloLectura">
                 <option value="" disabled selected>Seleccionar provincia</option>
                 <option *ngFor="let prov of provincias" [value]="prov.id">{{ prov.nombre }}</option>
               </select>
@@ -307,7 +330,8 @@
               <label class="block text-sm font-semibold text-gray-800">Ciudad</label>
               <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="ubicacion.ciudad"
-                required>
+                required
+                [disabled]="soloLectura">
                 <option value="" disabled selected>Seleccionar ciudad</option>
                 <option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad.id">{{ ciudad.nombre }}</option>
               </select>
@@ -325,7 +349,8 @@
             <label class="block text-sm font-semibold text-gray-800 mb-2">Tipo</label>
             <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
               [(ngModel)]="tipoEmprendimiento"
-              required>
+              required
+              [disabled]="soloLectura">
               <option value="0" disabled selected>Seleccionar tipo</option>
               <option *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id">
                 {{ tipo.tipo === tipo.subTipo ? tipo.tipo : tipo.tipo + ' - ' + tipo.subTipo }}
@@ -362,6 +387,7 @@
                 accept="image/png,image/jpeg"
                 class="hidden"
                 (change)="onLogoChange($event)"
+                [disabled]="soloLectura || loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -376,6 +402,7 @@
                     type="button"
                     (click)="removeLogo()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                    [disabled]="soloLectura"
                   >
                     Quitar
                   </button>
@@ -405,6 +432,7 @@
                 multiple
                 class="hidden"
                 (change)="onFotosProductosChange($event)"
+                [disabled]="soloLectura || loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl p-3 bg-gray-50 hover:bg-gray-100 transition"
@@ -421,6 +449,7 @@
                         type="button"
                         (click)="removeFotoProducto(i)"
                         class="absolute -top-1 -right-1 bg-white rounded-full shadow text-[10px] px-1 text-gray-600 hover:bg-red-500 hover:text-white"
+                        [disabled]="soloLectura"
                       >
                         ✕
                       </button>
@@ -457,6 +486,7 @@
                 accept="video/mp4,video/webm"
                 class="hidden"
                 (change)="onVideoChange($event)"
+                [disabled]="soloLectura || loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -471,6 +501,7 @@
                     type="button"
                     (click)="removeVideo()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                    [disabled]="soloLectura"
                   >
                     Quitar
                   </button>
@@ -499,6 +530,7 @@
                 accept="image/png,image/jpeg"
                 class="hidden"
                 (change)="onBannerChange($event)"
+                [disabled]="soloLectura || loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -513,6 +545,7 @@
                     type="button"
                     (click)="removeBanner()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
+                    [disabled]="soloLectura"
                   >
                     Quitar
                   </button>
@@ -549,6 +582,7 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '1-10'"
+                  [disabled]="soloLectura"
                 >
                   1-10
                 </button>
@@ -559,6 +593,7 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '11-50'"
+                  [disabled]="soloLectura"
                 >
                   11-50
                 </button>
@@ -569,6 +604,7 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '51-100'"
+                  [disabled]="soloLectura"
                 >
                   51-100
                 </button>
@@ -579,6 +615,7 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '100+'"
+                  [disabled]="soloLectura"
                 >
                   Más de 100
                 </button>
@@ -609,6 +646,7 @@
                     class="hidden"
                     name="ventas"
                     (change)="metricas.haGeneradoVentas = true"
+                    [disabled]="soloLectura"
                   />
                 </label>
 
@@ -630,6 +668,7 @@
                     class="hidden"
                     name="ventas"
                     (change)="metricas.haGeneradoVentas = false"
+                    [disabled]="soloLectura"
                   />
                 </label>
               </div>
@@ -660,6 +699,7 @@
                   class="hidden"
                   name="incubacion"
                   (change)="metricas.haParticipadoIncubacion = true"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -681,6 +721,7 @@
                   class="hidden"
                   name="incubacion"
                   (change)="metricas.haParticipadoIncubacion = false; metricas.nombreProgramaIncubacion = ''"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -690,6 +731,7 @@
                   class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                   [(ngModel)]="metricas.nombreProgramaIncubacion"
                   placeholder="Indica cuál, en caso de sí"
+                  [disabled]="soloLectura"
                 />
               </div>
             </div>
@@ -727,6 +769,7 @@
                   class="hidden"
                   name="rankings"
                   (change)="participacion.interesRankings = true"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -748,6 +791,7 @@
                   class="hidden"
                   name="rankings"
                   (change)="participacion.interesRankings = false"
+                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -778,6 +822,7 @@
                   class="hidden"
                   name="publicaciones"
                   (change)="participacion.publicacionesMensuales = true"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -799,6 +844,7 @@
                   class="hidden"
                   name="publicaciones"
                   (change)="participacion.publicacionesMensuales = false"
+                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -828,6 +874,7 @@
                   class="hidden"
                   name="feedback"
                   (change)="participacion.recibirFeedback = true"
+                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -849,6 +896,7 @@
                   class="hidden"
                   name="feedback"
                   (change)="participacion.recibirFeedback = false"
+                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -880,6 +928,7 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.infoVeridica"
+              [disabled]="soloLectura"
             />
           </label>
 
@@ -899,6 +948,7 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.aceptaPublicacion"
+              [disabled]="soloLectura"
             />
           </label>
 
@@ -918,6 +968,7 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.autorizaUsoImagenes"
+              [disabled]="soloLectura"
             />
           </label>
 
@@ -937,6 +988,7 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.aceptaPoliticasCentro"
+              [disabled]="soloLectura"
             />
           </label>
         </div>
@@ -953,7 +1005,7 @@
     <button
       type="button"
       class="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-100"
-      [disabled]="isFirstStep"
+      [disabled]="isFirstStep || loading"
       (click)="prevStep()"
     >
       Atrás
@@ -964,23 +1016,17 @@
         *ngIf="!isLastStep"
         type="button"
         class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
-        [disabled]="
-          (currentStep === 0 && !isDescripcionComplete) ||
-          (currentStep === 1 && !isCategoriasComplete) ||
-          (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
-          (currentStep === 3 && !isMultimediaComplete) ||
-          (currentStep === 4 && !isMetricasComplete)
-        "
+        [disabled]="!canNext() || loading"
         (click)="nextStep()"
       >
         Siguiente
       </button>
 
       <button
-        *ngIf="isLastStep"
+        *ngIf="!soloLectura && isLastStep"
         type="button"
         class="inline-flex items-center px-6 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-60"
-        [disabled]="!isMultimediaComplete || !isMetricasComplete || !isDeclaracionesComplete"
+        [disabled]="!isMultimediaComplete || !isMetricasComplete || !isDeclaracionesComplete || loading"
         (click)="finish()"
       >
         <span>Enviar</span>

@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { SolicitudService } from './solicitud.service';
 import { AuthService } from '../../auth/auth.service';
+import { ModalWrapperEditSolicitudComponent } from '../../../shared/components/modal-wrapper-edit-solicitud/modal-wrapper-edit-solicitud.component';
 
 // Interface ajustada al backend real
 export interface Solicitud {
@@ -38,6 +39,8 @@ export interface Solicitud {
     MatDatepickerModule,
     MatNativeDateModule,
     MatFormFieldModule,
+    // no es necesario importar el componente hijo aquí, se abre dentro del modal wrapper
+    ModalWrapperEditSolicitudComponent,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
@@ -275,7 +278,7 @@ export class AdminSolicitudesComponent implements OnInit {
   }
 
   verDetalle(solicitud: Solicitud) {
-    if (!solicitud.id) {
+    if (!solicitud || (!solicitud.id && !solicitud.emprendimientoId)) {
       this.dialog.open(MensajeConfirmacionComponent, {
         width: '420px',
         data: {
@@ -287,7 +290,27 @@ export class AdminSolicitudesComponent implements OnInit {
       });
       return;
     }
-    this.router.navigate(['/admin/solicitudes', solicitud.id]);
+
+    const idParaVer = solicitud.emprendimientoId ?? solicitud.id ?? null;
+    if (!idParaVer) {
+      // fallback por seguridad
+      return;
+    }
+
+    // Abrir el wrapper modal (contiene botón cerrar en la cabecera y el componente hijo)
+    const dialogRef = this.dialog.open(ModalWrapperEditSolicitudComponent, {
+      width: '900px',
+      maxHeight: '90vh',
+      panelClass: 'custom-dialog-container',
+      data: { emprendimientoId: idParaVer, soloLectura: true }
+    });
+
+    // Opcional: reaccionar cuando se cierre el modal (por ejemplo, recargar lista)
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'updated' || result === 'saved') {
+        this.loadSolicitudes();
+      }
+    });
   }
 
   cambiarEstado(solicitud: Solicitud, nuevoEstado: 'APROBADA' | 'RECHAZADA') {
