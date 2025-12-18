@@ -36,121 +36,177 @@
     </a>
 
     <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-      <div class="grid md:grid-cols-[320px,1fr] gap-6 p-6">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+      <div class="grid md:grid-cols-[280px,1fr] gap-6 p-6 items-start">
 
         <!-- Imagen -->
-        <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
-          <img 
-          [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
-            [alt]="emprendimiento.nombreComercial" class="w-full h-full object-cover" />
+        <div class="flex justify-center">
+          <div class="w-64 h-64 rounded-xl overflow-hidden bg-gray-100">
+            <img [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
+              [alt]="emprendimiento.nombreComercial" class="w-full h-full object-cover" />
+          </div>
         </div>
 
-        <!-- Info principal -->
-        <div class="flex flex-col justify-center space-y-4">
-          <h1 class="text-3xl font-black uppercase text-[#ED6C1C]">
+        <!-- Info -->
+        <div class="flex flex-col space-y-6">
+
+          <!-- Título -->
+          <h1 class="text-3xl md:text-4xl font-extrabold uppercase text-[#276BC7]">
             {{ emprendimiento.nombreComercial }}
           </h1>
 
-          <div class="flex flex-wrap gap-4 text-gray-600 text-sm">
-            <span>{{ emprendimiento.nombreCiudad }}</span>
-            <span>•</span>
-            <span>{{ emprendimiento.nombreTipoEmprendimiento }}</span>
+          <!-- Fecha y ubicación -->
+          <div class="flex flex-wrap gap-6">
+
+            <!-- Fecha -->
+            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600 text-base">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {{ emprendimiento.fechaCreacion | date:'dd/MM/yyyy' }}
+            </div>
+
+            <!-- Ubicación -->
+            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600 text-base">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" />
+              </svg>
+              {{ emprendimiento.nombreCiudad }}
+            </div>
+
           </div>
 
-          <div class="text-sm text-gray-700">
-            <strong>Emprendedor:</strong> {{ emprendimiento.nombreUsuario }}
+          <!-- Presencias digitales -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 text-sm text-gray-700 max-w-lg">
+
+            <ng-container *ngFor="let p of emprendimiento.presenciasDigitales">
+
+              <!-- Instagram -->
+              <div *ngIf="p.plataforma === 'instagram'" class="flex items-center gap-3">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" class="w-5 h-5">
+                {{ p.descripcion }}
+              </div>
+
+              <!-- TikTok -->
+              <div *ngIf="p.plataforma === 'tiktok'" class="flex items-center gap-3">
+                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" class="w-5 h-5">
+                {{ p.descripcion }}
+              </div>
+
+              <!-- Email -->
+              <div *ngIf="p.plataforma === 'email'" class="flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 12H8m8 0l-8-5m8 5l-8 5m14-9a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                </svg>
+                {{ p.descripcion }}
+              </div>
+
+              <!-- Sitio web -->
+              <div *ngIf="p.plataforma === 'web' || p.plataforma === 'sitio web'" class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="w-5 h-5 text-gray-700">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+
+                {{ p.descripcion }}
+              </div>
+
+
+              <!-- WhatsApp -->
+              <div *ngIf="p.plataforma === 'whatsapp'" class="flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7l1 2a11 11 0 005 5l2 1v-2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                {{ p.descripcion }}
+              </div>
+
+            </ng-container>
+
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- Grid principal -->
-    <div class="grid md:grid-cols-3 gap-6">
+    <!-- Contenido principal -->
+    <div class="space-y-8">
 
-      <!-- Columna izquierda -->
-      <div class="md:col-span-2 space-y-6">
+      <!-- Historia -->
+      <section *ngIf="getDescripcionByType('HISTORIA')" class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Historia</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+          {{ getDescripcionByType('HISTORIA') }}
+        </p>
+      </section>
 
-        <!-- Descripciones -->
-        <section *ngFor="let desc of emprendimiento.descripciones || []" 
-        class="bg-white rounded-xl shadow-sm p-5">
-          <h2 class="text-xl font-bold text-gray-900 mb-3">
-            {{ desc.tipoDescripcion }}
-          </h2>
-          <p class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-            {{ desc.descripcion }}
+      <!-- Resumen -->
+      <section *ngIf="getDescripcionByType('RESUMEN')" class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Resumen</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+          {{ getDescripcionByType('RESUMEN') }}
+        </p>
+      </section>
+
+      <!-- Diferencial -->
+      <section *ngIf="getDescripcionByType('DIFERENCIAL')" class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Diferencial</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+          {{ getDescripcionByType('DIFERENCIAL') }}
+        </p>
+      </section>
+
+      <!-- Galería -->
+      <section *ngIf="(emprendimiento.multimedia || []).length > 0" class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Galería</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <img *ngFor="let m of emprendimiento.multimedia" 
+               [src]="m.urlArchivo" 
+               [alt]="m.nombreActivo"
+               class="w-full h-48 object-cover rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Público Objetivo -->
+        <section *ngIf="getDescripcionByType('PUBLICO OBJETIVO')" class="bg-white rounded-xl shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Público Objetivo</h2>
+          <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+            {{ getDescripcionByType('PUBLICO OBJETIVO') }}
           </p>
         </section>
 
-        <!-- Galería -->
-        <section *ngIf="(emprendimiento.multimedia || []).length > 0" 
-          class="bg-white rounded-xl shadow-sm p-5">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">Galería</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <img *ngFor="let m of emprendimiento.multimedia" 
-            [src]="m.urlArchivo" 
-            [alt]="m.nombreActivo"
-              class="w-full h-40 object-cover rounded-lg">
-          </div>
-        </section>
 
+        <!-- Propósito -->
+        <section *ngIf="getDescripcionByType('PROPOSITO')" class="bg-white rounded-xl shadow-sm p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Propósito</h2>
+          <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+            {{ getDescripcionByType('PROPOSITO') }}
+          </p>
+        </section>
       </div>
 
-      <!-- Columna derecha -->
-      <aside class="space-y-6">
-
-        <!-- Información -->
-        <section class="bg-white rounded-xl shadow-sm p-5">
-          <h3 class="text-lg font-semibold mb-3">Información</h3>
-          <ul class="text-sm text-gray-700 space-y-1">
-            <li><strong>Ciudad:</strong> {{ emprendimiento.nombreCiudad }}</li>
-            <li><strong>Tipo:</strong> {{ emprendimiento.nombreTipoEmprendimiento }}</li>
-          </ul>
-        </section>
-
-        <!-- Presencias digitales -->
-        <section *ngIf="emprendimiento.aceptaDatosPublicos && (emprendimiento.presenciasDigitales || []).length > 0"
-          class="bg-white rounded-xl shadow-sm p-5">
-          <h3 class="text-lg font-semibold mb-3">Presencias digitales</h3>
-          <ul class="space-y-3 text-sm">
-            <li *ngFor="let p of emprendimiento.presenciasDigitales">
-              <p class="font-medium text-gray-800">{{ p.plataforma }}</p>
-
-              <a *ngIf="isUrl(p.descripcion)" 
-              [href]="p.descripcion" 
-              target="_blank" 
-              class="text-blue-600 break-all">
-                {{ p.descripcion }}
-              </a>
-
-              <a *ngIf="!isUrl(p.descripcion) && isPhone(p.descripcion)" 
-              [href]="'tel:' + p.descripcion"
-                class="text-blue-600">
-                {{ p.descripcion }}
-              </a>
-
-              <span *ngIf="!isUrl(p.descripcion) && !isPhone(p.descripcion)" 
-              class="text-gray-700">
-                {{ p.descripcion }}
-              </span>
-            </li>
-          </ul>
-        </section>
-
-        <!-- Calificación -->
-        <section *ngIf="qrCodeUrl" class="bg-white rounded-xl shadow-sm p-5 text-center">
+      <!-- QR Code -->
+      <section *ngIf="qrCodeUrl && !esStartup" class="bg-white rounded-xl shadow-sm p-6 mt-8 text-center">
+        <div class="max-w-md mx-auto">
           <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
             Califica nuestro emprendimiento
           </h3>
           <img [src]="qrCodeUrl" 
-          alt="QR Evaluación" 
-          class="w-44 h-44 mx-auto border rounded-lg p-2">
+               alt="QR Evaluación" 
+               class="w-44 h-44 mx-auto border rounded-lg p-2">
           <p class="text-xs text-gray-500 mt-3">
             Escanea el código QR para valorar este emprendimiento
           </p>
-        </section>
+        </div>
+      </section>
 
-      </aside>
     </div>
   </div>
 </main>
