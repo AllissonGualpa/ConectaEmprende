@@ -5,7 +5,7 @@ import { EmprendimientoService } from '../../../emprendimiento.service';
 import { CardsComponent, CardItem } from '../../../../layout/cards/cards.component';
 import { CreateSolicitudEmprendimientoComponent } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
 import { EditSolicitudEmprendimientoComponent } from '../edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-seccion-emprendimiento',
@@ -30,7 +30,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
   selectedEditId: number | null = null; // id seleccionado para edición
   loading = false; // <-- loading agregado
 
-  constructor(private emprendimientoService: EmprendimientoService) {}
+  constructor(private emprendimientoService: EmprendimientoService,  private router: Router) {}
 
   ngOnInit(): void {
     this.loadEmprendimientos();
@@ -91,5 +91,10 @@ export class SeccionEmprendimientoComponent implements OnInit {
   onEmprendimientoCreated(): void {
     this.closeCreateSolicitudModal();
     this.loadEmprendimientos();
+  }
+  onRoadmapClick(item: any) {
+    
+    this.router.navigate(['emprendedor/roadmap', item.id]);
+    
   }
 }

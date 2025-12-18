@@ -48,7 +48,10 @@
           [items]="cardsArray"
           [pageSize]="6"
           [ctaLabel]="'Editar'"
+          [showRoadmapButton]="true"  
+          [roadmapLabel]="'Roadmap'"  
           (discover)="openEditSolicitudModal($event)"
+          (roadmap)="onRoadmapClick($event)"
         >
         </app-cards>
       </div>

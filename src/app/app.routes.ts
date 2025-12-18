@@ -44,6 +44,7 @@ export const routes: Routes = [
   { path: 'eventos/:id', component: EventoDetailComponent },
   { path: 'evaluacion', component: EvaluacionComponent },
   { path: 'evaluacion/:id', component: EvaluacionComponent },
+  {path: 'roadmap', component: RoadmapComponent},
 
   // Emprendedor
   { path: 'emprendedor/gestion', component: GestionEmprendedor, canActivate: [RoleGuard], data: { roles: ['EMPRENDEDOR'] } },

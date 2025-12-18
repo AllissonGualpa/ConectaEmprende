@@ -35,9 +35,12 @@ export class CardsComponent {
   // Simple flags for small variations
   @Input() showLocation = true;
   @Input() ctaLabel = 'Descubrir';
+  @Input() showRoadmapButton = false;  // Nuevo: controla si se muestra el botón Roadmap
+  @Input() roadmapLabel = 'Roadmap';   // Nuevo: texto del botón Roadmap
 
   @Output() discover = new EventEmitter<CardItem>();
   @Output() toggleFavorite = new EventEmitter<CardItem>();
+  @Output() roadmap = new EventEmitter<CardItem>();  // Nuevo: evento para Roadmap
 
   currentPage = 1;
 
@@ -65,5 +68,10 @@ export class CardsComponent {
   onToggleFavorite(item: CardItem, event?: Event) {
     if (event) event.stopPropagation();
     this.toggleFavorite.emit(item);
+  }
+
+  // Nuevo método para emitir evento Roadmap
+  onRoadmap(item: CardItem) {
+    this.roadmap.emit(item);
   }
 }
