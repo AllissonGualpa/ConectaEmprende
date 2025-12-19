@@ -29,8 +29,8 @@
   <!-- Contenido de cada paso (placeholder, en construcción) -->
   <div class="flex-1 overflow-auto px-6 py-5">
     <ng-container [ngSwitch]="currentStep">
-      <!--categorias-->
-      <div *ngSwitchCase="1" class="flex flex-col items-center">
+      <!--categorias (paso 0)-->
+      <div *ngSwitchCase="0" class="flex flex-col items-center">
         <div class="max-w-xl w-full text-center mb-8">
           <h2 class="text-2xl font-bold text-[#1E71D8] mb-2">
             Categorías del emprendimiento
@@ -72,69 +72,9 @@
           </p>
         </div>
       </div>
-      <!--descripcion-->
-      <div *ngSwitchCase="0" class="space-y-8">
-        <div class="text-center">
-          <h2 class="text-2xl font-bold text-[#1E71D8]">
-            Descripción del emprendimiento
-          </h2>
-        </div>
 
-        <!-- Resumen general -->
-        <div class="space-y-2">
-          <h3 class="text-base font-semibold text-gray-800">
-            Resumen general del emprendimiento
-          </h3>
-          <textarea
-            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            [(ngModel)]="descripcion.resumen"
-            required
-            placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
-          ></textarea>
-        </div>
-
-        <!-- Fila de dos columnas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <h3 class="text-base font-semibold text-gray-800">
-              ¿Qué lo hace diferente o innovador?
-            </h3>
-            <textarea
-              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-              [(ngModel)]="descripcion.diferencial"
-              required
-              placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
-            ></textarea>
-          </div>
-
-          <div class="space-y-2">
-            <h3 class="text-base font-semibold text-gray-800">
-              ¿A qué público objetivo te diriges?
-            </h3>
-            <textarea
-              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-              [(ngModel)]="descripcion.publicoObjetivo"
-              required
-              placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
-            ></textarea>
-          </div>
-        </div>
-
-        <!-- Propósito / misión -->
-        <div class="space-y-2">
-          <h3 class="text-base font-semibold text-gray-800">
-            ¿Cuál es el propósito o misión como emprendedor/a?
-          </h3>
-          <textarea
-            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            [(ngModel)]="descripcion.proposito"
-            required
-            placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
-          ></textarea>
-        </div>
-      </div>
-
-      <div *ngSwitchCase="2" class="space-y-12">
+      <!--historia (paso 1)-->
+      <div *ngSwitchCase="1" class="space-y-12">
         <!-- Historia del emprendimiento -->
         <section class="space-y-4">
           <div class="text-center">
@@ -336,6 +276,69 @@
         </section>
       </div>
 
+      <!--descripcion (paso 2)-->
+      <div *ngSwitchCase="2" class="space-y-8">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-[#1E71D8]">
+            Descripción del emprendimiento
+          </h2>
+        </div>
+
+        <!-- Resumen general -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            Resumen general del emprendimiento
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.resumen"
+            required
+            placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
+          ></textarea>
+        </div>
+
+        <!-- Fila de dos columnas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿Qué lo hace diferente o innovador?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.diferencial"
+              required
+              placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
+            ></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿A qué público objetivo te diriges?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.publicoObjetivo"
+              required
+              placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Propósito / misión -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            ¿Cuál es el propósito o misión como emprendedor/a?
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.proposito"
+            required
+            placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
+          ></textarea>
+        </div>
+      </div>
+
+      <!--multimedia (paso 3)-->
       <div *ngSwitchCase="3" class="space-y-10">
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-bold text-[#1E71D8]">
@@ -529,6 +532,7 @@
         </div>
       </div>
 
+      <!--metricas (paso 4)-->
       <div *ngSwitchCase="4" class="space-y-10">
         <!-- Métricas básicas -->
         <section class="space-y-6">
@@ -857,6 +861,7 @@
         </section>
       </div>
 
+      <!--declaraciones (paso 5)-->
       <div *ngSwitchCase="5" class="max-w-3xl mx-auto space-y-8">
         <div class="text-center">
           <h2 class="text-2xl font-bold text-[#1E71D8]">
@@ -966,9 +971,9 @@
         type="button"
         class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
         [disabled]="
-          (currentStep === 0 && !isDescripcionComplete) ||
-          (currentStep === 1 && !isCategoriasComplete) ||
-          (currentStep === 2 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
+          (currentStep === 0 && !isCategoriasComplete) ||
+          (currentStep === 1 && (!isHistoriaComplete || !isPresenciaDigitalComplete || !isUbicacionComplete || !isTipoComplete)) ||
+          (currentStep === 2 && !isDescripcionComplete) ||
           (currentStep === 3 && !isMultimediaComplete) ||
           (currentStep === 4 && !isMetricasComplete)
         "
@@ -981,7 +986,7 @@
         *ngIf="isLastStep"
         type="button"
         class="inline-flex items-center px-6 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-60"
-        [disabled]="!isMultimediaComplete || !isMetricasComplete || !isDeclaracionesComplete"
+        [disabled]="!isDeclaracionesComplete"
         (click)="finish()"
       >
         <span>Enviar</span>
