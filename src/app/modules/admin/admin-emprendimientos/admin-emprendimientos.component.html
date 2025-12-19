@@ -93,9 +93,6 @@
                   Nombre
                 </th>
                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  Estado
-                </th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
                   Tipo
                 </th>
                 <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
@@ -120,13 +117,10 @@
                 [ngClass]="{ 'bg-[#F7F6FE]': i % 2 !== 0 }"
               >
                 <td class="px-6 py-3 text-sm text-gray-900">
-                  #{{ emp.id }}
+                  {{ emp.id }}
                 </td>
                 <td class="px-6 py-3 text-sm text-gray-600">
                   {{ emp.nombreComercial }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-600">
-                  {{ emp.estadoEmprendimiento }}
                 </td>
                 <td class="px-6 py-3 text-sm text-gray-600">
                   {{ emp.tipoInfo.tipo }}

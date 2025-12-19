@@ -89,9 +89,9 @@ export class AdminEventoComponent implements OnInit {
 
   // Opciones para los selectores
   estadosOptions = [
-    { value: 'PROGRAMADO', label: 'Programado' },
-    { value: 'TERMINADO', label: 'Terminado' },
-    { value: 'CANCELADO', label: 'Cancelado' }
+    { value: 'programado', label: 'Programado' },
+    { value: 'terminado', label: 'Terminado' },
+    { value: 'cancelado', label: 'Cancelado' }
   ];
 
   tiposOptions = [
@@ -265,17 +265,9 @@ export class AdminEventoComponent implements OnInit {
                 ? fechaEvento.split('T')[0]
                 : fechaEvento,
               hora: horaStr,
-              estado: ((): string => {
-                if (it.activo === false) return 'Cancelado';
-                const rawEstado = it.estadoEvento;
-                if (typeof rawEstado === 'string' && rawEstado.trim()) {
-                  const r = rawEstado.toLowerCase();
-                  if (r.includes('term')) return 'Terminado';
-                  if (r.includes('cancel')) return 'Cancelado';
-                  return 'Programado';
-                }
-                return it.activo === true ? 'Programado' : 'Cancelado';
-              })(),
+              estado: it.estadoEvento 
+                ? String(it.estadoEvento).charAt(0).toUpperCase() + String(it.estadoEvento).slice(1).toLowerCase()
+                : (it.activo === false ? 'Cancelado' : 'Programado'),
               descripcion: '',
               horaInicio: horaStr || undefined,
               horaFin: undefined,
