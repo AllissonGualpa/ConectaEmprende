@@ -145,11 +145,48 @@ export class BlogComponent implements OnInit {
     }
   }
 
-  // Filtrar artículos por búsqueda y tag (ahora del lado del servidor)
+  // Filtrar artículos por búsqueda y tag
   onSearch(payload: SearchPayload) {
     const { query, tag } = payload;
-    this.currentQuery = query || '';
-    this.currentTag = tag || '';
-    this.cargarArticulos(0); // Resetear a página 0 al buscar
+    this.currentQuery = (query || '').toString().trim();
+    this.currentTag = (tag || '').toString();
+
+    // Aplicar filtro local por título y tag
+    if (this.blogCardsArrayOriginal && this.blogCardsArrayOriginal.length > 0) {
+      const q = this.currentQuery.toLowerCase();
+      const tRaw = this.currentTag;
+      let tId: number | null = null;
+      let tLabel: string | null = null;
+
+      if (tRaw) {
+        const parsed = Number(tRaw);
+        if (!isNaN(parsed)) tId = parsed;
+        else tLabel = tRaw.toLowerCase();
+      }
+
+      this.blogCardsArray = this.blogCardsArrayOriginal.filter((card, idx) => {
+        const title = (card.title || '').toString().toLowerCase();
+        const matchesQuery = q ? title.includes(q) : true;
+
+        let matchesTag = true;
+        if (tId !== null) {
+          // Usar articulosOriginales para comparar por id
+          const articulo = this.articulosOriginales[idx];
+          matchesTag = !!(articulo?.tags || []).some((tg: any) => tg.idTag === tId);
+        } else if (tLabel) {
+          const tags = (card.tags || []).map((x: string) => x.toString().toLowerCase());
+          matchesTag = tags.includes(tLabel);
+        }
+
+        return matchesQuery && matchesTag;
+      });
+
+      // Ajustar paginación local al resultar del filtro
+      this.currentPage = 0;
+      this.totalPages = Math.max(1, Math.ceil(this.blogCardsArray.length / this.pageSize));
+    } else {
+      // Si no hay datos locales, pedir al servidor
+      this.cargarArticulos(0);
+    }
   }
 }

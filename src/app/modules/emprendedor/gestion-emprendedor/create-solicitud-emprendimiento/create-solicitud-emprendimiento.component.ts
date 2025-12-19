@@ -109,8 +109,8 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   loading = false;
 
   steps = [
-    { title: 'Descripción del emprendimiento', description: 'Cuéntanos más sobre tu emprendimiento, qué lo hace único y a quién va dirigido.' },
     { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
+    { title: 'Descripción del emprendimiento', description: 'Cuéntanos más sobre tu emprendimiento, qué lo hace único y a quién va dirigido.' },
     { title: 'Historia y presencia digital', description: 'Comparte la historia de tu emprendimiento y cómo las personas pueden encontrarte.' },
     { title: 'Material multimedia', description: 'Adjunta logo, fotos, video y banner para completar tu perfil.' },
     { title: 'Métricas y participación', description: 'Dinos cómo va tu emprendimiento y cómo quieres participar en la comunidad.' },
@@ -310,28 +310,44 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
 
 
   nextStep(): void {
-    if (this.currentStep === 0 && !this.isDescripcionComplete) return;
-    if (this.currentStep === 1 && !this.isCategoriasComplete) return;
+    // Paso 0: Categorías
+    if (this.currentStep === 0 && !this.isCategoriasComplete) {
+      return;
+    }
+    // Paso 1: Historia y presencia digital
     if (
-      this.currentStep === 2 &&
+      this.currentStep === 1 &&
       (!this.isHistoriaComplete ||
-      !this.isPresenciaDigitalComplete ||
-      !this.isUbicacionComplete ||
-      !this.isTipoComplete)
-    ) return;
-    if (this.currentStep === 3 && !this.isMultimediaComplete) return;
-    if (this.currentStep === 4 && !this.isMetricasComplete) return;
+        !this.isPresenciaDigitalComplete ||
+        !this.isUbicacionComplete ||
+        !this.isTipoComplete)
+    ) {
+      return;
+    }
+    // Paso 2: Descripción
+    if (this.currentStep === 2 && !this.isDescripcionComplete) {
+      return;
+    }
+    // Paso 3: Multimedia
+    if (this.currentStep === 3 && !this.isMultimediaComplete) {
+      return;
+    }
+    // Paso 4: Métricas y participación
+    if (this.currentStep === 4 && !this.isMetricasComplete) {
+      return;
+    }
+    // Paso 5: Declaraciones (no necesita validación aquí, se valida en finish)
 
-  if (!this.isLastStep) {
-    this.currentStep++;
-  }
+    if (!this.isLastStep) {
+      this.currentStep++;
+    }
 }
 
  finish(): void {
-  console.log('🎯 [INICIO] Ejecutando finish()');
+  console.log('[INICIO] Ejecutando finish()');
   
   if (!this.isMultimediaComplete || !this.isMetricasComplete || !this.isDeclaracionesComplete) {
-    console.warn('❌ Validaciones incompletas');
+    console.warn('Validaciones incompletas');
     return;
   }
 
@@ -525,7 +541,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   const usuarioLocal = this.authService.getPerfilLocal();
   const usuarioId = usuarioLocal && usuarioLocal.id ? usuarioLocal.id : 0;
 
-  console.log('👤 Usuario ID:', usuarioId);
+  console.log('Usuario ID:', usuarioId);
 
   const data: SolicitudEmprendimientoDataDto = {
     usuarioId,
@@ -557,33 +573,33 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
   }
 
-  console.log('📦 Data a enviar:', data);
-  console.log('📁 Archivos:', files.map(f => f.name));
+  console.log('Data a enviar:', data);
+  console.log('Archivos:', files.map(f => f.name));
 
   this.loading = true;
   
   // PASO 1: Grabar emprendimiento
   this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
     next: (resp: EmprendimientoCrearResponse) => {
-      console.log('✅ PASO 1 COMPLETADO - Emprendimiento creado con ID:', resp.id);
+      console.log('PASO 1 COMPLETADO - Emprendimiento creado con ID:', resp.id);
       
       // PASO 2: Enviar a aprobación
-      console.log('🔄 PASO 2 - Enviando a aprobación el emprendimiento:', resp.id);
+      console.log('PASO 2 - Enviando a aprobación el emprendimiento:', resp.id);
       
       this.emprendimientoService.enviarAprobacion(resp.id).subscribe({
         next: (solicitudResp) => {
-          console.log('✅ PASO 2 COMPLETADO - Solicitud de aprobación creada:', solicitudResp);
-          console.log('✅ TODO EL PROCESO COMPLETADO EXITOSAMENTE');
+          console.log('PASO 2 COMPLETADO - Solicitud de aprobación creada:', solicitudResp);
+          console.log('TODO EL PROCESO COMPLETADO EXITOSAMENTE');
           
           this.loading = false;
           this.onEmprendimientoCreated.emit();
           this.created.emit(resp);
         },
         error: (err) => {
-          console.error('❌ ERROR EN PASO 2 (enviarAprobacion):', err);
-          console.error('📊 Status:', err.status);
-          console.error('📝 Message:', err.message);
-          console.error('🔍 Error completo:', err);
+          console.error('ERROR EN PASO 2 (enviarAprobacion):', err);
+          console.error('Status:', err.status);
+          console.error('Message:', err.message);
+          console.error('Error completo:', err);
           
           this.loading = false;
           
@@ -596,10 +612,10 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       });
     },
     error: (err) => {
-      console.error('❌ ERROR EN PASO 1 (grabarEmprendimiento):', err);
-      console.error('📊 Status:', err.status);
-      console.error('📝 Message:', err.message);
-      console.error('🔍 Error completo:', err);
+      console.error('ERROR EN PASO 1 (grabarEmprendimiento):', err);
+      console.error('Status:', err.status);
+      console.error('Message:', err.message);
+      console.error('Error completo:', err);
       
       this.loading = false;
       alert('Hubo un error al crear el emprendimiento. Por favor, intenta nuevamente.');

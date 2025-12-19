@@ -39,6 +39,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
       case 'APROBADO':
         return 'Aprobado';
       case 'PENDIENTE_APROBACION':
+      case 'EN_REVISION':
         return 'En revisión';
       case 'RECHAZADO':
         return 'Rechazado';
@@ -59,7 +60,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
           id: e.id,
           title: e.nombreComercial || 'Emprendimiento sin nombre',
           description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad || 'sin ciudad'}`,
-          image: '/assets/img/inicio/foto5.png',
+          image: e.multimedia && e.multimedia.length > 0 ? e.multimedia[0].urlArchivo :'/assets/img/inicio/foto5.png',
           category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
           location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,

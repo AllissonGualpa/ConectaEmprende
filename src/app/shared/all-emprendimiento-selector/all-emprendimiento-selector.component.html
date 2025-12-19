@@ -1,7 +1,10 @@
-<div class="w-full">
+<!-- Emprendimiento -->
+<div class="md:col-span-1 w-full">
+  <label class="block text-xs text-gray-600 mb-1">
+    {{ label }}
+  </label>
+
   <mat-form-field appearance="outline" class="w-full">
-    <mat-label>{{ label }}</mat-label>
-    
     <mat-select
       [formControl]="emprendimientoControl"
       [placeholder]="placeholder"
@@ -10,24 +13,20 @@
       (selectionChange)="onEmprendimientoSelected($event.value)"
     >
 
-
-      <!-- Estado de carga -->
+      <!-- Cargando -->
       <mat-option *ngIf="isLoading" disabled>
-        <div class="flex items-center gap-2 justify-center py-2">
-          <mat-spinner diameter="20"></mat-spinner>
-          <span class="text-sm text-gray-600">Cargando emprendimientos...</span>
+        <div class="flex items-center gap-2 py-2">
+          <mat-spinner diameter="18"></mat-spinner>
+          <span class="text-xs text-gray-600">Cargando emprendimientos...</span>
         </div>
       </mat-option>
 
-      <!-- Lista de emprendimientos -->
+      <!-- Lista -->
       <mat-option
         *ngFor="let emprendimiento of filteredEmprendimientos"
         [value]="emprendimiento.id"
       >
-        <div class="flex items-center gap-2">
-          <mat-icon class="text-gray-500">store</mat-icon>
-          <span>{{ emprendimiento.nombreComercial }}</span>
-        </div>
+        {{ emprendimiento.nombreComercial }}
       </mat-option>
 
       <!-- Sin resultados -->
@@ -35,45 +34,36 @@
         *ngIf="!isLoading && filteredEmprendimientos.length === 0 && searchText"
         disabled
       >
-        <div class="text-center py-2 text-gray-500">
-          <mat-icon class="text-gray-400">search_off</mat-icon>
-          <p class="text-sm mt-1">No se encontraron resultados</p>
-        </div>
+        No se encontraron resultados
       </mat-option>
 
-      <!-- Sin emprendimientos -->
+      <!-- Sin datos -->
       <mat-option
         *ngIf="!isLoading && emprendimientos.length === 0 && !searchText"
         disabled
       >
-        <div class="text-center py-2 text-gray-500">
-          <mat-icon class="text-gray-400">store</mat-icon>
-          <p class="text-sm mt-1">No hay emprendimientos disponibles</p>
-        </div>
+        No hay emprendimientos disponibles
       </mat-option>
+
     </mat-select>
 
-    <mat-icon matPrefix class="text-gray-500">business</mat-icon>
-    
+    <!-- Botón limpiar -->
     <button
       *ngIf="emprendimientoControl.value && !disabled"
       matSuffix
       mat-icon-button
-      aria-label="Limpiar selección"
-      (click)="clearSelection(); $event.stopPropagation()"
       type="button"
-      class="mr-2"
+      (click)="clearSelection(); $event.stopPropagation()"
     >
       <mat-icon>close</mat-icon>
     </button>
 
-    <mat-error *ngIf="error">{{ error }}</mat-error>
+    <mat-error *ngIf="error">
+      {{ error }}
+    </mat-error>
+
     <mat-error *ngIf="emprendimientoControl.hasError('required')">
       Debe seleccionar un emprendimiento
     </mat-error>
-    
-    <mat-hint *ngIf="!error && !isLoading && emprendimientos.length > 0">
-      {{ emprendimientos.length }} emprendimiento(s) disponible(s)
-    </mat-hint>
   </mat-form-field>
 </div>

@@ -78,8 +78,9 @@ export class CardsComponent {
     this.roadmap.emit(item);
   }
   isEditDisabled(item: any): boolean {
-  return item?.rawStatus === 'PENDIENTE'
+    return item?.rawStatus === 'PENDIENTE'
       || item?.rawStatus === 'PENDIENTE_APROBACION'
+      || item?.rawStatus === 'EN_REVISION'
       || item?.rawStatus === 'RECHAZADO';
 }
 }

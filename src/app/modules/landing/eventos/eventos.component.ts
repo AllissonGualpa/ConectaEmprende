@@ -1,159 +1,166 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'; 
 import { EventoService } from '../../admin/evento.service';
-import { OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-
+import { EventoDetailModalComponent } from '.././evento-detail-modal/evento-detail-modal.component';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, SearchBarComponent, CardsComponent],
+  imports: [
+    CommonModule,
+    NavbarComponent,
+    FooterComponent,
+    SearchBarComponent,
+    CardsComponent,
+    EventoDetailModalComponent
+  ],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.css'
 })
 export class EventosComponent implements OnInit {
 
-  //SEARCH BAR
-   onSearch(payload: { query: string; [key: string]: any }) {
-    // Construir los parámetros para la API
+  showEventModal: boolean = false;
+  selectedEventId: number | null = null;
+  cardsArray: CardItem[] = [];
+  filtered: CardItem[] = [];
+  pageSize: number = 10;
+  currentPage: number = 0;
+  totalPages: number = 1;
+
+  constructor(private eventoService: EventoService) {}
+
+  ngOnInit(): void {
+    this.loadEventosFromServer();
+  }
+
+  onSearch(payload: { query: string; [key: string]: any }) {
     const params: any = {};
+
     if (payload.query) {
       params.titulo = payload.query;
     }
+
     if (payload['month']) {
-      // Convertir nombre de mes a número (soporta "Mayo", "mayo", etc.)
       const meses = [
         'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
         'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
       ];
-      const payloadMonthStr = String(payload['month']).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const mesesNormalizados = meses.map(m => m.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+
+      const payloadMonthStr = String(payload['month'])
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      const mesesNormalizados = meses.map(m =>
+        m.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      );
+
       const idx = mesesNormalizados.indexOf(payloadMonthStr);
       if (idx >= 0) params.mes = idx + 1;
     }
-    // No se procesa type porque el payload no lo envía
+
     params.page = 0;
     params.size = this.pageSize;
 
     this.eventoService.getPublicEvents(params).subscribe({
       next: (res: any) => {
         let items: any[] = [];
-        if (Array.isArray(res)) {
-          items = res;
-        } else if (res?.content && Array.isArray(res.content)) {
-          items = res.content;
-        } else if (res?.data && Array.isArray(res.data)) {
-          items = res.data;
-        } else if (res?.result && Array.isArray(res.result)) {
-          items = res.result;
-        } else if (res?.items && Array.isArray(res.items)) {
-          items = res.items;
-        }
-        this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
+
+        if (Array.isArray(res)) items = res;
+        else if (res?.content) items = res.content;
+        else if (res?.data) items = res.data;
+        else if (res?.result) items = res.result;
+        else if (res?.items) items = res.items;
+
+        this.cardsArray = (items || []).map(it => this.mapToCard(it));
         this.filtered = this.cardsArray.slice();
-        // Actualizar paginación si es necesario
-        if (typeof res?.size === 'number') this.pageSize = Number(res.size);
-        else if (res?.pageable?.pageSize) this.pageSize = Number(res.pageable.pageSize);
-        if (typeof res?.number === 'number') this.currentPage = Number(res.number);
-        else if (res?.pageable?.pageNumber) this.currentPage = Number(res.pageable.pageNumber || 0);
-        const totalElements = (typeof res?.totalElements === 'number') ? Number(res.totalElements) : ((typeof res?.total === 'number') ? Number(res.total) : this.cardsArray.length);
-        this.totalPages = Math.max(1, Math.ceil(totalElements / this.pageSize));
+
+        const total = res?.totalElements ?? res?.total ?? this.cardsArray.length;
+        this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
       },
-      error: (err: any) => {
-        console.warn('Error cargando eventos públicos desde backend', err);
+      error: err => {
+        console.warn('Error cargando eventos', err);
         this.cardsArray = [];
-        this.filtered = this.cardsArray.slice();
+        this.filtered = [];
       }
     });
   }
 
-  // cards populated from backend
-  cardsArray: CardItem[] = [];
+  // EVENT HANDLERS
+  onDiscover(item: CardItem) {
+    if (!item || item.id == null) return;
 
-  // filtered list (initially all items)
-  filtered: CardItem[] = [];
-  // paging info from public API
-  pageSize: number = 10;
-  currentPage: number = 0;
-  totalPages: number = 1;
-
-  constructor(private eventoService: EventoService, private router: Router) {}
-
-  ngOnInit(): void {
-    this.loadEventosFromServer();
+    this.selectedEventId = item.id;
+    this.showEventModal = true;
   }
 
-  // manejadores emitidos por <app-cards>
-  onDiscover(item: CardItem) {
-    // navegar a la página de detalle del evento
-    if (item && item.id != null) {
-      this.router.navigate(['/eventos', item.id]);
-    }
+  closeEventModal() {
+    this.showEventModal = false;
+    this.selectedEventId = null;
   }
 
   onToggleFavorite(item: CardItem) {
     console.log('Toggle favorito:', item);
-    // lógica para marcar favorito (llamar API o cambiar estado local)
   }
 
-    // handler para el botón Registrarse en eventos
-    onRegister(item: CardItem) {
-      console.log('Registrarse en evento:', item);
-      // implementar lógica de registro (abrir modal, navegar, llamar API, etc.)
-    }
+  onRegister(item: CardItem) {
+    this.onDiscover(item);
+  }
 
-    private loadEventosFromServer(): void {
-        // Usar filtro de mes si está en la búsqueda, si no, usar mes actual
-        const currentMonth = new Date().getMonth() + 1; // JS months are 0-based
-        const page = 0;
-        const size = this.pageSize;
-        this.eventoService.getPublicEvents({ mes: currentMonth, page, size }).subscribe({
-          next: (res: any) => {
-            // Response can be an array or a paginated object (content/data/result)
-            let items: any[] = [];
-            if (Array.isArray(res)) {
-              items = res;
-            } else if (res?.content && Array.isArray(res.content)) {
-              items = res.content;
-            } else if (res?.data && Array.isArray(res.data)) {
-              items = res.data;
-            } else if (res?.result && Array.isArray(res.result)) {
-              items = res.result;
-            } else if (res?.items && Array.isArray(res.items)) {
-              items = res.items;
-            }
+  // LOAD EVENTS
+  private loadEventosFromServer(): void {
+    const currentMonth = new Date().getMonth() + 1;
 
-            this.cardsArray = (items || []).map((it: any) => this.mapToCard(it));
-            this.filtered = this.cardsArray.slice();
-            // If server returns pagination metadata, adapt pageSize/currentPage/totalPages
-            if (typeof res?.size === 'number') this.pageSize = Number(res.size);
-            else if (res?.pageable?.pageSize) this.pageSize = Number(res.pageable.pageSize);
-            if (typeof res?.number === 'number') this.currentPage = Number(res.number);
-            else if (res?.pageable?.pageNumber) this.currentPage = Number(res.pageable.pageNumber || 0);
-            const totalElements = (typeof res?.totalElements === 'number') ? Number(res.totalElements) : ((typeof res?.total === 'number') ? Number(res.total) : this.cardsArray.length);
-            this.totalPages = Math.max(1, Math.ceil(totalElements / this.pageSize));
-          },
-          error: (err: any) => {
-            console.warn('Error cargando eventos públicos desde backend', err);
-            this.cardsArray = [];
-            this.filtered = this.cardsArray.slice();
-          }
-        });
-    }
+    this.eventoService.getPublicEvents({
+      mes: currentMonth,
+      page: 0,
+      size: this.pageSize
+    }).subscribe({
+      next: (res: any) => {
+        let items: any[] = [];
 
-    private mapToCard(it: any): CardItem {
-      const id = it.idEvento ?? it.id ?? it._id ?? 0;
-      const title = it.titulo || it.nombre || 'Evento';
-      const description = it.descripcion || '';
-      const image = it.imagenUrl || it.urlMultimedia || '/assets/img/eventos/foto1.png';
-      const dateRaw = it.fechaEvento || it.fecha || undefined;
-      const date = dateRaw && String(dateRaw).includes('T') ? String(dateRaw).split('T')[0] : dateRaw;
-      const location = it.lugar || it.direccion || '';
-      return { id: Number(id), title, description, image, date, location } as CardItem;
-    }
+        if (Array.isArray(res)) items = res;
+        else if (res?.content) items = res.content;
+        else if (res?.data) items = res.data;
+        else if (res?.result) items = res.result;
+        else if (res?.items) items = res.items;
+
+        this.cardsArray = (items || []).map(it => this.mapToCard(it));
+        this.filtered = this.cardsArray.slice();
+
+        const total = res?.totalElements ?? res?.total ?? this.cardsArray.length;
+        this.totalPages = Math.max(1, Math.ceil(total / this.pageSize));
+      },
+      error: err => {
+        console.warn('Error cargando eventos públicos', err);
+        this.cardsArray = [];
+        this.filtered = [];
+      }
+    });
+  }
+
+  private mapToCard(it: any): CardItem {
+    const id = it.idEvento ?? it.id ?? it._id ?? 0;
+    const title = it.titulo || it.nombre || 'Evento';
+    const description = it.descripcion || '';
+    const image = it.imagenUrl || it.urlMultimedia || '/assets/img/eventos/foto1.png';
+    const dateRaw = it.fechaEvento || it.fecha;
+    const date = dateRaw && String(dateRaw).includes('T')
+      ? String(dateRaw).split('T')[0]
+      : dateRaw;
+    const location = it.lugar || it.direccion || '';
+
+    return {
+      id: Number(id),
+      title,
+      description,
+      image,
+      date,
+      location
+    } as CardItem;
+  }
 }
