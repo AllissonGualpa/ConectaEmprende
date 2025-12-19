@@ -87,76 +87,91 @@
       </div>
 
       <!-- Cards Primera Fila -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <!-- Top Emprendimientos -->
-        <div class="bg-white p-6 rounded-xl shadow-md">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h4 class="text-lg font-semibold">Top Emprendimientos</h4>
-              <p class="text-sm text-gray-500">Los más destacados</p>
-            </div>
-            <div class="text-yellow-400 text-xl font-bold">★</div>
-          </div>
-
-          <ul class="space-y-4">
-            <li *ngFor="let emp of topEmprendimientos; let i = index" 
-                class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div [class]="getAvatarColor(i) + ' w-10 h-10 rounded-full text-white flex items-center justify-center font-bold'">
-                  {{ emp.iniciales }}
-                </div>
-                <div>
-                  <div class="font-semibold">{{ emp.nombre }}</div>
-                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-blue-600 font-bold">{{ emp.visitas || 0 }} vistas</span>
-              </div>
-            </li>
-          </ul>
-
-          <p *ngIf="topEmprendimientos.length === 0" class="text-gray-400 text-center py-4">
-            No hay datos disponibles
-          </p>
-        </div>
-
-        <!-- Emprendimientos Menos Vistos -->
-        <div class="bg-white p-6 rounded-xl shadow-md">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h4 class="text-lg font-semibold">Emprendimientos Menos Vistos</h4>
-              <p class="text-sm text-gray-500">Requieren atención</p>
-            </div>
-            <div class="text-red-500 text-xl font-bold">👁️</div>
-          </div>
-
-          <ul class="space-y-4">
-            <li *ngFor="let emp of emprendimientosMenosVistos; let i = index" 
-                class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div [class]="getAvatarColor(i + 3) + ' w-10 h-10 rounded-full text-white flex items-center justify-center font-bold'">
-                  {{ emp.iniciales }}
-                </div>
-                <div>
-                  <div class="font-semibold">{{ emp.nombre }}</div>
-                  <div class="text-sm text-gray-400">{{ emp.categoria }}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-gray-500">
-                <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>{{ emp.visitas }} vistas</span>
-              </div>
-            </li>
-          </ul>
-
-          <p *ngIf="emprendimientosMenosVistos.length === 0" class="text-gray-400 text-center py-4">
-            No hay datos disponibles
-          </p>
-        </div>
+<!-- Cards Primera Fila -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <!-- Top Emprendimientos -->
+  <div class="bg-white p-6 rounded-xl shadow-md">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h4 class="text-lg font-semibold">Top Emprendimientos</h4>
+        <p class="text-sm text-gray-500">Los más destacados</p>
       </div>
+      <div class="text-yellow-400 text-xl font-bold">★</div>
+    </div>
+
+    <div class="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+      <ul class="space-y-4">
+        <li *ngFor="let emp of topEmprendimientos; let i = index" 
+            class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="relative flex-shrink-0">
+              <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
+                {{ i + 1 }}
+              </div>
+              <div [class]="getAvatarColor(i) + ' w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold text-sm'">
+                {{ emp.iniciales }}
+              </div>
+            </div>
+            <div>
+              <div class="font-semibold">{{ emp.nombre }}</div>
+              <div class="text-sm text-gray-400">{{ emp.categoria || 'Sin categoría' }}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-blue-600 font-bold">{{ emp.visitas || 0 }} vistas</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <p *ngIf="topEmprendimientos.length === 0" class="text-gray-400 text-center py-4">
+      No hay datos disponibles
+    </p>
+  </div>
+
+  <!-- Emprendimientos Menos Vistos -->
+  <div class="bg-white p-6 rounded-xl shadow-md">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h4 class="text-lg font-semibold">Emprendimientos Menos Vistos</h4>
+        <p class="text-sm text-gray-500">Requieren atención</p>
+      </div>
+      <div class="text-red-500 text-xl font-bold">👁️</div>
+    </div>
+
+    <div class="max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+      <ul class="space-y-4">
+        <li *ngFor="let emp of emprendimientosMenosVistos; let i = index" 
+            class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="relative flex-shrink-0">
+              <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
+                {{ i + 1 }}
+              </div>
+              <div [class]="getAvatarColor(i + 3) + ' w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold text-sm'">
+                {{ emp.iniciales }}
+              </div>
+            </div>
+            <div>
+              <div class="font-semibold">{{ emp.nombre }}</div>
+              <div class="text-sm text-gray-400">{{ emp.categoria || 'Sin categoría' }}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M17 13l-5-5-5 5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>{{ emp.visitas }} vistas</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <p *ngIf="emprendimientosMenosVistos.length === 0" class="text-gray-400 text-center py-4">
+      No hay datos disponibles
+    </p>
+  </div>
+</div>
 
       <!-- Segunda fila: Mejor y Peor Valorados -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -226,38 +241,48 @@
       </div>
 
       <!-- Tercera fila: Categoría Más Vistas -->
-      <div class="grid grid-cols-1 gap-6 mb-6">
-        <div class="bg-white p-6 rounded-xl shadow-md">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h4 class="text-lg font-semibold">Categoría Más Vistas</h4>
-              <p class="text-sm text-gray-500">La categoría con más visitas</p>
-            </div>
-            <div class="text-blue-500 text-xl font-bold">🏆</div>
-          </div>
-          <ul class="space-y-4" *ngIf="categoriaMasVista">
-            <li class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                  {{ categoriaMasVista?.nombre?.substring(0, 2)?.toUpperCase() || '??' }}
-                </div>
-                <div>
-                  <div class="font-semibold">{{ categoriaMasVista.nombre }}</div>
-                  <div class="text-sm text-gray-400">{{ categoriaMasVista.ejemplo || 'Categoría destacada' }}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-gray-500">
-                <span class="font-bold text-blue-500">{{ categoriaMasVista.visitas | number }}</span>
-                <span>vistas</span>
-              </div>
-            </li>
-          </ul>
-
-          <p *ngIf="!categoriaMasVista" class="text-gray-400 text-center py-4">
-            No hay datos disponibles
-          </p>
-        </div>
+<!-- Tercera fila: Categorías Más Vistas -->
+<div class="grid grid-cols-1 gap-6 mb-6">
+  <div class="bg-white p-6 rounded-xl shadow-md">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h4 class="text-lg font-semibold">Categorías Más Vistas</h4>
+        <p class="text-sm text-gray-500">Ordenadas por cantidad de visitas</p>
       </div>
+      <div class="text-blue-500 text-xl font-bold">🏆</div>
+    </div>
+
+    <div class="max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+      <ul class="space-y-4" *ngIf="categoriasOrdenadas.length > 0">
+        <li *ngFor="let item of categoriasOrdenadas; let i = index" 
+            class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="relative flex-shrink-0">
+              <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
+                {{ i + 1 }}
+              </div>
+              <div [class]="getAvatarColor(i) + ' w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold text-sm'">
+                {{ item.categoria.nombre?.substring(0, 2)?.toUpperCase() || '??' }}
+              </div>
+            </div>
+            <div>
+              <div class="font-semibold">{{ item.categoria.nombre }}</div>
+              <div class="text-sm text-gray-400">{{ item.categoria.descripcion || 'Categoría destacada' }}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="font-bold text-blue-500">{{ item.vistas | number }}</span>
+            <span class="text-gray-500">vistas</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <p *ngIf="categoriasOrdenadas.length === 0" class="text-gray-400 text-center py-4">
+      No hay datos disponibles
+    </p>
+  </div>
+</div>
 
       <!-- Cuarta fila: Preguntas de Autoevaluación -->
       <div class="grid grid-cols-1 gap-6">

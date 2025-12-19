@@ -155,7 +155,7 @@ export class EmprendimientosComponent implements OnInit {
         const emprendimientos = data.filter(
           (e) =>
             (e.tipoEmprendimientoId === 2 || e.tipoEmprendimientoId === 4) &&
-            e.estadoEmprendimiento === 'APROBADO'
+            e.estadoEmprendimiento === 'PUBLICADO'
         );
 
         console.log('Emprendimientos filtrados:', emprendimientos.length);

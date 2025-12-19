@@ -10,7 +10,8 @@ import {
   EmprendimientoMenosVisto,
   EmprendimientoTop,
   CategoriaMasVista,
-  PreguntaAutoevaluacion 
+  PreguntaAutoevaluacion, 
+  CategoriaConVistas
 } from '../dashboard.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -42,7 +43,8 @@ export class AdminDashboardComponent implements OnInit {
   emprendimientosPeorValorados: EmprendimientoTop[] = [];
   categoriaMasVista: CategoriaMasVista | null = null;
   preguntasAutoevaluacion: PreguntaAutoevaluacion[] = [];
-
+  // Agregar después de categoriaMasVista
+categoriasOrdenadas: CategoriaConVistas[] = [];
   // Lista de todos los emprendimientos para el filtro
   todosEmprendimientos: EmprendimientoTop[] = [];
 
@@ -90,88 +92,107 @@ export class AdminDashboardComponent implements OnInit {
     this.cargarDatos();
   }
 
-  cargarDatos() {
-    this.isLoading = true;
-    this.errorMessage = '';
+cargarDatos() {
+  this.isLoading = true;
+  this.errorMessage = '';
 
-    // Cargar todos los datos en paralelo con manejo individual de errores
-    forkJoin({
-      menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(
-        catchError((error) => {
-          console.warn('Error al cargar emprendimientos menos vistos, usando datos de ejemplo:', error);
-          return of(this.getDatosMockMenosVistos());
-        })
-      ),
-      topEmprendimientos: this.dashboardService.getTopEmprendimientos().pipe(
-        catchError((error) => {
-          console.warn('Error al cargar top emprendimientos, usando datos de ejemplo:', error);
-          return of(this.getDatosMockTop());
-        })
-      ),
-      mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(
-        catchError((error) => {
-          console.warn('Error al cargar emprendimientos mejor valorados, usando datos de ejemplo:', error);
-          return of(this.getDatosMockMejorValorados());
-        })
-      ),
-      peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(
-        catchError((error) => {
-          console.warn('Error al cargar emprendimientos peor valorados, usando datos de ejemplo:', error);
-          return of(this.getDatosMockPeorValorados());
-        })
-      ),
-      categoriaMasVista: this.dashboardService.getCategoriaMasVista().pipe(
-        catchError((error) => {
-          console.warn('Error al cargar categoría más vista, usando datos de ejemplo:', error);
-          return of(this.getDatosMockCategoria());
-        })
-      ),
-    }).subscribe({
-      next: (data) => {
-        // Agregar iniciales a los emprendimientos
-        this.emprendimientosMenosVistos = (data.menosVistos || []).map(emp => ({
-          ...emp,
-          iniciales: this.dashboardService.generarIniciales(emp.nombre)
-        }));
+  forkJoin({
+    filtrosMetricas: this.dashboardService.getFiltrosMetricas().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar métricas filtradas:', error);
+        return of([]);
+      })
+    ),
+    mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar emprendimientos mejor valorados:', error);
+        return of(this.getDatosMockMejorValorados());
+      })
+    ),
+    peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar emprendimientos peor valorados:', error);
+        return of(this.getDatosMockPeorValorados());
+      })
+    ),
+    categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar categorías más vistas:', error);
+        return of([]); // ← CAMBIO AQUÍ: retornar array vacío, no objeto
+      })
+    ),
+  }).subscribe({
+    next: (data) => {
+      // Procesar datos de filtrosMetricas
+      const metricas = data.filtrosMetricas || [];
+      
+      // Ordenar por vistas de MAYOR a MENOR para Top Emprendimientos
+      const topSorted = [...metricas].sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
+      this.topEmprendimientos = topSorted.map(emp => ({
+        id: emp.idEmprendimiento,
+        nombre: emp.nombreEmprendimiento,
+        categoria: '',
+        visitas: emp.vistas,
+        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+      }));
 
-        this.topEmprendimientos = (data.topEmprendimientos || []).map(emp => ({
-          ...emp,
-          iniciales: this.dashboardService.generarIniciales(emp.nombre)
-        }));
+      // Ordenar por vistas de MENOR a MAYOR para Menos Vistos
+      const menosSorted = [...metricas].sort((a, b) => (a.vistas || 0) - (b.vistas || 0));
+      this.emprendimientosMenosVistos = menosSorted.map(emp => ({
+        id: emp.idEmprendimiento,
+        nombre: emp.nombreEmprendimiento,
+        categoria: '',
+        visitas: emp.vistas,
+        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+      }));
 
-        this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => ({
-          ...emp,
-          iniciales: this.dashboardService.generarIniciales(emp.nombre)
-        }));
+      // Mejor valorados
+      this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => ({
+        ...emp,
+        iniciales: this.dashboardService.generarIniciales(emp.nombre)
+      }));
 
-        this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => ({
-          ...emp,
-          iniciales: this.dashboardService.generarIniciales(emp.nombre)
-        }));
+      // Peor valorados
+      this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => ({
+        ...emp,
+        iniciales: this.dashboardService.generarIniciales(emp.nombre)
+      }));
 
-        this.categoriaMasVista = data.categoriaMasVista;
+// Reemplaza esta sección:
+    // Procesar categorías ordenadas de mayor a menor
+// Procesar categorías ordenadas de mayor a menor
+      this.categoriasOrdenadas = (data.categoriasMasVistas || [])
+        .sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
 
-        // Combinar todos los emprendimientos para el filtro
-        this.todosEmprendimientos = [
-          ...this.topEmprendimientos,
-          ...this.emprendimientosMejorValorados
-        ].filter((emp, index, self) => 
-          index === self.findIndex((e) => e.id === emp.id)
-        );
+      // Mantener la categoría principal (la primera)
+      this.categoriaMasVista = this.categoriasOrdenadas.length > 0 
+        ? {
+            nombre: this.categoriasOrdenadas[0].categoria.nombre,
+            visitas: this.categoriasOrdenadas[0].vistas,
+            ejemplo: this.categoriasOrdenadas[0].categoria.descripcion || 'Categoría líder en visitas'
+          }
+        : null;
 
-        // Datos mock para preguntas de autoevaluación
-        this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
+      // Combinar todos los emprendimientos para el filtro
+      this.todosEmprendimientos = [
+        ...this.topEmprendimientos,
+        ...this.emprendimientosMejorValorados
+      ].filter((emp, index, self) => 
+        index === self.findIndex((e) => e.id === emp.id)
+      );
 
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error crítico al cargar datos del dashboard:', error);
-        this.errorMessage = 'Error al conectar con el servidor. Verifica tu conexión.';
-        this.isLoading = false;
-      }
-    });
-  }
+      // Datos mock para preguntas de autoevaluación
+      this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
 
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Error crítico al cargar datos del dashboard:', error);
+      this.errorMessage = 'Error al conectar con el servidor. Verifica tu conexión.';
+      this.isLoading = false;
+    }
+  });
+}
   // Métodos para datos mock (de ejemplo) - solo para presentar JAJA
   private getDatosMockMenosVistos(): EmprendimientoMenosVisto[] {
     return [

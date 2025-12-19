@@ -9,26 +9,30 @@ import { AuthService } from '../../../auth/auth.service';
 import { EmprendimientoDto, EmprendimientoCategoriaDto, DescripcionDto, MetricaDto, PresenciaDigitalDto, ParticipacionComunidadDto, DeclaracionFinalDto, SolicitudEmprendimientoDataDto } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 import { Categoria } from '../../../../models/categoria.interface';
 import { CategoriaService } from '../../../admin/categoria.service';
+import { SolicitudService, VistaEmprendedorDTO } from '../../../admin/admin-solicitudes/solicitud.service';
 
 @Component({
   selector: 'app-edit-solicitud-emprendimiento',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule, // necesario para usar [(ngModel)]
+    FormsModule,
   ],
   templateUrl: './edit-solicitud-emprendimiento.component.html',
   styleUrls: ['./edit-solicitud-emprendimiento.component.css'],
 })
 export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
-    // Tipo de emprendimiento seleccionado en la sección correspondiente
-    tipoEmprendimiento: number = 0;
-    tiposEmprendimiento: TipoEmprendimiento[] = [];
-    @Input() emprendimientoId: number = 0;
-    // Nuevo input para modo solo lectura
-    @Input() soloLectura: boolean = false;
-    // Emprendimiento cargado desde la API según el id recibido
-    emprendimientoLoaded: EmprendimientoPublico | null = null;
+  // Tipo de emprendimiento seleccionado en la sección correspondiente
+  tipoEmprendimiento: number = 0;
+  tiposEmprendimiento: TipoEmprendimiento[] = [];
+  @Input() emprendimientoId: number = 0;
+  
+  // Nuevo input para modo solo lectura
+  @Input() soloLectura: boolean = false;
+  
+  // Emprendimiento cargado desde la API según el id recibido
+  emprendimientoLoaded: EmprendimientoPublico | null = null;
+  
   // --- UBICACIÓN ---
   ubicacion = {
     provincia: '',
@@ -49,11 +53,96 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   // Reemplazamos la lista quemada por un array que guarda id, label y selected
   categories: { id: number; label: string; selected: boolean }[] = [];
 
+  // NUEVA propiedad para manejar el estado del emprendimiento
+  vistaEmprendedor: VistaEmprendedorDTO | null = null;
+  
+  // NUEVAS propiedades para controlar los botones
+  mostrarGuardarDraft: boolean = false;
+  mostrarGuardarCambios: boolean = false;
+  mostrarEnviarAprobacion: boolean = false;
+  mostrarReenviarConObservaciones: boolean = false;
+  mostrarObservaciones: boolean = false;
+  
+  // Variable para almacenar observaciones (para mostrar en UI)
+  observacionesTexto: string = '';
+
+  currentStep = 0;
+  loading = false;
+
+  steps = [
+    { title: 'Descripción del emprendimiento', description: 'Cuéntanos más sobre tu emprendimiento, qué lo hace único y a quién va dirigido.' },
+    { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
+    { title: 'Historia y presencia digital', description: 'Comparte la historia de tu emprendimiento y cómo las personas pueden encontrarte.' },
+    { title: 'Material multimedia', description: 'Adjunta logo, fotos, video y banner para completar tu perfil.' },
+    { title: 'Métricas y participación', description: 'Dinos cómo va tu emprendimiento y cómo quieres participar en la comunidad.' },
+    { title: 'Declaraciones finales', description: 'Confirma las declaraciones necesarias para enviar tu solicitud.' },
+  ];
+
+  // Modelo de la descripción del emprendimiento (paso 2)
+  descripcion = {
+    resumen: '',
+    diferencial: '',
+    publicoObjetivo: '',
+    proposito: '',
+  };
+
+  // Modelo de la historia del emprendimiento (paso 3)
+  historia = {
+    nombreComercial: '',
+    historiaGeneral: '',
+  };
+
+  presenciaDigital = {
+    instagram: '',
+    sitioWeb: '',
+    whatsapp: '',
+    tiktok: '',
+    aceptaMostrarPublicamente: true,
+  };
+
+  // Modelo de métricas y participación (paso 4)
+  metricas = {
+    clientes: '',                // '1-10' | '11-50' | '51-100' | '100+'
+    haGeneradoVentas: null as boolean | null,
+    haParticipadoIncubacion: null as boolean | null,
+    nombreProgramaIncubacion: '',
+  };
+
+  participacion = {
+    interesRankings: null as boolean | null,
+    publicacionesMensuales: null as boolean | null,
+    recibirFeedback: null as boolean | null,
+  };
+
+  // Modelo de archivos para el paso 3 (material multimedia)
+  multimedia = {
+    logo: null as File | null,
+    logoPreview: '' as string,
+
+    fotosProductos: [] as File[],
+    fotosProductosPreview: [] as string[],
+
+    videoPresentacion: null as File | null,
+    videoPreview: '' as string,
+
+    banner: null as File | null,
+    bannerPreview: '' as string,
+  };
+
+  // Declaraciones finales (nuevo paso 5)
+  declaraciones = {
+    infoVeridica: false,
+    aceptaPublicacion: false,
+    autorizaUsoImagenes: false,
+    aceptaPoliticasCentro: false,
+  };
+
   constructor(
     private emprendimientoService: EmprendimientoService,
+    private solicitudService: SolicitudService,
     private locationService: LocationService,
     private authService: AuthService,
-    private categoriaService: CategoriaService, // nuevo
+    private categoriaService: CategoriaService,
   ) {}
 
   ngOnInit(): void {
@@ -91,11 +180,99 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
       }
     });
   }
+ngOnChanges(changes: SimpleChanges): void {
+  if (changes['emprendimientoId'] && changes['emprendimientoId'].currentValue) {
+    this.loadEmprendimiento();
+    this.loadVistaEmprendedor(); // ✅ Debe llamarse aquí
+  }
+}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['emprendimientoId'] && changes['emprendimientoId'].currentValue) {
-      this.loadEmprendimiento();
+  // NUEVO MÉTODO: Cargar vista del emprendedor
+  private loadVistaEmprendedor(): void {
+    if (!this.emprendimientoId) return;
+    
+    this.solicitudService.obtenerVistaEmprendedor(this.emprendimientoId).subscribe({
+      next: (vista: VistaEmprendedorDTO) => {
+        this.vistaEmprendedor = vista;
+        this.observacionesTexto = vista.observaciones || '';
+        
+        // Determinar qué botones mostrar según el estado
+        this.determinarBotonesVisibles();
+      },
+      error: (err) => {
+        console.error('Error al cargar vista del emprendedor:', err);
+        // Si hay error, mostrar botones por defecto
+        this.mostrarBotonesPorDefecto();
+      }
+    });
+  }
+
+  // NUEVO MÉTODO: Determinar qué botones mostrar
+  private determinarBotonesVisibles(): void {
+    if (!this.vistaEmprendedor) {
+      this.mostrarBotonesPorDefecto();
+      return;
     }
+
+    const estadoEmp = this.vistaEmprendedor.estadoEmprendimiento;
+    console.log('Estado del emprendimiento:', estadoEmp);
+    const estadoSol = this.vistaEmprendedor.estadoSolicitud;
+    const tieneSolicitudActiva = this.vistaEmprendedor.tieneSolicitudActiva;
+
+    // Resetear todos los botones
+    this.resetearBotones();
+
+    // Lógica según el estado
+    switch (estadoEmp) {
+      case 'BORRADOR':
+        // En borrador: puede guardar como borrador, guardar cambios, o enviar a aprobación
+        this.mostrarGuardarDraft = true;
+        this.mostrarGuardarCambios = true;
+        this.mostrarEnviarAprobacion = true;
+        break;
+
+      case 'APROBADO':
+        // Publicado: puede editar y solicitar actualización (que crea una solicitud de ACTUALIZACION)
+        this.mostrarGuardarCambios = true;
+        this.mostrarEnviarAprobacion = true;
+        break;
+
+      case 'EN_REVISION':
+        // Ya enviado, esperando respuesta del admin
+
+          // Si hay observaciones: puede reenviar corregido
+          this.mostrarReenviarConObservaciones = true;
+          this.mostrarObservaciones = true;
+          this.mostrarGuardarCambios = true;
+
+
+          // Solo mostrar que está pendiente
+
+        break;
+
+      case 'INACTIVO':
+        // Inactivo: puede reactivar (aunque esto va por otro endpoint)
+        this.mostrarGuardarCambios = true;
+        break;
+
+      default:
+        this.mostrarBotonesPorDefecto();
+        break;
+    }
+  }
+
+  private resetearBotones(): void {
+    this.mostrarGuardarDraft = false;
+    this.mostrarGuardarCambios = false;
+    this.mostrarEnviarAprobacion = false;
+    this.mostrarReenviarConObservaciones = false;
+    this.mostrarObservaciones = false;
+  }
+
+  private mostrarBotonesPorDefecto(): void {
+    // Por defecto, mostrar opciones básicas
+    this.mostrarGuardarCambios = true;
+    this.mostrarEnviarAprobacion = true;
   }
 
   public loadEmprendimiento(): void {
@@ -267,77 +444,6 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
       },
     });
   }
-  currentStep = 0;
-
-  loading = false;
-
-  steps = [
-    { title: 'Descripción del emprendimiento', description: 'Cuéntanos más sobre tu emprendimiento, qué lo hace único y a quién va dirigido.' },
-    { title: 'Categorías del emprendimiento', description: 'Selecciona el rubro que mejor represente tu emprendimiento (puedes escoger hasta 2).' },
-    { title: 'Historia y presencia digital', description: 'Comparte la historia de tu emprendimiento y cómo las personas pueden encontrarte.' },
-    { title: 'Material multimedia', description: 'Adjunta logo, fotos, video y banner para completar tu perfil.' },
-    { title: 'Métricas y participación', description: 'Dinos cómo va tu emprendimiento y cómo quieres participar en la comunidad.' },
-    { title: 'Declaraciones finales', description: 'Confirma las declaraciones necesarias para enviar tu solicitud.' },
-  ];
-
-  // Modelo de la descripción del emprendimiento (paso 2)
-  descripcion = {
-    resumen: '',
-    diferencial: '',
-    publicoObjetivo: '',
-    proposito: '',
-  };
-
-  // Modelo de la historia del emprendimiento (paso 3)
-  historia = {
-    nombreComercial: '',
-    historiaGeneral: '',
-  };
-
-  presenciaDigital = {
-    instagram: '',
-    sitioWeb: '',
-    whatsapp: '',
-    tiktok: '',
-    aceptaMostrarPublicamente: true,
-  };
-
-  // Modelo de métricas y participación (paso 4)
-  metricas = {
-    clientes: '',                // '1-10' | '11-50' | '51-100' | '100+'
-    haGeneradoVentas: null as boolean | null,
-    haParticipadoIncubacion: null as boolean | null,
-    nombreProgramaIncubacion: '',
-  };
-
-  participacion = {
-    interesRankings: null as boolean | null,
-    publicacionesMensuales: null as boolean | null,
-    recibirFeedback: null as boolean | null,
-  };
-
-  // Modelo de archivos para el paso 3 (material multimedia)
-  multimedia = {
-    logo: null as File | null,
-    logoPreview: '' as string,
-
-    fotosProductos: [] as File[],
-    fotosProductosPreview: [] as string[],
-
-    videoPresentacion: null as File | null,
-    videoPreview: '' as string,
-
-    banner: null as File | null,
-    bannerPreview: '' as string,
-  };
-
-  // Declaraciones finales (nuevo paso 5)
-  declaraciones = {
-    infoVeridica: false,
-    aceptaPublicacion: false,
-    autorizaUsoImagenes: false,
-    aceptaPoliticasCentro: false,
-  };
 
   // Helper: quita tildes y pasa a MAYÚSCULAS
   private normalizeText(value: string | null | undefined): string {
@@ -361,8 +467,8 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   }
 
   get isCategoriasComplete(): boolean {
-  return this.selectedCategoriesCount > 0 && this.selectedCategoriesCount <= 2;
-}
+    return this.selectedCategoriesCount > 0 && this.selectedCategoriesCount <= 2;
+  }
 
   get canGoNextFromStep1(): boolean {
     return this.selectedCategoriesCount > 0 && this.selectedCategoriesCount <= 2;
@@ -468,7 +574,6 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     }
     cat.selected = !cat.selected;
   }
-  
 
   nextStep(): void {
     // Modo solo lectura: permitir avanzar libremente (sin validaciones), un paso hacia adelante
@@ -518,6 +623,355 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     }
   }
 
+  // MÉTODOS PARA LOS BOTONES:
+
+  /**
+   * 1. Guardar como borrador (draft)
+   * Usa el endpoint de borrador específico
+   */
+  guardarComoBorrador(): void {
+    if (this.soloLectura) return;
+    
+    this.loading = true;
+    
+    // Primero obtén los datos del formulario
+    const datosFormulario = this.obtenerDatosFormulario();
+    
+    this.emprendimientoService.crearBorrador(datosFormulario).subscribe({
+      next: (response: { id: number }) => {
+        console.log('Guardado como borrador, ID:', response.id);
+        this.loading = false;
+        alert('Borrador guardado correctamente');
+        
+        // Actualizar el emprendimientoId si es nuevo
+        if (response.id && this.emprendimientoId === 0) {
+          this.emprendimientoId = response.id;
+          this.loadVistaEmprendedor();
+        }
+      },
+      error: (err) => {
+        console.error('Error al guardar borrador:', err);
+        this.loading = false;
+        alert('Error al guardar borrador');
+      }
+    });
+  }
+
+/**
+ * 2. Guardar cambios
+ * - Si es PUBLICADO: NO guardar directamente, solo editar en memoria
+ * - Si es BORRADOR: Guardar directamente con PUT
+ */
+guardarCambios(): void {
+  if (this.soloLectura) return;
+  
+  // Si es publicado, solo guardamos en memoria local (no hacemos PUT)
+  if (this.vistaEmprendedor?.estadoEmprendimiento === 'PUBLICADO') {
+    alert('Cambios guardados en borrador. Presiona "Enviar para revisión" para solicitar la actualización.');
+    return;
+  }
+  
+  // Si es BORRADOR u otro estado, sí guardamos directamente
+  const data = this.prepararDatosParaEnvio('ACTUALIZAR');
+  const files = this.obtenerArchivos();
+  
+  this.loading = true;
+  
+  this.emprendimientoService.editarEmprendimiento(this.emprendimientoId, data, files).subscribe({
+    next: (resp: EmprendimientoCrearResponse) => {
+      console.log('Cambios guardados correctamente', resp);
+      this.loading = false;
+      alert('Cambios guardados correctamente');
+      this.loadVistaEmprendedor();
+    },
+    error: (err) => {
+      console.error('Error al guardar cambios:', err);
+      this.loading = false;
+      alert('Error al guardar cambios');
+    }
+  });
+}
+/**
+ * 3. Enviar a aprobación
+ * - Si es BORRADOR: crea solicitud de CREACION
+ * - Si es PUBLICADO: crea solicitud de ACTUALIZACION con datos propuestos
+ */
+enviarAprobacion(): void {
+  if (this.soloLectura) return;
+  
+  this.loading = true;
+  
+  // ✅ Para PUBLICADOS: enviar solicitud de actualización con datos completos
+  if (this.vistaEmprendedor?.estadoEmprendimiento === 'PUBLICADO') {
+    this.enviarSolicitudActualizacion();
+    return;
+  }
+  
+  // Para BORRADOR: usar el endpoint simple
+  this.emprendimientoService.enviarAprobacion(this.emprendimientoId).subscribe({
+    next: (resp: any) => {
+      console.log('Enviado a aprobación:', resp);
+      this.loading = false;
+      alert('Emprendimiento enviado para revisión');
+      this.loadVistaEmprendedor();
+    },
+    error: (err) => {
+      console.error('Error al enviar a aprobación:', err);
+      this.enviarAprobacionConDatosCompletos();
+    }
+  });
+}
+
+/**
+ * Enviar solicitud de ACTUALIZACIÓN para emprendimientos PUBLICADOS
+ * Usa el endpoint de solicitudes, NO el de emprendimientos
+ */
+private enviarSolicitudActualizacion(): void {
+  // Preparar datos en formato EmprendimientoCompletoDTO
+  const datosActualizados = this.prepararDatosParaSolicitud();
+  
+  console.log('Enviando solicitud de actualización:', datosActualizados);
+  
+  // ✅ Usar el servicio de solicitudes
+  this.solicitudService.enviarSolicitudActualizacion(
+    this.emprendimientoId,
+    datosActualizados
+  ).subscribe({
+    next: (resp: any) => {
+      console.log('Solicitud de actualización creada:', resp);
+      this.loading = false;
+      alert('Solicitud de actualización enviada para revisión. Los cambios se aplicarán cuando un administrador los apruebe.');
+      this.loadVistaEmprendedor();
+    },
+    error: (err) => {
+      console.error('Error al enviar solicitud de actualización:', err);
+      this.loading = false;
+      alert('Error al enviar solicitud de actualización');
+    }
+  });
+}
+
+/**
+ * Prepara datos en formato EmprendimientoCompletoDTO para solicitud de actualización
+ * NO incluye IDs de relaciones (se generan en backend)
+ */
+private prepararDatosParaSolicitud(): any {
+  const nowIso = new Date().toISOString();
+  const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+  const usuarioLocal = this.authService.getPerfilLocal();
+
+  return {
+    // Datos básicos del emprendimiento
+    nombreComercial: this.historia.nombreComercial,
+    anioCreacion: nowIso,
+    activoEmprendimiento: true,
+    aceptaDatosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
+    tipoEmprendimientoId: this.tipoEmprendimiento,
+    ciudadId: ciudadSeleccionada ? ciudadSeleccionada.id : null,
+    
+    // Usuario propietario
+    usuario: usuarioLocal ? {
+      id: usuarioLocal.id,
+      nombre: usuarioLocal.nombre,
+      email: usuarioLocal.correo
+    } : null,
+    
+    // Categorías (estructura completa)
+    categorias: this.categories
+      .filter(c => c.selected)
+      .map(c => ({
+        categoria: {
+          id: c.id,
+          nombre: c.label,
+          descripcion: '',
+          urlImagen: '',
+          idMultimedia: 0
+        },
+        nombreCategoria: c.label
+      })),
+    
+    // Descripciones
+    descripciones: [
+      {
+        tipoDescripcion: 'RESUMEN',
+        descripcion: this.descripcion.resumen,
+        maxCaracteres: 500,
+        obligatorio: true
+      },
+      {
+        tipoDescripcion: 'DIFERENCIAL',
+        descripcion: this.descripcion.diferencial,
+        maxCaracteres: 1000,
+        obligatorio: true
+      },
+      {
+        tipoDescripcion: 'PUBLICO OBJETIVO',
+        descripcion: this.descripcion.publicoObjetivo,
+        maxCaracteres: 1000,
+        obligatorio: true
+      },
+      {
+        tipoDescripcion: 'PROPOSITO',
+        descripcion: this.descripcion.proposito,
+        maxCaracteres: 1000,
+        obligatorio: true
+      },
+      {
+        tipoDescripcion: 'HISTORIA',
+        descripcion: this.historia.historiaGeneral,
+        maxCaracteres: 2000,
+        obligatorio: true
+      }
+    ],
+    
+    // Métricas
+    metricas: [
+      {
+        metricaId: 1,
+        valor: this.metricas.clientes
+      },
+      {
+        metricaId: 2,
+        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO'
+      },
+      {
+        metricaId: 3,
+        valor: this.metricas.haParticipadoIncubacion 
+          ? (this.metricas.nombreProgramaIncubacion || 'SI') 
+          : 'NO'
+      }
+    ],
+    
+    // Presencias digitales
+    presenciasDigitales: [
+      {
+        plataforma: 'instagram',
+        descripcion: this.presenciaDigital.instagram
+      },
+      {
+        plataforma: 'whatsapp',
+        descripcion: this.presenciaDigital.whatsapp
+      },
+      {
+        plataforma: 'tiktok',
+        descripcion: this.presenciaDigital.tiktok
+      }
+    ].concat(
+      this.presenciaDigital.sitioWeb 
+        ? [{
+            plataforma: 'sitio web',
+            descripcion: this.presenciaDigital.sitioWeb
+          }] 
+        : []
+    ),
+    
+    // Participación comunidad
+    participacionesComunidad: [
+      {
+        opcionParticipacionId: 1,
+        respuesta: !!this.participacion.interesRankings,
+        nombreOpcionParticipacion: 'RANKINGS'
+      },
+      {
+        opcionParticipacionId: 2,
+        respuesta: !!this.participacion.publicacionesMensuales,
+        nombreOpcionParticipacion: 'PUBLICACIONESMENSUALES'
+      },
+      {
+        opcionParticipacionId: 4,
+        respuesta: !!this.participacion.recibirFeedback,
+        nombreOpcionParticipacion: 'FEEDBACK'
+      }
+    ],
+    
+    // Declaraciones finales
+    declaracionesFinales: [
+      {
+        declaracionId: 1,
+        aceptada: this.declaraciones.infoVeridica,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        declaracionId: 2,
+        aceptada: this.declaraciones.aceptaPublicacion,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        declaracionId: 4,
+        aceptada: this.declaraciones.autorizaUsoImagenes,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        declaracionId: 5,
+        aceptada: this.declaraciones.aceptaPoliticasCentro,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      }
+    ],
+    
+    // Información representante (opcional)
+    informacionRepresentante: null
+  };
+}
+  /**
+   * Opción B: Enviar con datos completos
+   */
+  private enviarAprobacionConDatosCompletos(): void {
+    const data = this.prepararDatosParaEnvio('CREAR');
+    const files = this.obtenerArchivos();
+    
+    // Opción 1: Usar el servicio de solicitudes
+    this.solicitudService.enviarSolicitudEmprendimiento(
+      this.emprendimientoId, 
+      data
+    ).subscribe({
+      next: (resp: any) => {
+        console.log('Solicitud creada:', resp);
+        this.loading = false;
+        alert('Emprendimiento enviado para revisión');
+        this.loadVistaEmprendedor();
+      },
+      error: (err) => {
+        console.error('Error al crear solicitud:', err);
+        this.loading = false;
+        alert('Error al enviar para aprobación');
+      }
+    });
+  }
+
+  /**
+
+ * 4. Reenviar con observaciones corregidas
+ * Solo cuando estadoSolicitud = ENREVISION
+ */
+reenviarConObservaciones(): void {
+  if (!this.vistaEmprendedor?.solicitudId) return;
+  
+  const solicitudId = this.vistaEmprendedor.solicitudId;
+  
+  // 🔥 USA EL NUEVO MÉTODO en lugar de prepararDatosParaEnvio
+  const datosCorregidos = this.prepararDatosParaModificarReenviar();
+  
+  this.loading = true;
+  
+  this.solicitudService.modificarYReenviarSolicitud(solicitudId, datosCorregidos).subscribe({
+    next: (resp: any) => {
+      console.log('Reenviado con correcciones:', resp);
+      this.loading = false;
+      alert('Correcciones enviadas para revisión');
+      this.loadVistaEmprendedor();
+    },
+    error: (err) => {
+      console.error('Error al reenviar:', err);
+      this.loading = false;
+      alert('Error al reenviar correcciones');
+    }
+  });
+}
+
   finish(): void {
     // En modo solo lectura no se envía ni guarda nada
     if (this.soloLectura) return;
@@ -539,7 +993,7 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     console.log('Tipo de emprendimiento seleccionado:', tipoSeleccionado);
 
     const emprendimientoBase: EmprendimientoDto = {
-      id: 0,
+      id: this.emprendimientoId,
       correoComercial: '',
       correoUees: '',
       identificacion: '',
@@ -753,7 +1207,7 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
       const data: SolicitudEmprendimientoDataDto = {
         usuarioId,
         emprendimiento: emprendimientoBase,
-        tipoAccion: 'BORRADOR',
+        tipoAccion: 'CREAR',
         categorias: categoriasSeleccionadas,
         descripciones,
         metricas,
@@ -791,6 +1245,416 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
         },
       });
     });
+  }
+
+  // MÉTODOS AUXILIARES:
+
+  private obtenerDatosFormulario(): any {
+    // Extrae solo los datos básicos para el borrador
+    return {
+      nombreComercial: this.historia.nombreComercial,
+      tipoEmprendimientoId: this.tipoEmprendimiento,
+      ciudadId: Number(this.ubicacion.ciudad),
+      provinciaId: Number(this.ubicacion.provincia),
+      aceptaDatosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
+    };
+  }
+
+  private prepararDatosParaEnvio(tipoAccion: string): SolicitudEmprendimientoDataDto {
+    // Tu lógica existente para preparar los datos completos
+    const usuarioLocal = this.authService.getPerfilLocal();
+    const usuarioId = usuarioLocal?.id || 0;
+    
+    const nowIso = new Date().toISOString();
+    const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+    const provinciaSeleccionada = this.provincias.find(p => p.id === Number(this.ubicacion.provincia));
+    const tipoSeleccionado = this.tiposEmprendimiento.find(t => t.id === this.tipoEmprendimiento);
+
+    const emprendimientoBase: EmprendimientoDto = {
+      id: this.emprendimientoId || 0,
+      correoComercial: '',
+      correoUees: '',
+      identificacion: '',
+      parienteDirecto: '',
+      nombreComercialEmprendimiento: this.historia.nombreComercial,
+      fechaCreacion: nowIso,
+      ciudad: ciudadSeleccionada ? ciudadSeleccionada.id : 0,
+      provinia: provinciaSeleccionada ? provinciaSeleccionada.id : 0,
+      estadoEmpredimiento: true,
+      tipoEmprendimiento: tipoSeleccionado ? tipoSeleccionado.tipo : '',
+      tipoEmprendimientoId: this.tipoEmprendimiento,
+      datosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
+    };
+
+    const categoriasSeleccionadas: EmprendimientoCategoriaDto[] = this.categories
+      .filter(c => c.selected)
+      .map((c) => ({
+        emprendimiento: emprendimientoBase,
+        categoria: {
+          id: c.id,
+          nombre: this.normalizeText(c.label),
+          descripcion: '',
+          urlImagen: '',
+          idMultimedia: 0,
+        },
+        nombreCategoria: this.normalizeText(c.label),
+      }));
+
+    const descripciones: DescripcionDto[] = [
+      {
+        tipoDescripcion: this.normalizeText('RESUMEN'),
+        descripcion: this.descripcion.resumen,
+        maxCaracteres: 500,
+        obligatorio: true,
+        idEmprendimiento: 0,
+        emprendimientoId: 0,
+      },
+      {
+        tipoDescripcion: this.normalizeText('DIFERENCIAL'),
+        descripcion: this.descripcion.diferencial,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: 0,
+        emprendimientoId: 0,
+      },
+      {
+        tipoDescripcion: this.normalizeText('PUBLICO OBJETIVO'),
+        descripcion: this.descripcion.publicoObjetivo,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: 0,
+        emprendimientoId: 0,
+      },
+      {
+        tipoDescripcion: this.normalizeText('PROPOSITO'),
+        descripcion: this.descripcion.proposito,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: 0,
+        emprendimientoId: 0,
+      },
+      {
+        tipoDescripcion: this.normalizeText('HISTORIA'),
+        descripcion: this.historia.historiaGeneral,
+        maxCaracteres: 2000,
+        obligatorio: true,
+        idEmprendimiento: 0,
+        emprendimientoId: 0,
+      },
+    ];
+
+    const metricas: MetricaDto[] = [
+      {
+        emprendimientoId: 0,
+        metricaId: 1,
+        valor: this.metricas.clientes,
+      },
+      {
+        emprendimientoId: 0,
+        metricaId: 2,
+        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO',
+      },
+      {
+        emprendimientoId: 0,
+        metricaId: 3,
+        valor: this.metricas.haParticipadoIncubacion
+          ? (this.metricas.nombreProgramaIncubacion || 'SI')
+          : 'NO',
+      },
+    ];
+
+    const presenciasDigitales: PresenciaDigitalDto[] = [
+      {
+        emprendimientoId: 0,
+        plataforma: 'instagram',
+        descripcion: this.presenciaDigital.instagram,
+      },
+    ];
+    if (this.presenciaDigital.sitioWeb && this.presenciaDigital.sitioWeb.trim().length > 0) {
+      presenciasDigitales.push({
+        emprendimientoId: 0,
+        plataforma: 'sitio web',
+        descripcion: this.presenciaDigital.sitioWeb,
+      });
+    }
+    presenciasDigitales.push(
+      {
+        emprendimientoId: 0,
+        plataforma: 'whatsapp',
+        descripcion: this.presenciaDigital.whatsapp,
+      },
+      {
+        emprendimientoId: 0,
+        plataforma: 'tiktok',
+        descripcion: this.presenciaDigital.tiktok,
+      }
+    );
+
+    const participacionesComunidad: ParticipacionComunidadDto[] = [
+      {
+        emprendimientoId: 0,
+        opcionParticipacionId: 1,
+        respuesta: !!this.participacion.interesRankings,
+        nombreOpcionParticipacion: this.normalizeText('RANKINGS'),
+      },
+      {
+        emprendimientoId: 0,
+        opcionParticipacionId: 2,
+        respuesta: !!this.participacion.publicacionesMensuales,
+        nombreOpcionParticipacion: this.normalizeText('PUBLICACIONESMENSUALES'),
+      },
+      {
+        emprendimientoId: 0,
+        opcionParticipacionId: 4,
+        respuesta: !!this.participacion.recibirFeedback,
+        nombreOpcionParticipacion: this.normalizeText('FEEDBACK'),
+      },
+    ];
+
+    const declaracionesFinales: DeclaracionFinalDto[] = [
+      {
+        emprendimientoId: 0,
+        declaracionId: 1,
+        aceptada: this.declaraciones.infoVeridica,
+        fechaAceptacion: nowIso,
+        nombreFirma: '',
+      },
+      {
+        emprendimientoId: 0,
+        declaracionId: 2,
+        aceptada: this.declaraciones.aceptaPublicacion,
+        fechaAceptacion: nowIso,
+        nombreFirma: '',
+      },
+      {
+        emprendimientoId: 0,
+        declaracionId: 4,
+        aceptada: this.declaraciones.autorizaUsoImagenes,
+        fechaAceptacion: nowIso,
+        nombreFirma: '',
+      },
+      {
+        emprendimientoId: 0,
+        declaracionId: 5,
+        aceptada: this.declaraciones.aceptaPoliticasCentro,
+        fechaAceptacion: nowIso,
+        nombreFirma: '',
+      },
+    ];
+
+    const tiposMultimedia: string[] = [];
+    if (this.multimedia.logo) tiposMultimedia.push('LOGO');
+    if (this.multimedia.fotosProductos.length > 0) tiposMultimedia.push('FOTOSPRODUCTOS');
+    if (this.multimedia.banner) tiposMultimedia.push('BANNER');
+    if (this.multimedia.videoPresentacion) tiposMultimedia.push('VIDEO');
+
+    return {
+      usuarioId,
+      emprendimiento: emprendimientoBase,
+      tipoAccion: tipoAccion,
+      categorias: categoriasSeleccionadas,
+      descripciones,
+      metricas,
+      presenciasDigitales,
+      participacionesComunidad,
+      declaracionesFinales,
+      tiposMultimedia,
+    };
+  }
+/**
+ * Prepara los datos en formato EmprendimientoCompletoDTO para modificar-reenviar
+ * Coincide EXACTAMENTE con la estructura de DTOs del backend
+ */
+private prepararDatosParaModificarReenviar(): any {
+  const nowIso = new Date().toISOString();
+  const ciudadSeleccionada = this.ciudadesFiltradas.find(c => c.id === Number(this.ubicacion.ciudad));
+
+  return {
+    // Datos básicos
+    nombreComercial: this.historia.nombreComercial,
+    anioCreacion: nowIso,
+    activoEmprendimiento: true,
+    aceptaDatosPublicos: this.presenciaDigital.aceptaMostrarPublicamente,
+    tipoEmprendimientoId: this.tipoEmprendimiento,
+    ciudadId: ciudadSeleccionada ? ciudadSeleccionada.id : null,
+    
+    // ✅ Categorías: debe tener emprendimiento, categoria y nombreCategoria
+    categorias: this.categories
+      .filter(c => c.selected)
+      .map(c => ({
+        emprendimiento: null, // Se puede enviar null o el objeto completo
+        categoria: {
+          id: c.id,
+          nombre: c.label,
+          descripcion: '',
+          urlImagen: '',
+          idMultimedia: 0
+        },
+        nombreCategoria: c.label
+      })),
+    
+    // ✅ Descripciones: estructura completa con todos los campos
+    descripciones: [
+      {
+        tipoDescripcion: 'RESUMEN',
+        descripcion: this.descripcion.resumen,
+        maxCaracteres: 500,
+        obligatorio: true,
+        idEmprendimiento: this.emprendimientoId || 0,
+        emprendimientoId: this.emprendimientoId || 0
+      },
+      {
+        tipoDescripcion: 'DIFERENCIAL',
+        descripcion: this.descripcion.diferencial,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: this.emprendimientoId || 0,
+        emprendimientoId: this.emprendimientoId || 0
+      },
+      {
+        tipoDescripcion: 'PUBLICO OBJETIVO',
+        descripcion: this.descripcion.publicoObjetivo,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: this.emprendimientoId || 0,
+        emprendimientoId: this.emprendimientoId || 0
+      },
+      {
+        tipoDescripcion: 'PROPOSITO',
+        descripcion: this.descripcion.proposito,
+        maxCaracteres: 1000,
+        obligatorio: true,
+        idEmprendimiento: this.emprendimientoId || 0,
+        emprendimientoId: this.emprendimientoId || 0
+      },
+      {
+        tipoDescripcion: 'HISTORIA',
+        descripcion: this.historia.historiaGeneral,
+        maxCaracteres: 2000,
+        obligatorio: true,
+        idEmprendimiento: this.emprendimientoId || 0,
+        emprendimientoId: this.emprendimientoId || 0
+      }
+    ],
+    
+    // ✅ Métricas: emprendimientoId, metricaId, valor
+    metricas: [
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        metricaId: 1,
+        valor: this.metricas.clientes
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        metricaId: 2,
+        valor: this.metricas.haGeneradoVentas ? 'SI' : 'NO'
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        metricaId: 3,
+        valor: this.metricas.haParticipadoIncubacion 
+          ? (this.metricas.nombreProgramaIncubacion || 'SI') 
+          : 'NO'
+      }
+    ],
+    
+    // ✅ Presencias digitales: emprendimientoId, plataforma, descripcion
+    presenciasDigitales: [
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        plataforma: 'instagram',
+        descripcion: this.presenciaDigital.instagram
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        plataforma: 'whatsapp',
+        descripcion: this.presenciaDigital.whatsapp
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        plataforma: 'tiktok',
+        descripcion: this.presenciaDigital.tiktok
+      }
+    ].concat(
+      this.presenciaDigital.sitioWeb 
+        ? [{
+            emprendimientoId: this.emprendimientoId || 0,
+            plataforma: 'sitio web',
+            descripcion: this.presenciaDigital.sitioWeb
+          }] 
+        : []
+    ),
+    
+    // ✅ Participación comunidad: emprendimientoId, opcionParticipacionId, respuesta, nombreOpcionParticipacion
+    participacionesComunidad: [
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        opcionParticipacionId: 1,
+        respuesta: !!this.participacion.interesRankings,
+        nombreOpcionParticipacion: 'RANKINGS'
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        opcionParticipacionId: 2,
+        respuesta: !!this.participacion.publicacionesMensuales,
+        nombreOpcionParticipacion: 'PUBLICACIONESMENSUALES'
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        opcionParticipacionId: 4,
+        respuesta: !!this.participacion.recibirFeedback,
+        nombreOpcionParticipacion: 'FEEDBACK'
+      }
+    ],
+    
+    // ✅ Declaraciones finales: emprendimientoId, declaracionId, aceptada, fechaAceptacion, nombreFirma
+    declaracionesFinales: [
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        declaracionId: 1,
+        aceptada: this.declaraciones.infoVeridica,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        declaracionId: 2,
+        aceptada: this.declaraciones.aceptaPublicacion,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        declaracionId: 4,
+        aceptada: this.declaraciones.autorizaUsoImagenes,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      },
+      {
+        emprendimientoId: this.emprendimientoId || 0,
+        declaracionId: 5,
+        aceptada: this.declaraciones.aceptaPoliticasCentro,
+        fechaAceptacion: nowIso,
+        nombreFirma: ''
+      }
+    ],
+    
+    // ✅ Usuario: puede ser null o el objeto UsuarioDTO
+    usuario: null,
+    
+    // ✅ Información representante: puede ser null
+    informacionRepresentante: null
+  };
+}
+  private obtenerArchivos(): File[] {
+    const files: File[] = [];
+    if (this.multimedia.logo) files.push(new File([this.multimedia.logo], 'LOGO.PNG', { type: this.multimedia.logo.type }));
+    if (this.multimedia.banner) files.push(new File([this.multimedia.banner], 'BANNER.PNG', { type: this.multimedia.banner.type }));
+    if (this.multimedia.videoPresentacion) files.push(new File([this.multimedia.videoPresentacion], 'VIDEO.MP4', { type: this.multimedia.videoPresentacion.type }));
+    if (this.multimedia.fotosProductos.length > 0) files.push(new File([this.multimedia.fotosProductos[0]], 'FOTOPRODUCTO_1.PNG', { type: this.multimedia.fotosProductos[0].type }));
+    if (this.multimedia.fotosProductos.length > 1) files.push(new File([this.multimedia.fotosProductos[1]], 'FOTOPRODUCTO_2.PNG', { type: this.multimedia.fotosProductos[1].type }));
+    
+    return files;
   }
 
   // Manejo de carga de archivos
@@ -901,6 +1765,20 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
         return this.isMetricasComplete;
       default:
         return true;
+    }
+  }
+
+  // Método para obtener el texto del estado actual
+  getEstadoTexto(): string {
+    if (!this.vistaEmprendedor) return 'Cargando...';
+    
+    const estado = this.vistaEmprendedor.estadoEmprendimiento;
+    switch(estado) {
+      case 'BORRADOR': return 'Borrador (no visible al público)';
+      case 'PENDIENTE_APROBACION': return 'Pendiente de aprobación';
+      case 'PUBLICADO': return 'Publicado (visible al público)';
+      case 'INACTIVO': return 'Inactivo (oculto al público)';
+      default: return estado;
     }
   }
 }

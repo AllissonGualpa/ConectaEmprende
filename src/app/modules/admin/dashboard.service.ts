@@ -13,6 +13,39 @@ export interface EmprendimientoMenosVisto {
   iniciales?: string;
 }
 
+export interface FiltroMetrica {
+  id: number;
+  idEmprendimiento: number;
+  nombreEmprendimiento: string;
+  vistas: number;
+  fechaRegistro: string;
+}
+
+export interface CategoriaDTO {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  urlImagen: string;
+  idMultimedia: number;
+}
+
+export interface CategoriaDetalle {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  urlImagen: string;
+  idMultimedia: number;
+}
+
+export interface CategoriaConVistas {
+  categoria: CategoriaDetalle;
+  vistas: number;
+}
+
+export interface CategoriaMasVistaResponse {
+  categorias: CategoriaConVistas[];
+}
+
 export interface EmprendimientoTop {
   id: number;
   nombre: string;
@@ -144,18 +177,17 @@ export class DashboardService {
   // ============================
   // CATEGORÍA MÁS VISTA
   // ============================
-  getCategoriaMasVista(): Observable<CategoriaMasVista> {
+  getCategoriasMasVistas(): Observable<CategoriaConVistas[]> {
     const url = `${this.baseUrl}/v1/metricas-generales/categoria/mayor-vista`;
 
-    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarObjeto(res, {
-        nombre: '',
-        visitas: 0,
-        ejemplo: ''
-      })),
-      catchError(err => throwError(() => err))
-    );
+    return this.http
+      .get<CategoriaMasVistaResponse>(url, { headers: this.getHeaders() })
+      .pipe(
+        map(res => res.categorias ?? []),
+        catchError(err => throwError(() => err))
+      );
   }
+
 
   // ============================
   // PREGUNTAS AUTOEVALUACIÓN
@@ -182,6 +214,35 @@ export class DashboardService {
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<any>(res)),
+      catchError(err => throwError(() => err))
+    );
+  }
+
+
+  getFiltrosMetricas(options?: {
+    emprendimientoId?: number;
+    fechaInicio?: string;
+    fechaFin?: string;
+  }): Observable<FiltroMetrica[]> {
+    let url = `${this.baseUrl}/v1/metricas-generales/filtros`;
+    const params: string[] = [];
+
+    if (options?.emprendimientoId) {
+      params.push(`emprendimientoId=${options.emprendimientoId}`);
+    }
+    if (options?.fechaInicio) {
+      params.push(`fechaInicio=${options.fechaInicio}`);
+    }
+    if (options?.fechaFin) {
+      params.push(`fechaFin=${options.fechaFin}`);
+    }
+
+    if (params.length) {
+      url += '?' + params.join('&');
+    }
+
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      map(res => this.normalizarArray<FiltroMetrica>(res)),
       catchError(err => throwError(() => err))
     );
   }

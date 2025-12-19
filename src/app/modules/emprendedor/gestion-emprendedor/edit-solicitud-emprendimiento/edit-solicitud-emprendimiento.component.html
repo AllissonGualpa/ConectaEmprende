@@ -6,6 +6,23 @@
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
     </svg>
     <span class="text-gray-500 text-sm">Cargando emprendimiento...</span>
+  </div>  <!-- ✅ Cierra correctamente el div de loading -->
+
+  <!-- Sección de observaciones (solo mostrar si hay observaciones del backend) -->
+  <div *ngIf="vistaEmprendedor?.observaciones" class="border-b bg-yellow-50 border-yellow-200 px-6 py-4">
+    <div class="flex items-start">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">📝 Observaciones del revisor</h3>
+        <div class="mt-2 text-sm text-yellow-700">
+          <p>{{ vistaEmprendedor?.observaciones }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Header del wizard -->
@@ -18,6 +35,7 @@
         <p class="text-sm text-gray-500">
           {{ steps[currentStep].description }}
         </p>
+      
       </div>
 
       <!-- Indicador de pasos -->
@@ -38,6 +56,69 @@
   <!-- Contenido de cada paso (placeholder, en construcción) -->
   <div class="flex-1 overflow-auto px-6 py-5">
     <ng-container [ngSwitch]="currentStep">
+      <!-- Paso 0: Descripción del emprendimiento -->
+      <div *ngSwitchCase="0" class="space-y-8">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-[#1E71D8]">
+            Descripción del emprendimiento
+          </h2>
+        </div>
+
+        <!-- Resumen general -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            Resumen general del emprendimiento
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.resumen"
+            required
+            placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
+          ></textarea>
+        </div>
+
+        <!-- Fila de dos columnas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿Qué lo hace diferente o innovador?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.diferencial"
+              required
+              placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
+            ></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-base font-semibold text-gray-800">
+              ¿A qué público objetivo te diriges?
+            </h3>
+            <textarea
+              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              [(ngModel)]="descripcion.publicoObjetivo"
+              required
+              placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Propósito / misión -->
+        <div class="space-y-2">
+          <h3 class="text-base font-semibold text-gray-800">
+            ¿Cuál es el propósito o misión como emprendedor/a?
+          </h3>
+          <textarea
+            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+            [(ngModel)]="descripcion.proposito"
+            required
+            placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Paso 1: Categorías del emprendimiento -->
       <div *ngSwitchCase="1" class="flex flex-col items-center">
         <div class="max-w-xl w-full text-center mb-8">
           <h2 class="text-2xl font-bold text-[#1E71D8] mb-2">
@@ -56,7 +137,6 @@
             *ngFor="let cat of categories"
             class="flex items-center space-x-3 text-left w-full"
             (click)="soloLectura ? goToStep(1) : toggleCategory(cat)"
-            [disabled]="soloLectura ? false : null"
           >
             <!-- checkbox custom -->
             <span
@@ -82,71 +162,7 @@
         </div>
       </div>
 
-      <div *ngSwitchCase="0" class="space-y-8">
-        <div class="text-center">
-          <h2 class="text-2xl font-bold text-[#1E71D8]">
-            Descripción del emprendimiento
-          </h2>
-        </div>
-
-        <!-- Resumen general -->
-        <div class="space-y-2">
-          <h3 class="text-base font-semibold text-gray-800">
-            Resumen general del emprendimiento
-          </h3>
-          <textarea
-            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            [(ngModel)]="descripcion.resumen"
-            required
-            placeholder="Describe brevemente en qué consiste tu emprendimiento, qué ofreces y cuál es su esencia principal."
-            [disabled]="soloLectura"
-          ></textarea>
-        </div>
-
-        <!-- Fila de dos columnas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2">
-            <h3 class="text-base font-semibold text-gray-800">
-              ¿Qué lo hace diferente o innovador?
-            </h3>
-            <textarea
-              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-              [(ngModel)]="descripcion.diferencial"
-              required
-              placeholder="Explica qué hace único tu emprendimiento, qué lo diferencia de otros y en qué radica su propuesta innovadora."
-              [disabled]="soloLectura"
-            ></textarea>
-          </div>
-
-          <div class="space-y-2">
-            <h3 class="text-base font-semibold text-gray-800">
-              ¿A qué público objetivo te diriges?
-            </h3>
-            <textarea
-              class="w-full min-h-[150px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-              [(ngModel)]="descripcion.publicoObjetivo"
-              required
-              placeholder="Describe a las personas a las que te diriges: edad, intereses, necesidades o contexto."
-              [disabled]="soloLectura"
-            ></textarea>
-          </div>
-        </div>
-
-        <!-- Propósito / misión -->
-        <div class="space-y-2">
-          <h3 class="text-base font-semibold text-gray-800">
-            ¿Cuál es el propósito o misión como emprendedor/a?
-          </h3>
-          <textarea
-            class="w-full min-h-[120px] rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            [(ngModel)]="descripcion.proposito"
-            required
-            placeholder="Comparte cuál es tu propósito, motivación o misión detrás de tu emprendimiento."
-            [disabled]="soloLectura"
-          ></textarea>
-        </div>
-      </div>
-
+      <!-- Paso 2: Historia y presencia digital -->
       <div *ngSwitchCase="2" class="space-y-12">
         <!-- Historia del emprendimiento -->
         <section class="space-y-4">
@@ -156,7 +172,7 @@
             </h2>
           </div>
 
-          <!-- NUEVO: Nombre Comercial -->
+          <!-- Nombre Comercial -->
           <div class="space-y-2">
             <label class="block text-sm font-semibold text-gray-800">Nombre Comercial</label>
             <input
@@ -165,10 +181,8 @@
               [(ngModel)]="historia.nombreComercial"
               placeholder="Ingrese el nombre comercial de su emprendimiento"
               required
-              [disabled]="soloLectura"
             />
           </div>
-          <!-- FIN NUEVO -->
 
           <div class="space-y-2">
             <h3 class="text-base font-semibold text-gray-800">
@@ -179,7 +193,6 @@
               [(ngModel)]="historia.historiaGeneral"
               placeholder="Comparte la historia de tu emprendimiento: cómo nació, qué te motivó y cómo ha ido evolucionando."
               required
-              [disabled]="soloLectura"
             ></textarea>
           </div>
         </section>
@@ -203,7 +216,6 @@
                 [(ngModel)]="presenciaDigital.instagram"
                 required
                 placeholder="@tuEmprendimiento"
-                [disabled]="soloLectura"
               />
             </div>
 
@@ -216,7 +228,6 @@
                 class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="presenciaDigital.sitioWeb"
                 placeholder="http://www.tu-emprendimiento.com"
-                [disabled]="soloLectura"
               />
             </div>
 
@@ -230,7 +241,6 @@
                 [(ngModel)]="presenciaDigital.whatsapp"
                 required
                 placeholder="+593 99 123 4567 o 0991234567"
-                [disabled]="soloLectura"
               />
               <!-- Mensaje de formato inválido -->
               <p *ngIf="presenciaDigital.whatsapp && !isWhatsappValid()" class="text-xs text-red-500 mt-1">
@@ -248,7 +258,6 @@
                 [(ngModel)]="presenciaDigital.tiktok"
                 required
                 placeholder="@tuEmprendimiento"
-                [disabled]="soloLectura"
               />
             </div>
           </div>
@@ -279,7 +288,6 @@
                   name="aceptaPublico"
                   [checked]="presenciaDigital.aceptaMostrarPublicamente"
                   (change)="presenciaDigital.aceptaMostrarPublicamente = true"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -302,12 +310,12 @@
                   name="aceptaPublico"
                   [checked]="!presenciaDigital.aceptaMostrarPublicamente"
                   (change)="presenciaDigital.aceptaMostrarPublicamente = false"
-                  [disabled]="soloLectura"
                 />
               </label>
             </div>
           </div>
         </section>
+        
         <!-- Sección Ubicación -->
         <section class="space-y-6">
           <div class="text-center">
@@ -320,9 +328,8 @@
               <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="ubicacion.provincia"
                 (change)="onProvinciaChange()"
-                required
-                [disabled]="soloLectura">
-                <option value="" disabled selected>Seleccionar provincia</option>
+                required>
+                <option value=""  selected>Seleccionar provincia</option>
                 <option *ngFor="let prov of provincias" [value]="prov.id">{{ prov.nombre }}</option>
               </select>
             </div>
@@ -331,8 +338,8 @@
               <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 [(ngModel)]="ubicacion.ciudad"
                 required
-                [disabled]="soloLectura">
-                <option value="" disabled selected>Seleccionar ciudad</option>
+                >
+                <option value=""  selected>Seleccionar ciudad</option>
                 <option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad.id">{{ ciudad.nombre }}</option>
               </select>
             </div>
@@ -350,8 +357,8 @@
             <select class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
               [(ngModel)]="tipoEmprendimiento"
               required
-              [disabled]="soloLectura">
-              <option value="0" disabled selected>Seleccionar tipo</option>
+              >
+              <option value="0"  selected>Seleccionar tipo</option>
               <option *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id">
                 {{ tipo.tipo === tipo.subTipo ? tipo.tipo : tipo.tipo + ' - ' + tipo.subTipo }}
               </option>
@@ -360,6 +367,7 @@
         </section>
       </div>
 
+      <!-- Paso 3: Material multimedia -->
       <div *ngSwitchCase="3" class="space-y-10">
         <div class="text-center space-y-2">
           <h2 class="text-2xl font-bold text-[#1E71D8]">
@@ -387,7 +395,7 @@
                 accept="image/png,image/jpeg"
                 class="hidden"
                 (change)="onLogoChange($event)"
-                [disabled]="soloLectura || loading"
+                [disabled]="loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -402,7 +410,7 @@
                     type="button"
                     (click)="removeLogo()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
-                    [disabled]="soloLectura"
+                    
                   >
                     Quitar
                   </button>
@@ -432,7 +440,7 @@
                 multiple
                 class="hidden"
                 (change)="onFotosProductosChange($event)"
-                [disabled]="soloLectura || loading"
+                [disabled]=" loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl p-3 bg-gray-50 hover:bg-gray-100 transition"
@@ -449,14 +457,13 @@
                         type="button"
                         (click)="removeFotoProducto(i)"
                         class="absolute -top-1 -right-1 bg-white rounded-full shadow text-[10px] px-1 text-gray-600 hover:bg-red-500 hover:text-white"
-                        [disabled]="soloLectura"
                       >
                         ✕
                       </button>
                     </div>
                   </ng-container>
 
-                  <!-- Mostrar “+ Añadir” solo si hay menos de 2 fotos -->
+                  <!-- Mostrar "+ Añadir" solo si hay menos de 2 fotos -->
                   <div
                     *ngIf="multimedia.fotosProductos.length < 2"
                     class="flex items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 text-[11px] text-gray-400"
@@ -486,7 +493,7 @@
                 accept="video/mp4,video/webm"
                 class="hidden"
                 (change)="onVideoChange($event)"
-                [disabled]="soloLectura || loading"
+                [disabled]="loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -501,7 +508,6 @@
                     type="button"
                     (click)="removeVideo()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
-                    [disabled]="soloLectura"
                   >
                     Quitar
                   </button>
@@ -530,7 +536,6 @@
                 accept="image/png,image/jpeg"
                 class="hidden"
                 (change)="onBannerChange($event)"
-                [disabled]="soloLectura || loading"
               />
               <div
                 class="cursor-pointer border-2 border-dashed border-gray-300 rounded-2xl h-40 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition relative"
@@ -545,7 +550,6 @@
                     type="button"
                     (click)="removeBanner()"
                     class="absolute top-2 right-2 bg-white rounded-full shadow text-[10px] px-2 py-0.5 text-gray-600 hover:bg-red-500 hover:text-white"
-                    [disabled]="soloLectura"
                   >
                     Quitar
                   </button>
@@ -561,6 +565,7 @@
         </div>
       </div>
 
+      <!-- Paso 4: Métricas y participación -->
       <div *ngSwitchCase="4" class="space-y-10">
         <!-- Métricas básicas -->
         <section class="space-y-6">
@@ -582,7 +587,6 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '1-10'"
-                  [disabled]="soloLectura"
                 >
                   1-10
                 </button>
@@ -593,7 +597,6 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '11-50'"
-                  [disabled]="soloLectura"
                 >
                   11-50
                 </button>
@@ -604,7 +607,6 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '51-100'"
-                  [disabled]="soloLectura"
                 >
                   51-100
                 </button>
@@ -615,7 +617,6 @@
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'border-gray-300 bg-white'"
                   (click)="metricas.clientes = '100+'"
-                  [disabled]="soloLectura"
                 >
                   Más de 100
                 </button>
@@ -646,7 +647,6 @@
                     class="hidden"
                     name="ventas"
                     (change)="metricas.haGeneradoVentas = true"
-                    [disabled]="soloLectura"
                   />
                 </label>
 
@@ -668,7 +668,6 @@
                     class="hidden"
                     name="ventas"
                     (change)="metricas.haGeneradoVentas = false"
-                    [disabled]="soloLectura"
                   />
                 </label>
               </div>
@@ -699,7 +698,6 @@
                   class="hidden"
                   name="incubacion"
                   (change)="metricas.haParticipadoIncubacion = true"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -721,7 +719,6 @@
                   class="hidden"
                   name="incubacion"
                   (change)="metricas.haParticipadoIncubacion = false; metricas.nombreProgramaIncubacion = ''"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -731,7 +728,6 @@
                   class="w-full rounded-2xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                   [(ngModel)]="metricas.nombreProgramaIncubacion"
                   placeholder="Indica cuál, en caso de sí"
-                  [disabled]="soloLectura"
                 />
               </div>
             </div>
@@ -748,7 +744,7 @@
           <div class="space-y-3">
             <p class="font-semibold text-gray-800">
               ¿Te interesa participar en rankings públicos o destacarte como por ejemplo
-              “Emprendimiento del mes”, lo más visto u otros?
+              "Emprendimiento del mes", lo más visto u otros?
             </p>
             <div class="flex items-center gap-6 text-sm">
               <label class="inline-flex items-center space-x-2 cursor-pointer">
@@ -769,7 +765,6 @@
                   class="hidden"
                   name="rankings"
                   (change)="participacion.interesRankings = true"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -791,7 +786,6 @@
                   class="hidden"
                   name="rankings"
                   (change)="participacion.interesRankings = false"
-                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -822,7 +816,6 @@
                   class="hidden"
                   name="publicaciones"
                   (change)="participacion.publicacionesMensuales = true"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -844,7 +837,6 @@
                   class="hidden"
                   name="publicaciones"
                   (change)="participacion.publicacionesMensuales = false"
-                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -874,7 +866,6 @@
                   class="hidden"
                   name="feedback"
                   (change)="participacion.recibirFeedback = true"
-                  [disabled]="soloLectura"
                 />
               </label>
 
@@ -896,7 +887,6 @@
                   class="hidden"
                   name="feedback"
                   (change)="participacion.recibirFeedback = false"
-                  [disabled]="soloLectura"
                 />
               </label>
             </div>
@@ -904,6 +894,7 @@
         </section>
       </div>
 
+      <!-- Paso 5: Declaraciones finales -->
       <div *ngSwitchCase="5" class="max-w-3xl mx-auto space-y-8">
         <div class="text-center">
           <h2 class="text-2xl font-bold text-[#1E71D8]">
@@ -928,7 +919,6 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.infoVeridica"
-              [disabled]="soloLectura"
             />
           </label>
 
@@ -948,7 +938,6 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.aceptaPublicacion"
-              [disabled]="soloLectura"
             />
           </label>
 
@@ -968,7 +957,6 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.autorizaUsoImagenes"
-              [disabled]="soloLectura"
             />
           </label>
 
@@ -988,7 +976,6 @@
               type="checkbox"
               class="hidden"
               [(ngModel)]="declaraciones.aceptaPoliticasCentro"
-              [disabled]="soloLectura"
             />
           </label>
         </div>
@@ -1000,37 +987,68 @@
     </ng-container>
   </div>
 
-  <!-- Footer con controles de navegación -->
-  <div class="border-t px-6 py-4 flex justify-between items-center">
-    <button
-      type="button"
-      class="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-100"
-      [disabled]="isFirstStep || loading"
-      (click)="prevStep()"
-    >
-      Atrás
-    </button>
+  <!-- Footer con controles de navegación y botones de acción -->
+  <div class="border-t px-6 py-4 flex flex-col gap-4">
+    <!-- Barra de botones de acción -->
+    <div class="flex flex-wrap gap-2 justify-center">
+      <!-- Botón Guardar como borrador -->
+      <button *ngIf="mostrarGuardarDraft"
+              (click)="guardarComoBorrador()"
+              [disabled]="loading"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 transition-colors">
+        {{ loading ? 'Guardando...' : 'Guardar borrador' }}
+      </button>
+      
+      <!-- Botón Guardar cambios -->
+      <button *ngIf="mostrarGuardarCambios "
+              (click)="guardarCambios()"
+              [disabled]="loading"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors">
+        {{ loading ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      
+      <!-- Botón Reenviar con observaciones -->
+      <button *ngIf="mostrarReenviarConObservaciones"
+              (click)="reenviarConObservaciones()"
+              [disabled]="loading"
+              class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors">
+        {{ loading ? 'Enviando...' : 'Enviar correcciones' }}
+      </button>
+      
+      <!-- Botón Enviar a aprobación -->
+      <button *ngIf="mostrarEnviarAprobacion"
+              (click)="enviarAprobacion()"
+              [disabled]="loading"
+              class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors">
+        {{ loading ? 'Enviando...' : 'Enviar para revisión' }}
+      </button>
+      
+    </div>
 
-    <div class="space-x-2">
+    <!-- Controles de navegación entre pasos -->
+    <div class="flex justify-between items-center">
       <button
-        *ngIf="!isLastStep"
         type="button"
-        class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
-        [disabled]="!canNext() || loading"
-        (click)="nextStep()"
+        class="px-4 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition-colors"
+        [disabled]="isFirstStep || loading"
+        (click)="prevStep()"
       >
-        Siguiente
+        Atrás
       </button>
 
-      <button
-        *ngIf="!soloLectura && isLastStep"
-        type="button"
-        class="inline-flex items-center px-6 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-60"
-        [disabled]="!isMultimediaComplete || !isMetricasComplete || !isDeclaracionesComplete || loading"
-        (click)="finish()"
-      >
-        <span>Enviar</span>
-      </button>
+      <div class="space-x-2">
+        <button
+          *ngIf="!isLastStep"
+          type="button"
+          class="px-8 py-2 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60 transition-colors"
+          [disabled]="!canNext() || loading"
+          (click)="nextStep()"
+        >
+          Siguiente
+        </button>
+
+        <!-- El botón Finalizar ya no es necesario aquí porque está en la barra de acciones superior -->
+      </div>
     </div>
   </div>
 </div>

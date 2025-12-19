@@ -1,6 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Environment } from '../../environments/environment';
+import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
+import { VistaEmprendedorDTO } from './admin/admin-solicitudes/solicitud.service';
+
+// ============================================
+// INTERFACES
+// ============================================
 
 export interface EmprendimientosFilter {
     nombre?: string;
@@ -16,6 +23,7 @@ export interface TipoEmprendimiento {
     tipo: string;
     subTipo: string;
 }
+
 export interface EmprendimientoCrearResponse {
     mensaje: string;
     id: number;
@@ -86,8 +94,7 @@ export interface EmprendimientoPublico {
     }[];
 }
 
-import { Environment } from '../../environments/environment';
-import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
+
 
 @Injectable({
     providedIn: 'root'
@@ -98,15 +105,183 @@ export class EmprendimientoService {
 
     constructor(private http: HttpClient) {}
 
-    getMisEmprendimientos(): Observable<any> {
-        const token = localStorage.getItem('token');
-        const headers: { [header: string]: string } = token
-            ? { Authorization: `Bearer ${token}` }
-            : {};
-
-        return this.http.get(`${this.baseUrl}/mis-emprendimientos`, { headers });
+    // ============================================
+    // HELPER: Obtener headers con token
+    // ============================================
+    private getHeaders(): HttpHeaders {
+        const token = localStorage.getItem('token') || 
+                     localStorage.getItem('accessToken') || 
+                     localStorage.getItem('authToken');
+        
+        return token 
+            ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+            : new HttpHeaders();
     }
 
+    // ============================================
+    // 1. CREAR EMPRENDIMIENTO (Completo)
+    // ============================================
+    /**
+     * Crea un emprendimiento completo con todos sus datos
+     * Estado resultante: PENDIENTE_APROBACION
+     * 
+     * @param data - Datos completos del emprendimiento
+     * @param files - Archivos multimedia (logo, portada, galería)
+     * @returns ID del emprendimiento creado
+     */
+    grabarEmprendimiento(
+        data: SolicitudEmprendimientoDataDto,
+        files: File[]
+    ): Observable<EmprendimientoCrearResponse> {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(data));
+        
+        files.forEach(file => {
+            formData.append('imagenes', file);
+        });
+
+        return this.http.post<EmprendimientoCrearResponse>(
+            `${this.baseUrlEmprendimientos}`, 
+            formData, 
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 2. CREAR BORRADOR
+    // ============================================
+    /**
+     * Crea un borrador de emprendimiento (datos básicos)
+     * Estado resultante: BORRADOR
+     * 
+     * @param data - Datos básicos del emprendimiento
+     * @returns ID del borrador creado
+     */
+    crearBorrador(data: any): Observable<{ id: number }> {
+        return this.http.post<{ id: number }>(
+            `${this.baseUrlEmprendimientos}/borrador`,
+            data,
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 3. EDITAR EMPRENDIMIENTO
+    // ============================================
+    /**
+     * Actualiza un emprendimiento existente
+     * NO cambia el estado de publicación por sí solo
+     * 
+     * @param idEmprendimiento - ID del emprendimiento a editar
+     * @param data - Datos actualizados
+     * @param files - Nuevas imágenes (opcional)
+     * @returns Confirmación de actualización
+     */
+    editarEmprendimiento(
+        idEmprendimiento: number,
+        data: SolicitudEmprendimientoDataDto,
+        files: File[]
+    ): Observable<EmprendimientoCrearResponse> { 
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(data));
+        
+        files.forEach(file => {
+            formData.append('imagenes', file);
+        });
+
+        return this.http.put<EmprendimientoCrearResponse>(
+            `${this.baseUrlEmprendimientos}/${idEmprendimiento}`, 
+            formData, 
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 4. ENVIAR A APROBACIÓN
+    // ============================================
+    /**
+     * Envía un emprendimiento para revisión del administrador
+     * Crea una SolicitudAprobacion con estado PENDIENTE
+     * 
+     * Casos de uso:
+     * - Emprendimiento nuevo → tipoSolicitud: CREACION
+     * - Emprendimiento publicado → tipoSolicitud: ACTUALIZACION
+     * 
+     * @param emprendimientoId - ID del emprendimiento
+     * @returns Estado de la solicitud y su ID
+     */
+    enviarAprobacion(emprendimientoId: number): Observable<EmprendimientoAprobacionResponse> {
+        return this.http.post<EmprendimientoAprobacionResponse>(
+            `${this.baseUrlEmprendimientos}/${emprendimientoId}/enviar-aprobacion`,
+            {},
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 5. VER ESTADO Y OBSERVACIONES
+    // ============================================
+    /**
+     * Obtiene la vista completa del emprendedor sobre su emprendimiento
+     * Incluye: datos actuales, datos propuestos, estado, observaciones
+     * 
+     * @param emprendimientoId - ID del emprendimiento
+     * @returns Vista completa con estados y observaciones
+     */
+    obtenerVistaEmprendedor(emprendimientoId: number): Observable<VistaEmprendedorDTO> {
+        return this.http.get<VistaEmprendedorDTO>(
+            `${Environment.api_url}/api/solicitudes/emprendimiento/${emprendimientoId}/mi-vista`,
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 6. INACTIVAR/ACTIVAR EMPRENDIMIENTO
+    // ============================================
+    /**
+     * Inactiva un emprendimiento (lo oculta del público)
+     * 
+     * @param emprendimientoId - ID del emprendimiento
+     */
+    inactivarEmprendimiento(emprendimientoId: number): Observable<void> {
+        return this.http.put<void>(
+            `${this.baseUrlEmprendimientos}/${emprendimientoId}/inactivar`,
+            {},
+            { headers: this.getHeaders() }
+        );
+    }
+
+    /**
+     * Activa un emprendimiento previamente inactivado
+     * 
+     * @param emprendimientoId - ID del emprendimiento
+     */
+    activarEmprendimiento(emprendimientoId: number): Observable<void> {
+        return this.http.put<void>(
+            `${this.baseUrlEmprendimientos}/${emprendimientoId}/activar`,
+            {},
+            { headers: this.getHeaders() }
+        );
+    }
+
+    // ============================================
+    // 7. OBTENER EMPRENDIMIENTOS
+    // ============================================
+    /**
+     * Obtiene lista de emprendimientos del usuario actual
+     */
+    getMisEmprendimientos(): Observable<any> {
+        return this.http.get(
+            `${this.baseUrl}/mis-emprendimientos`, 
+            { headers: this.getHeaders() }
+        );
+    }
+
+    /**
+     * Obtiene emprendimientos con filtros (público)
+     * 
+     * @param filters - Filtros de búsqueda
+     */
     getEmprendimientos(filters?: EmprendimientosFilter): Observable<any> {
         let params = new HttpParams();
         
@@ -123,105 +298,49 @@ export class EmprendimientoService {
     }
 
     /**
-     * Graba (crea / actualiza) un emprendimiento enviando:
-     * - data: JSON con la estructura SolicitudEmprendimientoDataDto
-     * - imagenes: arreglo de archivos (multipart/form-data)
+     * Obtiene un emprendimiento público por ID
+     * 
+     * @param id - ID del emprendimiento
      */
-    grabarEmprendimiento(
-        data: SolicitudEmprendimientoDataDto,
-        files: File[]
-    ): Observable<EmprendimientoCrearResponse> {
-        const token = localStorage.getItem('token');
-        const headers = new HttpHeaders(
-            token ? { Authorization: `Bearer ${token}` } : {}
-        );
-
-        const formData = new FormData();
-
-        // Parte JSON (nombre EXACTO que espera tu API)
-        formData.append('data', JSON.stringify(data));
-
-        // Partes de archivo (campo imágenes múltiple)
-        files.forEach(file => {
-            formData.append('imagenes', file); // mismo nombre repetido para cada archivo
-        });
-
-        return this.http.post<EmprendimientoCrearResponse>(`${this.baseUrlEmprendimientos}`, formData, {
-            headers,
-        });
-    }
-
-    editarEmprendimiento(
-        idEmprendimiento: number,
-        data: SolicitudEmprendimientoDataDto,
-        files: File[]
-    ): Observable<EmprendimientoCrearResponse> { 
-        const token = localStorage.getItem('token');
-        const headers = new HttpHeaders(
-            token ? { Authorization: `Bearer ${token}` } : {}
-        );
-
-        const formData = new FormData();
-
-        // Parte JSON (nombre EXACTO que espera tu API)
-        formData.append('data', JSON.stringify(data));
-
-        // Partes de archivo (campo imágenes múltiple)
-        files.forEach(file => {
-            formData.append('imagenes', file); // mismo nombre repetido para cada archivo
-        });
-
-        return this.http.put<EmprendimientoCrearResponse>(`${this.baseUrlEmprendimientos}/${idEmprendimiento}`, formData, {
-            headers,
-        });
-    }
-
-    getTiposEmprendimiento(): Observable<TipoEmprendimiento[]> {
-        const token = localStorage.getItem('token');
-        const headers: { [header: string]: string } = token
-            ? { Authorization: `Bearer ${token}` }
-            : {};
-
-        return this.http.get<TipoEmprendimiento[]>(`${Environment.api_url}${Environment.api_tipos}`, { headers });
-    }
-
     getEmprendimientoPublico(id: number): Observable<EmprendimientoPublico> {
-    let token: string | null = null;
+        let token: string | null = null;
 
-    // Solo usar localStorage en navegador
-    if (typeof window !== 'undefined' && window.localStorage) {
-        token = localStorage.getItem('token');
-    }
+        if (typeof window !== 'undefined' && window.localStorage) {
+            token = localStorage.getItem('token');
+        }
 
-    const headers: { [header: string]: string } = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-
-    return this.http.get<EmprendimientoPublico>(
-        `${this.baseUrlEmprendimientos}/${id}/publico`,
-        { headers }
-    );
-    }
-
-
-    getEmprendimientoAdmin(id: number): Observable<EmprendimientoPublico> {
-        const token = localStorage.getItem('token');
         const headers: { [header: string]: string } = token
             ? { Authorization: `Bearer ${token}` }
             : {};
 
-        return this.http.get<EmprendimientoPublico>(`${this.baseUrlEmprendimientos}/${id}/publico`, { headers });
+        return this.http.get<EmprendimientoPublico>(
+            `${this.baseUrlEmprendimientos}/${id}/publico`,
+            { headers }
+        );
     }
 
-    enviarAprobacion(emprendimientoId: number) : Observable<EmprendimientoAprobacionResponse> {
-        const token = localStorage.getItem('token');
-        const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
-
-        const url = `${this.baseUrlEmprendimientos}/${emprendimientoId}/enviar-aprobacion`;
-        // body vacío según ejemplo; ajustar si la API espera algún payload
-        return this.http.post<EmprendimientoAprobacionResponse>(url, {}, { headers });
+    /**
+     * Obtiene un emprendimiento (vista admin)
+     * 
+     * @param id - ID del emprendimiento
+     */
+    getEmprendimientoAdmin(id: number): Observable<EmprendimientoPublico> {
+        return this.http.get<EmprendimientoPublico>(
+            `${this.baseUrlEmprendimientos}/${id}/publico`, 
+            { headers: this.getHeaders() }
+        );
     }
 
-    //falta api para editar emprendimiento
-    //falta api para inactivar emprendimiento
+    // ============================================
+    // 8. CATÁLOGOS
+    // ============================================
+    /**
+     * Obtiene los tipos de emprendimiento disponibles
+     */
+    getTiposEmprendimiento(): Observable<TipoEmprendimiento[]> {
+        return this.http.get<TipoEmprendimiento[]>(
+            `${Environment.api_url}${Environment.api_tipos}`, 
+            { headers: this.getHeaders() }
+        );
+    }
 }
