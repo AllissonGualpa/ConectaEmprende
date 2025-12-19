@@ -25,7 +25,7 @@
   <!-- Contenido -->
   <div *ngIf="!cargando && !error && emprendimiento" class="max-w-6xl mx-auto px-6 py-6">
 
-    <!-- Botón volver -->
+    <!-- Volver -->
     <a [routerLink]="esStartup ? '/startups' : '/emprendimientos'"
       class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
       <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor"
@@ -50,16 +50,14 @@
         <!-- Info -->
         <div class="flex flex-col space-y-6">
 
-          <!-- Título -->
           <h1 class="text-3xl md:text-4xl font-extrabold uppercase text-[#276BC7]">
             {{ emprendimiento.nombreComercial }}
           </h1>
 
-          <!-- Fecha y ubicación -->
+          <!-- Fecha / Ubicación -->
           <div class="flex flex-wrap gap-6">
 
-            <!-- Fecha -->
-            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600 text-base">
+            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -67,8 +65,7 @@
               {{ emprendimiento.fechaCreacion | date:'dd/MM/yyyy' }}
             </div>
 
-            <!-- Ubicación -->
-            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600 text-base">
+            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" />
@@ -106,23 +103,35 @@
                 {{ p.descripcion }}
               </div>
 
-              <!-- Sitio web -->
+              <!-- Sitio Web -->
               <div *ngIf="p.plataforma === 'web' || p.plataforma === 'sitio web'" class="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                   stroke="currentColor" class="w-5 h-5 text-gray-700">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747
+             M12 21a9.004 9.004 0 0 1-8.716-6.747
+             M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3
+             m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3
+             m0 0a8.997 8.997 0 0 1 7.843 4.582
+             M12 3a8.997 8.997 0 0 0-7.843 4.582
+             m15.686 0A11.953 11.953 0 0 1 12 10.5
+             c-2.998 0-5.74-1.1-7.843-2.918
+             m15.686 0A8.959 8.959 0 0 1 21 12
+             c0 .778-.099 1.533-.284 2.253
+             m0 0A17.919 17.919 0 0 1 12 16.5
+             c-3.162 0-6.133-.815-8.716-2.247
+             m0 0A9.015 9.015 0 0 1 3 12
+             c0-1.605.42-3.113 1.157-4.418" />
                 </svg>
-
                 {{ p.descripcion }}
               </div>
 
-
-              <!-- WhatsApp -->
+              <!-- Teléfono / WhatsApp -->
               <div *ngIf="p.plataforma === 'whatsapp'" class="flex items-center gap-3">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H7l1 2a11 11 0 005 5l2 1v-2a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h2a2 2 0 012 2v2
+             a2 2 0 01-2 2H7l1 2a11 11 0 005 5l2 1v-2
+             a2 2 0 012-2h2a2 2 0 012 2v2
+             a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 {{ p.descripcion }}
               </div>
@@ -131,84 +140,121 @@
 
           </div>
 
+
         </div>
       </div>
     </div>
 
-    <!-- Contenido principal -->
+    <!-- CONTENIDO PRINCIPAL -->
     <div class="space-y-8">
 
-      <!-- Historia -->
+      <!-- HISTORIA -->
       <section *ngIf="getDescripcionByType('HISTORIA')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Historia</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+        <h2 class="text-2xl font-bold text-center mb-6">Historia</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-4">
           {{ getDescripcionByType('HISTORIA') }}
         </p>
+        <div class="text-center mt-4">
+          <button (click)="abrirModal('Historia','HISTORIA')" class="text-[#ED6C1C] font-semibold hover:underline">
+            Ver historia completa
+          </button>
+        </div>
       </section>
 
-      <!-- Resumen -->
+      <!-- RESUMEN -->
       <section *ngIf="getDescripcionByType('RESUMEN')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Resumen</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+        <h2 class="text-xl font-bold mb-4">Resumen</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
           {{ getDescripcionByType('RESUMEN') }}
         </p>
+        <button (click)="abrirModal('Resumen','RESUMEN')"
+          class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+          Ver más
+        </button>
       </section>
 
-      <!-- Diferencial -->
+      <!-- DIFERENCIAL -->
       <section *ngIf="getDescripcionByType('DIFERENCIAL')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Diferencial</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+        <h2 class="text-xl font-bold mb-4">Diferencial</h2>
+        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
           {{ getDescripcionByType('DIFERENCIAL') }}
         </p>
+        <button (click)="abrirModal('Diferencial','DIFERENCIAL')"
+          class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+          Ver más
+        </button>
       </section>
 
-      <!-- Galería -->
+      <!-- GALERÍA -->
       <section *ngIf="(emprendimiento.multimedia || []).length > 0" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">Galería</h2>
+        <h2 class="text-xl font-bold mb-6">Galería</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <img *ngFor="let m of emprendimiento.multimedia" 
-               [src]="m.urlArchivo" 
-               [alt]="m.nombreActivo"
-               class="w-full h-48 object-cover rounded-lg hover:scale-105 transition-transform duration-300 cursor-pointer">
+          <img *ngFor="let m of emprendimiento.multimedia" [src]="m.urlArchivo" [alt]="m.nombreActivo"
+            class="w-full h-48 object-cover rounded-lg">
         </div>
       </section>
 
+      <!-- PUBLICO / PROPOSITO -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Público Objetivo -->
+
         <section *ngIf="getDescripcionByType('PUBLICO OBJETIVO')" class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">Público Objetivo</h2>
-          <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+          <h2 class="text-xl font-bold mb-4">Público Objetivo</h2>
+          <p class="line-clamp-3 text-gray-700 whitespace-pre-line">
             {{ getDescripcionByType('PUBLICO OBJETIVO') }}
           </p>
+          <button (click)="abrirModal('Público Objetivo','PUBLICO OBJETIVO')"
+            class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+            Ver más
+          </button>
         </section>
 
-
-        <!-- Propósito -->
         <section *ngIf="getDescripcionByType('PROPOSITO')" class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">Propósito</h2>
-          <p class="text-gray-700 whitespace-pre-line leading-relaxed">
+          <h2 class="text-xl font-bold mb-4">Propósito</h2>
+          <p class="line-clamp-3 text-gray-700 whitespace-pre-line">
             {{ getDescripcionByType('PROPOSITO') }}
           </p>
+          <button (click)="abrirModal('Propósito','PROPOSITO')"
+            class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+            Ver más
+          </button>
         </section>
+
       </div>
 
-      <!-- QR Code -->
-      <section *ngIf="qrCodeUrl && !esStartup" class="bg-white rounded-xl shadow-sm p-6 mt-8 text-center">
-        <div class="max-w-md mx-auto">
-          <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
-            Califica nuestro emprendimiento
-          </h3>
-          <img [src]="qrCodeUrl" 
-               alt="QR Evaluación" 
-               class="w-44 h-44 mx-auto border rounded-lg p-2">
-          <p class="text-xs text-gray-500 mt-3">
-            Escanea el código QR para valorar este emprendimiento
-          </p>
-        </div>
+      <!-- QR -->
+      <section *ngIf="qrCodeUrl && !esStartup" class="bg-white rounded-xl shadow-sm p-6 text-center">
+        <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
+          Califica nuestro emprendimiento
+        </h3>
+        <img [src]="qrCodeUrl" class="w-44 h-44 mx-auto border rounded-lg p-2">
+        <p class="text-xs text-gray-500 mt-3">
+          Escanea el código QR para valorar este emprendimiento
+        </p>
       </section>
 
     </div>
   </div>
+
+  <!-- MODAL -->
+  <div *ngIf="modalAbierto" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex justify-between items-center px-6 py-4 border-b">
+        <h3 class="text-xl font-bold">{{ modalTitulo }}</h3>
+        <button (click)="cerrarModal()" class="text-2xl">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[65vh]">
+        <p class="whitespace-pre-line text-gray-700">
+          {{ modalContenido }}
+        </p>
+      </div>
+      <div class="px-6 py-4 border-t text-right">
+        <button (click)="cerrarModal()" class="bg-[#ED6C1C] text-white px-5 py-2 rounded-lg font-semibold">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <app-footer></app-footer>
