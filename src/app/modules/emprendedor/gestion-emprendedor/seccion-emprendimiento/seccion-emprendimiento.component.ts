@@ -37,6 +37,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
   mapEstado(estado: string): string {
     switch (estado) {
       case 'APROBADO':
+      case 'PUBLICADO':
         return 'Aprobado';
       case 'PENDIENTE_APROBACION':
       case 'EN_REVISION':

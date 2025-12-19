@@ -16,6 +16,8 @@ import { CiudadDto, LocationService, ProvinciaDto } from '../../../../core/servi
 import { AuthService } from '../../../auth/auth.service';
 import { CategoriaService } from '../../../admin/categoria.service';
 import { Categoria } from '../../../../models/categoria.interface';
+import { MatDialog } from '@angular/material/dialog';
+import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
   selector: 'app-create-solicitud-emprendimiento',
@@ -52,6 +54,7 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
     private locationService: LocationService,
     private authService: AuthService,
     private categoriaService: CategoriaService, // nuevo
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -582,16 +585,22 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
   this.emprendimientoService.grabarEmprendimiento(data, files).subscribe({
     next: (resp: EmprendimientoCrearResponse) => {
       console.log('PASO 1 COMPLETADO - Emprendimiento creado con ID:', resp.id);
-      
       // PASO 2: Enviar a aprobación
       console.log('PASO 2 - Enviando a aprobación el emprendimiento:', resp.id);
-      
       this.emprendimientoService.enviarAprobacion(resp.id).subscribe({
         next: (solicitudResp) => {
           console.log('PASO 2 COMPLETADO - Solicitud de aprobación creada:', solicitudResp);
           console.log('TODO EL PROCESO COMPLETADO EXITOSAMENTE');
-          
           this.loading = false;
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Emprendimiento',
+              title: 'Emprendimiento creado exitosamente',
+              subtitle: 'Tu emprendimiento ha sido registrado correctamente.',
+              type: 'success',
+            },
+          });
           this.onEmprendimientoCreated.emit();
           this.created.emit(resp);
         },
@@ -600,12 +609,16 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
           console.error('Status:', err.status);
           console.error('Message:', err.message);
           console.error('Error completo:', err);
-          
           this.loading = false;
-          
-          // Aún así notificamos que el emprendimiento se creó
-          // (aunque no se envió a aprobación)
-          alert('El emprendimiento se creó pero hubo un error al enviarlo a aprobación. Por favor, contacta a soporte.');
+          this.dialog.open(MensajeConfirmacionComponent, {
+            width: '420px',
+            data: {
+              subject: 'Emprendimiento',
+              title: 'Emprendimiento creado, pero no enviado a aprobación',
+              subtitle: 'El emprendimiento se creó pero hubo un error al enviarlo a aprobación. Por favor, contacta a soporte.',
+              type: 'warning',
+            },
+          });
           this.onEmprendimientoCreated.emit();
           this.created.emit(resp);
         }
@@ -616,9 +629,16 @@ export class CreateSolicitudEmprendimientoComponent implements OnInit {
       console.error('Status:', err.status);
       console.error('Message:', err.message);
       console.error('Error completo:', err);
-      
       this.loading = false;
-      alert('Hubo un error al crear el emprendimiento. Por favor, intenta nuevamente.');
+      this.dialog.open(MensajeConfirmacionComponent, {
+        width: '420px',
+        data: {
+          subject: 'Emprendimiento',
+          title: 'Error al crear el emprendimiento',
+          subtitle: 'Hubo un error al crear el emprendimiento. Por favor, intenta nuevamente.',
+          type: 'error',
+        },
+      });
     },
   });
 }
