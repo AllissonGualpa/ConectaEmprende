@@ -1,4 +1,3 @@
-// card-event.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -30,13 +29,15 @@ export class CardEventComponent {
   get estadoClass(): string {
     const estado = this.evento.estadoEvento.toLowerCase();
     if (estado.includes('programado')) return 'bg-green-100 text-green-700';
-    if (estado.includes('finalizado') || estado.includes('terminado')) return 'bg-gray-100 text-gray-700';
+    if (estado.includes('terminado') || estado.includes('finalizado'))
+      return 'bg-gray-100 text-gray-700';
     if (estado.includes('cancelado')) return 'bg-red-100 text-red-700';
     return 'bg-gray-100 text-gray-700';
   }
 
-  get isEventoCancelado(): boolean {
-    return this.evento.estadoEvento.toLowerCase().includes('cancelado');
+  get isEventoInactivo(): boolean {
+    const estado = this.evento.estadoEvento.toLowerCase();
+    return estado.includes('cancelado') || estado.includes('terminado');
   }
 
   formatearFecha(fecha: string): { dia: string; mes: string } {
@@ -64,14 +65,12 @@ export class CardEventComponent {
   }
 
   onCancelar(): void {
-    if (!this.isEventoCancelado) {
-      this.eliminar.emit(this.evento);
-    }
+    if (this.isEventoInactivo) return;
+    this.eliminar.emit(this.evento);
   }
 
   onEditar(): void {
-    if (!this.isEventoCancelado) {
-      this.editar.emit(this.evento);
-    }
+    if (this.isEventoInactivo) return;
+    this.editar.emit(this.evento);
   }
 }
