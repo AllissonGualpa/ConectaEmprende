@@ -20,14 +20,101 @@ import { ModalObservacionesSolicitudComponent } from '../../shared/components/mo
 // Interface ajustada al backend real
 export interface Solicitud {
   id: number;
-  estado: string;
-  observaciones: string;
+  emprendimientoId: number;
+  nombreEmprendimiento: string;
+  tipoSolicitud: string;
+  estadoSolicitud: string;
+  datosPropuestos: DatosPropuestos;
+  datosOriginales: DatosPropuestos | null;
+  observaciones: string | null;
+  motivoRechazo: string | null;
   fechaSolicitud: string;
   fechaRespuesta: string | null;
+  nombreSolicitante: string;
+  nombreRevisor: string | null;
+}
+
+interface DatosPropuestos {
+  usuario: any | null;
+  ciudadId: number;
+  metricas: Metrica[];
+  categorias: CategoriaEmprendimiento[];
+  anioCreacion: string;
+  descripciones: Descripcion[];
+  nombreComercial: string;
+  aceptaDatosPublicos: boolean;
+  presenciasDigitales: PresenciaDigital[];
+  activoEmprendimiento: boolean;
+  declaracionesFinales: DeclaracionFinal[];
+  tipoEmprendimientoId: number;
+  informacionRepresentante: any | null;
+  participacionesComunidad: ParticipacionComunidad[];
+}
+
+interface Metrica {
+  valor: string;
+  metricaId: number;
   emprendimientoId: number;
-  usuarioId: number;
-  usuarioAdministradorId: number | null;
-  nombreComercial?: string;
+}
+
+interface CategoriaEmprendimiento {
+  categoria: Categoria;
+  emprendimiento: Emprendimiento;
+  nombreCategoria: string;
+}
+
+interface Categoria {
+  id: number;
+  nombre: string;
+  urlImagen: string;
+  descripcion: string;
+  idMultimedia: number;
+}
+
+interface Emprendimiento {
+  id: number;
+  ciudad: number;
+  provinia: number;
+  correoUees: string | null;
+  datosPublicos: boolean;
+  fechaCreacion: string;
+  identificacion: string | null;
+  correoComercial: string | null;
+  parienteDirecto: string | null;
+  tipoEmprendimiento?: string;
+  estadoEmpredimiento: string | null;
+  tipoEmprendimientoId: number;
+  nombreComercialEmprendimiento: string;
+}
+
+interface Descripcion {
+  descripcion: string;
+  obligatorio: boolean;
+  maxCaracteres: number;
+  tipoDescripcion: string;
+  emprendimientoId: number;
+  idEmprendimiento: number | null;
+}
+
+interface PresenciaDigital {
+  plataforma: string;
+  descripcion: string;
+  emprendimientoId: number;
+}
+
+interface DeclaracionFinal {
+  aceptada: boolean;
+  nombreFirma: string;
+  declaracionId: number;
+  fechaAceptacion: string;
+  emprendimientoId: number;
+}
+
+interface ParticipacionComunidad {
+  respuesta: boolean;
+  emprendimientoId: number;
+  opcionParticipacionId: number;
+  nombreOpcionParticipacion: string | null;
 }
 
 @Component({
@@ -162,7 +249,7 @@ export class AdminSolicitudesComponent implements OnInit {
       const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(
         (s) =>
-          (s.estado ?? '').toLowerCase().includes(searchLower) ||
+          (s.estadoSolicitud ?? '').toLowerCase().includes(searchLower) ||
           (s.observaciones ?? '').toLowerCase().includes(searchLower) ||
           String(s.id ?? '')
             .toLowerCase()

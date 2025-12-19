@@ -107,7 +107,10 @@ export class SeccionEventoComponent implements OnInit {
       return;
     }
 
-    if (evento.estadoEvento.toLowerCase().includes('cancelado')) {
+    const estadoLower = evento.estadoEvento.toLowerCase();
+    
+    // Bloquear edición si está cancelado o terminado
+    if (estadoLower.includes('cancelado') || estadoLower.includes('terminado')) {
       return;
     }
 
@@ -132,7 +135,10 @@ export class SeccionEventoComponent implements OnInit {
   }
 
   cancelarEvento(evento: EventoCard) {
-    if (evento.estadoEvento.toLowerCase().includes('cancelado')) {
+    const estadoLower = evento.estadoEvento.toLowerCase();
+    
+    // Bloquear cancelación si ya está cancelado o terminado
+    if (estadoLower.includes('cancelado') || estadoLower.includes('terminado')) {
       return;
     }
 
@@ -159,7 +165,6 @@ export class SeccionEventoComponent implements OnInit {
       }
     });
   }
-
   aplicarFiltros() {
     const filtros = this.filtrosForm.value;
     

@@ -66,4 +66,11 @@ export class NotificationService {
 
     return this.http.get<any>(`${this.baseUrl}`, { headers, params });
   }
+
+  obtenerNotificacionPorId(id: number): Observable<NotificationDto> {
+    const token = localStorage.getItem('token');
+    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+
+    return this.http.get<NotificationDto>(`${this.baseUrl}/${id}`, { headers });
+  }
 }

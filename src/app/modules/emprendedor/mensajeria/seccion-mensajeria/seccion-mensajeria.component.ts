@@ -1,16 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NotificationService, NotificationDto } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DetailsMensajeriaComponent } from '../details-mensajeria/details-mensajeria.component';
 @Component({
   selector: 'app-seccion-mensajeria',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatIconModule, MatButtonModule, MatCardModule],
+  imports: [
+    CommonModule, 
+    MatTableModule, 
+    MatIconModule, 
+    MatButtonModule, 
+    MatCardModule,
+    MatDialogModule
+  ],
   templateUrl: './seccion-mensajeria.component.html',
   styleUrl: './seccion-mensajeria.component.css'
 })
@@ -18,8 +26,9 @@ export class SeccionMensajeriaComponent implements OnInit {
   notificaciones: NotificationDto[] = [];
   loading = false;
   displayedColumns: string[] = ['id', 'titulo', 'mensaje', 'fecha', 'hora', 'estado', 'accion'];
+  
   // paginación
-  page = 0; // page index (0-based)
+  page = 0;
   size = 10;
   totalElements = 0;
   totalPages = 0;
@@ -27,6 +36,7 @@ export class SeccionMensajeriaComponent implements OnInit {
   constructor(
     private notificationService: NotificationService,
     private authService: AuthService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +71,6 @@ export class SeccionMensajeriaComponent implements OnInit {
     });
   }
 
-  // helpers de paginación (usa perfil almacenado)
   prevPage(): void {
     if (this.page <= 0) return;
     const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
@@ -86,7 +95,6 @@ export class SeccionMensajeriaComponent implements OnInit {
     this.loadPage(usuarioId, n);
   }
 
-  // Formatea fecha y hora para la tabla
   getFecha(fechaIso?: string): string {
     if (!fechaIso) return '-';
     return new Date(fechaIso).toLocaleDateString();
@@ -97,13 +105,32 @@ export class SeccionMensajeriaComponent implements OnInit {
     return new Date(fechaIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  abrirNotificacion(n: NotificationDto) {
-    // placeholder: marcar como leída localmente y abrir enlace si existe
-    n.leida = true;
-    if (n.enlace) {
-      window.open(n.enlace, '_blank');
-    } else {
-      console.log('Abrir notificación', n);
-    }
+  abrirNotificacion(notificacion: NotificationDto): void {
+    console.log('Abriendo notificación en modal:', notificacion);
+    
+    // Abrir modal con los datos de la notificación
+    const dialogRef = this.dialog.open(DetailsMensajeriaComponent, {
+      width: '700px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: { notificacionId: notificacion.id },
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Modal cerrado:', result);
+      
+      // Si el modal devuelve que se marcó como leída, actualizar localmente
+      if (result?.marcarComoLeida) {
+        notificacion.leida = true;
+        
+        // Opcional: recargar la página actual para refrescar los datos
+        const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
+        const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
+        if (usuarioId) {
+          this.loadPage(usuarioId, this.page);
+        }
+      }
+    });
   }
 }
