@@ -34,21 +34,22 @@ export class SeccionEmprendimientoComponent implements OnInit {
     this.loadEmprendimientos();
   }
 
-  mapEstado(estado: string): string {
-    switch (estado) {
-      case 'APROBADO':
-        return 'Aprobado';
-      case 'PENDIENTE_APROBACION':
-      case 'EN_REVISION':
-        return 'En revisión';
-      case 'RECHAZADO':
-        return 'Rechazado';
-      case 'BORRADOR':
-        return 'Borrador';
-      default:
-        return estado;
-    }
+mapEstado(estado: string): string {
+  switch (estado) {
+    case 'APROBADO':
+      return 'Aprobado';
+    case 'PENDIENTE_APROBACION':
+      return 'Pendiente de aprobación'; // ← Cambiar texto
+    case 'EN_REVISION':
+      return 'En revisión';
+    case 'RECHAZADO':
+      return 'Rechazado';
+    case 'BORRADOR':
+      return 'Borrador';
+    default:
+      return estado;
   }
+}
 
   loadEmprendimientos(): void {
     this.loading = true;

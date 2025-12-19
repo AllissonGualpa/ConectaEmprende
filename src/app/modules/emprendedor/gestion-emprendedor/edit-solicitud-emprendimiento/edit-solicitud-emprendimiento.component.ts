@@ -10,6 +10,8 @@ import { EmprendimientoDto, EmprendimientoCategoriaDto, DescripcionDto, MetricaD
 import { Categoria } from '../../../../models/categoria.interface';
 import { CategoriaService } from '../../../admin/categoria.service';
 import { SolicitudService, VistaEmprendedorDTO } from '../../../admin/admin-solicitudes/solicitud.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
   selector: 'app-edit-solicitud-emprendimiento',
@@ -62,6 +64,8 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
   mostrarEnviarAprobacion: boolean = false;
   mostrarReenviarConObservaciones: boolean = false;
   mostrarObservaciones: boolean = false;
+  mostrarSolicitarActualizacion: boolean = false;
+
   
   // Variable para almacenar observaciones (para mostrar en UI)
   observacionesTexto: string = '';
@@ -143,6 +147,8 @@ export class EditSolicitudEmprendimientoComponent implements OnInit, OnChanges {
     private locationService: LocationService,
     private authService: AuthService,
     private categoriaService: CategoriaService,
+    private dialog: MatDialog  // ⭐ AGREGAR ESTA LÍNEA
+
   ) {}
 
   ngOnInit(): void {
@@ -231,10 +237,8 @@ ngOnChanges(changes: SimpleChanges): void {
         this.mostrarEnviarAprobacion = true;
         break;
 
-      case 'APROBADO':
-        // Publicado: puede editar y solicitar actualización (que crea una solicitud de ACTUALIZACION)
-        this.mostrarGuardarCambios = true;
-        this.mostrarEnviarAprobacion = true;
+      case 'PUBLICADO':
+        this.mostrarSolicitarActualizacion = true; // ⭐ NUEVO: botón específico para publicados
         break;
 
       case 'EN_REVISION':
@@ -261,13 +265,14 @@ ngOnChanges(changes: SimpleChanges): void {
     }
   }
 
-  private resetearBotones(): void {
-    this.mostrarGuardarDraft = false;
-    this.mostrarGuardarCambios = false;
-    this.mostrarEnviarAprobacion = false;
-    this.mostrarReenviarConObservaciones = false;
-    this.mostrarObservaciones = false;
-  }
+private resetearBotones(): void {
+  this.mostrarGuardarDraft = false;
+  this.mostrarGuardarCambios = false;
+  this.mostrarEnviarAprobacion = false;
+  this.mostrarReenviarConObservaciones = false;
+  this.mostrarObservaciones = false;
+  this.mostrarSolicitarActualizacion = false; // ⭐ NUEVO
+}
 
   private mostrarBotonesPorDefecto(): void {
     // Por defecto, mostrar opciones básicas
@@ -629,34 +634,48 @@ ngOnChanges(changes: SimpleChanges): void {
    * 1. Guardar como borrador (draft)
    * Usa el endpoint de borrador específico
    */
-  guardarComoBorrador(): void {
-    if (this.soloLectura) return;
-    
-    this.loading = true;
-    
-    // Primero obtén los datos del formulario
-    const datosFormulario = this.obtenerDatosFormulario();
-    
-    this.emprendimientoService.crearBorrador(datosFormulario).subscribe({
-      next: (response: { id: number }) => {
-        console.log('Guardado como borrador, ID:', response.id);
-        this.loading = false;
-        alert('Borrador guardado correctamente');
-        
-        // Actualizar el emprendimientoId si es nuevo
-        if (response.id && this.emprendimientoId === 0) {
-          this.emprendimientoId = response.id;
-          this.loadVistaEmprendedor();
+guardarComoBorrador(): void {
+  if (this.soloLectura) return;
+  
+  this.loading = true;
+  const datosFormulario = this.obtenerDatosFormulario();
+  
+  this.emprendimientoService.crearBorrador(datosFormulario).subscribe({
+    next: (response: { id: number }) => {
+      console.log('Guardado como borrador, ID:', response.id);
+      this.loading = false;
+      
+      // ✅ Mostrar diálogo de confirmación
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Borrador',
+          title: 'Borrador guardado correctamente',
+          subtitle: 'Puedes continuar editando o enviar para revisión cuando estés listo.',
+          type: 'success'
         }
-      },
-      error: (err) => {
-        console.error('Error al guardar borrador:', err);
-        this.loading = false;
-        alert('Error al guardar borrador');
+      });
+      
+      if (response.id && this.emprendimientoId === 0) {
+        this.emprendimientoId = response.id;
+        this.loadVistaEmprendedor();
       }
-    });
-  }
-
+    },
+    error: (err) => {
+      console.error('Error al guardar borrador:', err);
+      this.loading = false;
+      
+      // ❌ Mostrar error
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Borrador',
+          title: 'Error al guardar borrador',
+          subtitle: 'Por favor, intenta nuevamente.',
+          type: 'error'
+        }
+      });
+    }
+  });
+}
 /**
  * 2. Guardar cambios
  * - Si es PUBLICADO: NO guardar directamente, solo editar en memoria
@@ -665,13 +684,18 @@ ngOnChanges(changes: SimpleChanges): void {
 guardarCambios(): void {
   if (this.soloLectura) return;
   
-  // Si es publicado, solo guardamos en memoria local (no hacemos PUT)
   if (this.vistaEmprendedor?.estadoEmprendimiento === 'PUBLICADO') {
-    alert('Cambios guardados en borrador. Presiona "Enviar para revisión" para solicitar la actualización.');
+    this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        subject: 'Cambios',
+        title: 'Cambios guardados en borrador',
+        subtitle: 'Presiona "Solicitar actualización" para enviar los cambios a revisión.',
+        type: 'info'
+      }
+    });
     return;
   }
   
-  // Si es BORRADOR u otro estado, sí guardamos directamente
   const data = this.prepararDatosParaEnvio('ACTUALIZAR');
   const files = this.obtenerArchivos();
   
@@ -681,13 +705,30 @@ guardarCambios(): void {
     next: (resp: EmprendimientoCrearResponse) => {
       console.log('Cambios guardados correctamente', resp);
       this.loading = false;
-      alert('Cambios guardados correctamente');
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Emprendimiento',
+          title: 'Cambios guardados correctamente',
+          subtitle: 'Tu emprendimiento ha sido actualizado.',
+          type: 'success'
+        }
+      });
+      
       this.loadVistaEmprendedor();
     },
     error: (err) => {
       console.error('Error al guardar cambios:', err);
       this.loading = false;
-      alert('Error al guardar cambios');
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Emprendimiento',
+          title: 'Error al guardar cambios',
+          subtitle: 'Verifica los datos e intenta nuevamente.',
+          type: 'error'
+        }
+      });
     }
   });
 }
@@ -697,22 +738,27 @@ guardarCambios(): void {
  * - Si es PUBLICADO: crea solicitud de ACTUALIZACION con datos propuestos
  */
 enviarAprobacion(): void {
-  if (this.soloLectura) return;
-  
   this.loading = true;
   
-  // ✅ Para PUBLICADOS: enviar solicitud de actualización con datos completos
   if (this.vistaEmprendedor?.estadoEmprendimiento === 'PUBLICADO') {
     this.enviarSolicitudActualizacion();
     return;
   }
   
-  // Para BORRADOR: usar el endpoint simple
   this.emprendimientoService.enviarAprobacion(this.emprendimientoId).subscribe({
     next: (resp: any) => {
       console.log('Enviado a aprobación:', resp);
       this.loading = false;
-      alert('Emprendimiento enviado para revisión');
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Emprendimiento',
+          title: 'Enviado para revisión',
+          subtitle: 'Tu emprendimiento está en revisión. Recibirás una notificación cuando sea aprobado.',
+          type: 'success'
+        }
+      });
+      
       this.loadVistaEmprendedor();
     },
     error: (err) => {
@@ -727,12 +773,10 @@ enviarAprobacion(): void {
  * Usa el endpoint de solicitudes, NO el de emprendimientos
  */
 private enviarSolicitudActualizacion(): void {
-  // Preparar datos en formato EmprendimientoCompletoDTO
   const datosActualizados = this.prepararDatosParaSolicitud();
   
   console.log('Enviando solicitud de actualización:', datosActualizados);
   
-  // ✅ Usar el servicio de solicitudes
   this.solicitudService.enviarSolicitudActualizacion(
     this.emprendimientoId,
     datosActualizados
@@ -740,17 +784,99 @@ private enviarSolicitudActualizacion(): void {
     next: (resp: any) => {
       console.log('Solicitud de actualización creada:', resp);
       this.loading = false;
-      alert('Solicitud de actualización enviada para revisión. Los cambios se aplicarán cuando un administrador los apruebe.');
-      this.loadVistaEmprendedor();
+      
+      // ✅ Mostrar diálogo y cerrar modal
+      const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Solicitud de actualización',
+          title: 'Solicitud enviada correctamente',
+          subtitle: 'Los cambios se aplicarán cuando un administrador los apruebe.',
+          type: 'success'
+        }
+      });
+      
+      dialogRef.afterClosed().subscribe(() => {
+        this.updated.emit();
+        this.close.emit();
+      });
     },
     error: (err) => {
       console.error('Error al enviar solicitud de actualización:', err);
       this.loading = false;
-      alert('Error al enviar solicitud de actualización');
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Solicitud de actualización',
+          title: 'Error al enviar solicitud',
+          subtitle: err.error?.error || 'Por favor, intenta nuevamente.',
+          type: 'error'
+        }
+      });
     }
   });
 }
 
+/**
+ * 4. Solicitar actualización (para publicados)
+ */
+solicitarActualizacion(): void {
+  if (this.vistaEmprendedor?.tieneSolicitudActiva) {
+    this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        subject: 'Solicitud',
+        title: 'Ya existe una solicitud activa',
+        subtitle: 'Por favor espera a que sea revisada antes de enviar otra.',
+        type: 'warning'
+      }
+    });
+    return;
+  }
+  
+  this.loading = true;
+  const datosActualizados = this.prepararDatosParaSolicitud();
+  
+  this.solicitudService.enviarSolicitudActualizacion(
+    this.emprendimientoId,
+    datosActualizados
+  ).subscribe({
+    next: (resp: any) => {
+      console.log('Solicitud de actualización creada:', resp);
+      this.loading = false;
+      
+      // ✅ Mostrar diálogo y cerrar modal
+      const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Solicitud de actualización',
+          title: 'Solicitud enviada correctamente',
+          subtitle: 'Los cambios se aplicarán cuando un administrador los apruebe.',
+          type: 'success'
+        }
+      });
+      
+      dialogRef.afterClosed().subscribe(() => {
+        this.updated.emit();
+        this.close.emit();
+      });
+    },
+    error: (err) => {
+      console.error('Error al enviar solicitud de actualización:', err);
+      this.loading = false;
+      
+      const errorMsg = err.error?.error?.includes('Ya existe una solicitud activa')
+        ? 'Ya existe una solicitud activa para este emprendimiento.'
+        : 'Error al enviar solicitud de actualización';
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Solicitud de actualización',
+          title: errorMsg,
+          subtitle: 'Por favor, intenta nuevamente más tarde.',
+          type: 'error'
+        }
+      });
+    }
+  });
+}
 /**
  * Prepara datos en formato EmprendimientoCompletoDTO para solicitud de actualización
  * NO incluye IDs de relaciones (se generan en backend)
@@ -951,8 +1077,6 @@ reenviarConObservaciones(): void {
   if (!this.vistaEmprendedor?.solicitudId) return;
   
   const solicitudId = this.vistaEmprendedor.solicitudId;
-  
-  // 🔥 USA EL NUEVO MÉTODO en lugar de prepararDatosParaEnvio
   const datosCorregidos = this.prepararDatosParaModificarReenviar();
   
   this.loading = true;
@@ -961,17 +1085,37 @@ reenviarConObservaciones(): void {
     next: (resp: any) => {
       console.log('Reenviado con correcciones:', resp);
       this.loading = false;
-      alert('Correcciones enviadas para revisión');
-      this.loadVistaEmprendedor();
+      
+      // ✅ Mostrar diálogo y cerrar modal
+      const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Correcciones',
+          title: 'Correcciones enviadas',
+          subtitle: 'Tu solicitud ha sido reenviada para revisión con las correcciones aplicadas.',
+          type: 'success'
+        }
+      });
+      
+      dialogRef.afterClosed().subscribe(() => {
+        this.updated.emit();
+        this.close.emit();
+      });
     },
     error: (err) => {
       console.error('Error al reenviar:', err);
       this.loading = false;
-      alert('Error al reenviar correcciones');
+      
+      this.dialog.open(MensajeConfirmacionComponent, {
+        data: {
+          subject: 'Correcciones',
+          title: 'Error al reenviar correcciones',
+          subtitle: 'Verifica los cambios e intenta nuevamente.',
+          type: 'error'
+        }
+      });
     }
   });
 }
-
   finish(): void {
     // En modo solo lectura no se envía ni guarda nada
     if (this.soloLectura) return;

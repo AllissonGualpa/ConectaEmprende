@@ -20,6 +20,8 @@ export interface NotificationDto {
   emprendimientoId: number | null;
   nombreEmprendimiento: string | null;
   solicitudId: number | null;
+  motivo: string | null;  // ⭐ NUEVO
+  observaciones: string | null;  // ⭐ NUEVO
 }
 
 @Injectable({
