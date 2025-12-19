@@ -39,6 +39,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
       case 'APROBADO':
         return 'Aprobado';
       case 'PENDIENTE_APROBACION':
+      case 'EN_REVISION':
         return 'En revisión';
       case 'RECHAZADO':
         return 'Rechazado';
