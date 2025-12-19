@@ -1,105 +1,129 @@
-<div class="relative bg-white rounded-lg overflow-hidden">
-  <!-- Header -->
-  <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r"
-       [ngClass]="data.tipo === 'rechazar' ? 'from-red-50 to-red-100' : 'from-orange-50 to-orange-100'">
+<div class="relative bg-white rounded-lg overflow-hidden shadow-xl w-full">
+  <!-- Header compacto -->
+  <div class="relative px-6 py-4 bg-gradient-to-br from-orange-50 via-white to-orange-50 border-b border-orange-100">
+  <div class="flex items-center justify-between gap-3">
+
     <div class="flex items-center gap-3">
-      <div class="w-12 h-12 rounded-full flex items-center justify-center"
-           [ngClass]="data.tipo === 'rechazar' ? 'bg-red-100' : 'bg-orange-100'">
-        <mat-icon [class]="iconoColor" class="text-3xl">{{ icono }}</mat-icon>
+      <div
+        class="w-12 h-12 rounded-lg flex items-center justify-center shadow-lg flex-shrink-0"
+        [ngClass]="data.tipo === 'rechazar' ? 'bg-red-500' : 'bg-[#ED6C1C]'">
+        <mat-icon class="text-white text-2xl leading-none">
+          {{ icono }}
+        </mat-icon>
       </div>
+
       <div>
-        <h2 class="text-xl font-bold text-gray-800">{{ titulo }}</h2>
-        <p class="text-sm text-gray-600">{{ subtitulo }}</p>
+        <h2 class="text-lg font-bold text-gray-900">{{ titulo }}</h2>
+        <p class="text-xs text-gray-600">{{ subtitulo }}</p>
       </div>
     </div>
-    <button mat-icon-button (click)="onCancel()" class="text-gray-500 hover:text-gray-700">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
 
-  <!-- Información del emprendimiento -->
-  <div *ngIf="data.nombreEmprendimiento" 
-       class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-    <div class="flex items-center gap-2 text-sm text-gray-700">
-      <mat-icon class="text-gray-500 text-base">business</mat-icon>
-      <span class="font-medium">Emprendimiento:</span>
-      <span class="text-gray-900">{{ data.nombreEmprendimiento }}</span>
+    <button
+      mat-icon-button
+      (click)="onCancel()"
+      class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors
+             self-start -mt-2">
+      <mat-icon class="text-xl leading-none">close</mat-icon>
+    </button>
+
+  </div>
+</div>
+
+
+  <!-- Información del emprendimiento compacta -->
+  <div *ngIf="data.nombreEmprendimiento"
+    class="px-6 py-3 bg-gradient-to-r from-orange-50 to-transparent border-b border-orange-100">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-[#ED6C1C] bg-opacity-10 flex items-center justify-center flex-shrink-0">
+        <mat-icon class="text-[#ED6C1C] text-sm">business</mat-icon>
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Emprendimiento</p>
+        <p class="text-sm text-gray-900 font-semibold truncate">{{ data.nombreEmprendimiento }}</p>
+      </div>
     </div>
   </div>
 
-  <!-- Form -->
+  <!-- Form compacto -->
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6">
     <div class="space-y-4">
-      <!-- Campo de texto -->
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>{{ labelTexto }}</mat-label>
-        <textarea
-          matInput
-          formControlName="texto"
-          [placeholder]="placeholderTexto"
-          rows="6"
-          maxlength="500"
-          class="resize-none"
-        ></textarea>
-        <mat-hint align="start">
-          <span *ngIf="textoControl?.invalid && textoControl?.touched" 
-                class="text-red-600">
-            {{ getErrorMessage() }}
+      <!-- Campo de texto compacto -->
+      <div class="space-y-2">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-[#ED6C1C] bg-opacity-10 flex items-center justify-center flex-shrink-0">
+            <mat-icon class="text-[#ED6C1C] text-sm">edit_note</mat-icon>
+          </div>
+          <h3 class="text-xs font-bold text-gray-900">
+            {{ labelTexto }}
+          </h3>
+          <span class="text-xs font-semibold text-[#ED6C1C] bg-[#ED6C1C] bg-opacity-10 px-2 py-0.5 rounded-full">
+            Requerido
           </span>
-        </mat-hint>
-        <mat-hint align="end">
-          <span [ngClass]="caracteresRestantes < 50 ? 'text-orange-600' : 'text-gray-500'">
-            {{ caracteresRestantes }} caracteres restantes
-          </span>
-        </mat-hint>
-        <mat-error *ngIf="textoControl?.invalid">
-          {{ getErrorMessage() }}
-        </mat-error>
-      </mat-form-field>
+        </div>
 
-      <!-- Mensaje informativo -->
-      <div class="flex items-start gap-3 p-4 rounded-lg"
-           [ngClass]="data.tipo === 'rechazar' ? 'bg-red-50 border border-red-200' : 'bg-orange-50 border border-orange-200'">
-        <mat-icon [ngClass]="data.tipo === 'rechazar' ? 'text-red-500' : 'text-orange-500'" 
-                  class="text-xl mt-0.5">
-          info
-        </mat-icon>
-        <div class="flex-1 text-sm">
-          <p [ngClass]="data.tipo === 'rechazar' ? 'text-red-800' : 'text-orange-800'" 
-             class="font-medium mb-1">
-            {{ data.tipo === 'rechazar' ? 'Importante' : 'Recuerda' }}
+        <!-- Textarea compacto -->
+        <mat-form-field appearance="outline" class="w-full">
+          <textarea matInput formControlName="texto" [placeholder]="placeholderTexto" rows="4" maxlength="500"
+            class="resize-none text-sm text-gray-800 placeholder-gray-400" style="border-color: #ED6C1C20"></textarea>
+
+          <mat-hint align="start" *ngIf="textoControl?.valid && !textoControl?.errors">
+            <span class="text-xs text-gray-500">Se compartirá con el usuario</span>
+          </mat-hint>
+
+          <mat-hint align="end">
+            <span class="text-xs font-semibold transition-colors" [ngClass]="caracteresRestantes < 50 
+                ? 'text-red-500' 
+                : caracteresRestantes < 100 
+                ? 'text-orange-500' 
+                : 'text-gray-400'">
+              {{ caracteresRestantes }}/500
+            </span>
+          </mat-hint>
+
+          <mat-error *ngIf="textoControl?.invalid && textoControl?.touched">
+            {{ getErrorMessage() }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Mensaje informativo compacto -->
+      <div class="flex gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
+        <div class="flex-shrink-0 pt-0.5">
+          <mat-icon class="text-blue-600 text-lg">info_outline</mat-icon>
+        </div>
+        <div class="flex-1 text-xs">
+          <p class="font-bold text-blue-900 mb-0.5">
+            {{ data.tipo === 'rechazar' ? 'Importante' : 'Información' }}
           </p>
-          <p [ngClass]="data.tipo === 'rechazar' ? 'text-red-700' : 'text-orange-700'">
-            {{ data.tipo === 'rechazar' 
-              ? 'Esta acción rechazará permanentemente la solicitud. El usuario recibirá una notificación con el motivo proporcionado.'
-              : 'El usuario recibirá una notificación y podrá modificar su solicitud según las observaciones indicadas.' }}
+          <p class="text-blue-800 leading-relaxed">
+            {{ data.tipo === 'rechazar'
+            ? 'Esta acción rechazará permanentemente la solicitud.'
+            : 'El usuario recibirá una notificación con el motivo proporcionado.'
+            }}
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Botones -->
-    <div class="flex justify-end gap-3 mt-6">
-      <button
-        type="button"
-        mat-stroked-button
-        (click)="onCancel()"
-        class="px-6"
-      >
+    <!-- Botones compactos -->
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-100">
+      <button type="button" mat-stroked-button (click)="onCancel()"
+        class="px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-lg transition-all duration-200">
         Cancelar
       </button>
-      <button
-        type="submit"
-        mat-raised-button
-        [disabled]="form.invalid || isSubmitting"
-        [ngClass]="data.tipo === 'rechazar' 
-          ? 'bg-red-600 hover:bg-red-700 text-white' 
-          : 'bg-orange-600 hover:bg-orange-700 text-white'"
-        class="px-6"
-      >
-        <span class="flex items-center gap-2">
-          <mat-icon class="text-base">{{ data.tipo === 'rechazar' ? 'cancel' : 'send' }}</mat-icon>
-          {{ data.tipo === 'rechazar' ? 'Rechazar Solicitud' : 'Enviar Observaciones' }}
+
+      <button type="submit" mat-raised-button [disabled]="form.invalid || isSubmitting"
+        [color]="data.tipo === 'rechazar' ? 'primary' : 'primary'" class="px-6 h-10 text-sm font-bold text-white rounded-lg transition-all duration-200
+           shadow-md hover:shadow-lg disabled:shadow-none
+           flex items-center justify-center gap-2
+           disabled:cursor-not-allowed leading-none">
+
+        <mat-icon class="!leading-none !h-5 !w-5">
+          {{ data.tipo === 'rechazar' ? 'cancel' : 'send' }}
+        </mat-icon>
+
+        <span class="leading-none">
+          {{ data.tipo === 'rechazar' ? 'Rechazar' : 'Enviar' }}
         </span>
       </button>
     </div>
