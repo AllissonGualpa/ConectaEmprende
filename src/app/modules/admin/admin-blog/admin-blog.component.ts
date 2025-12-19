@@ -237,11 +237,9 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
 
   onFilterChange(): void {
     this.currentPage = 0;
-    this.loadBlogs();
   }
 
   onSearch(value: string) {
-    // Emitir al Subject (debounce + llamada al API en la suscripción)
     this.searchSubject.next(value);
   }
 

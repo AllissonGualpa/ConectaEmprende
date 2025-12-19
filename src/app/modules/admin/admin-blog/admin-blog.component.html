@@ -35,7 +35,7 @@
           <div class="md:col-span-1">
             <label class="block text-xs text-gray-600 mb-1">Tags</label>
             <mat-form-field appearance="outline" class="w-full">
-              <mat-select [(ngModel)]="selectedTag" (selectionChange)="onFilterChange()">
+              <mat-select [(ngModel)]="selectedTag">
                 <mat-option value="">Todos</mat-option>
                 <mat-option *ngFor="let tag of availableTags" [value]="tag.idTag">
                   {{ tag.nombre }}
@@ -48,7 +48,7 @@
           <div class="md:col-span-1">
             <label class="block text-xs text-gray-600 mb-1">Estado</label>
             <mat-form-field appearance="outline" class="w-full">
-              <mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()">
+              <mat-select [(ngModel)]="selectedEstado">
                 <mat-option value="">Todos</mat-option>
                 <mat-option value="PUBLICADO">Publicado</mat-option>
                 <mat-option value="BORRADOR">Borrador</mat-option>
@@ -61,7 +61,7 @@
           <div class="md:col-span-1">
             <label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
             <mat-form-field appearance="outline" class="w-full">
-              <input matInput [matDatepicker]="pickerInicio" placeholder="Seleccionar fecha" [(ngModel)]="fechaInicio" (dateChange)="onFilterChange()">
+              <input matInput [matDatepicker]="pickerInicio" placeholder="Seleccionar fecha" [(ngModel)]="fechaInicio">
               <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
               <mat-datepicker #pickerInicio></mat-datepicker>
             </mat-form-field>
@@ -71,7 +71,7 @@
           <div class="md:col-span-1">
             <label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
             <mat-form-field appearance="outline" class="w-full">
-              <input matInput [matDatepicker]="pickerFin" placeholder="Seleccionar fecha" [(ngModel)]="fechaFin" (dateChange)="onFilterChange()">
+              <input matInput [matDatepicker]="pickerFin" placeholder="Seleccionar fecha" [(ngModel)]="fechaFin">
               <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
               <mat-datepicker #pickerFin></mat-datepicker>
             </mat-form-field>
