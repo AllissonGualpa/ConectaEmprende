@@ -1,17 +1,16 @@
 <div class="flex min-h-screen bg-gray-50">
-  
-
   <app-navbar-admin></app-navbar-admin>
 
   <main class="flex-1 p-8">
     <!-- Overlay de loading centrado sobre el contenido principal -->
-  <div *ngIf="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
-    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-    <span class="text-gray-500 text-sm">Cargando datos de edición...</span>
-  </div>
+    <div *ngIf="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <span class="text-gray-500 text-sm">Cargando datos de edición...</span>
+    </div>
+    
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-[#ED6C1C]">
         {{ mode === 'create' ? 'Crear Nuevo Blog' : 'Editar Blog' }}
@@ -19,11 +18,6 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-md p-6 mb-6 max-h-[80vh] overflow-y-auto">
-      <!-- puedes mostrar un loader cuando loading sea true -->
-      <div *ngIf="loading">
-        <p class="text-gray-600">Cargando blog...</p>
-      </div>
-
       <div *ngIf="!loading">
         <div class="mb-6">
           <label class="block text-sm font-bold text-gray-700 mb-2">Título del blog</label>
@@ -45,14 +39,15 @@
 
         <!-- Estado: solo visible en modo edición -->
         <div class="mb-6" *ngIf="mode === 'edit'">
-          <label class="block text-sm font-bold text-gray-700 mb-2">Estado</label>
-          <select
-            [(ngModel)]="blog.estado"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="BORRADOR">Borrador</option>
-            <option value="PUBLICADO">Publicado</option>
-          </select>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Estado actual</label>
+          <div class="px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+            <span class="font-medium" [ngClass]="{
+              'text-green-600': blog.estado === 'PUBLICADO',
+              'text-orange-600': blog.estado === 'BORRADOR'
+            }">
+              {{ blog.estado === 'PUBLICADO' ? 'Publicado' : 'Borrador' }}
+            </span>
+          </div>
         </div>
 
         <!-- Tags -->
@@ -92,7 +87,6 @@
               </button>
             </span>
           </div>
-
 
           <!-- Selector de tags existentes -->
           <div class="flex gap-2">
@@ -142,25 +136,32 @@
           </div>
         </div>
 
-        <!-- Botones al final -->
+        <!-- Botones al final - TRES BOTONES -->
         <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          <!-- Botón Cancelar -->
           <button
             (click)="cancelar()"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
+            class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
             <i class="fa-solid fa-times"></i>
             Cancelar
           </button>
 
+          <!-- Botón Guardar como borrador -->
           <button
-            (click)="guardar()"
-            [disabled]="publicando"
-            [class]="publicando
-              ? 'bg-gray-400 text-white px-8 py-3 rounded-lg shadow flex items-center gap-2 cursor-not-allowed'
-              : 'bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200'">
-            <i class="fa-solid" [ngClass]="publicando ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-            {{ publicando
-              ? (mode === 'create' ? 'Publicando...' : 'Guardando...')
-              : (mode === 'create' ? 'Publicar' : 'Guardar cambios') }}
+            (click)="guardarComoBorrador()"
+            [disabled]="guardando"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 disabled:bg-yellow-300 disabled:cursor-not-allowed">
+            <i class="fa-solid" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+            {{ guardando ? 'Guardando...' : 'Guardar como borrador' }}
+          </button>
+
+          <!-- Botón Publicar -->
+          <button
+            (click)="publicar()"
+            [disabled]="guardando"
+            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 disabled:bg-orange-300 disabled:cursor-not-allowed">
+            <i class="fa-solid" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+            {{ guardando ? 'Publicando...' : 'Publicar' }}
           </button>
         </div>
       </div>
