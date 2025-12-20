@@ -96,7 +96,12 @@
               disabled:bg-gray-300 disabled:text-gray-500
               disabled:cursor-not-allowed disabled:hover:bg-gray-300">
               {{ ctaLabel }}
-            </button>
+        </button>
+        <ng-container
+            *ngIf="footerTemplate"
+            [ngTemplateOutlet]="footerTemplate"
+            [ngTemplateOutletContext]="{ $implicit: item }">
+          </ng-container>
       </div>
     </article>
   </div>

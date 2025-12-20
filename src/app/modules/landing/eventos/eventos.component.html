@@ -67,17 +67,35 @@
       </ng-template>
 
       <ng-template #eventActions let-item>
-        <div class="flex flex-col gap-2">
-          <a (click)="onDiscover(item)" class="text-center text-orange-500 mt-2 cursor-pointer">Ver Detalle</a>
-        </div>
+         <div class="flex flex-col gap-2 mt-3">
+    
+            <button
+                class="w-full py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition"
+                (click)="onRegister(item)">
+                Registrarse
+              </button>
+
+            
+            <button
+              class="w-full py-2 rounded-lg border border-orange-500 text-orange-500 hover:bg-orange-50 transition"
+              (click)="onDiscover(item)">
+              Ver detalle
+            </button>
+           </div>
       </ng-template>
 
       <!-- empty overlay to prevent actionTemp late rendering in the image overlay -->
       <ng-template #emptyOverlay></ng-template>
 
-      <app-cards [items]="filtered" [pageSize]="pageSize" [badgeTemplate]="eventBadge" [actionTemplate]="eventActions"
-        [overlayTemplate]="emptyOverlay" (discover)="onDiscover($event)" (toggleFavorite)="onToggleFavorite($event)"
-        ctaLabel="Registrarse">
+      <app-cards 
+      [items]="filtered" 
+      [pageSize]="pageSize" 
+      [badgeTemplate]="eventBadge" 
+      [actionTemplate]="eventActions"
+      [overlayTemplate]="emptyOverlay" 
+      (discover)="onDiscover($event)" 
+      (toggleFavorite)="onToggleFavorite($event)"
+      ctaLabel="Ver Detalle">
       </app-cards>
     </div>
   </section>
