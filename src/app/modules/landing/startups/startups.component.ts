@@ -137,7 +137,7 @@ export class StartupsComponent implements OnInit {
         const startups = data.filter(
           (e) =>
             (e.tipoEmprendimientoId === 1 || e.tipoEmprendimientoId === 3) &&
-            e.estadoEmprendimiento === 'APROBADO'
+            e.estadoEmprendimiento === 'PUBLICADO'
         );
 
         console.log('Startups filtradas:', startups.length);
@@ -147,7 +147,7 @@ export class StartupsComponent implements OnInit {
           id: e.id,
           title: e.nombreComercial || 'Startup sin nombre',
           description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobada en ${e.nombreCiudad || 'sin ciudad'}`,
-          image: '/assets/img/inicio/foto5.png',
+          image: e.multimedia && e.multimedia.length > 0 ? e.multimedia[0].urlArchivo :'/assets/img/inicio/foto5.png',
           category: e.nombreTipoEmprendimiento?.trim() || 'Startup',
           location: e.nombreCiudad || 'Sin ubicación',
           views: Math.floor(Math.random() * 20000) + 1000,
