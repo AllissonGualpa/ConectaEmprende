@@ -108,7 +108,7 @@ export class BlogService {
     formData.append('titulo', blog.titulo);
     formData.append('descripcionCorta', blog.resumen);
     formData.append('contenido', blog.contenido);
-    formData.append('estado', 'BORRADOR');
+    formData.append('estado', 'PUBLICADO');
 
     const nombresTags = blog.tags.map(t => t.nombre).join(',');
     const idsTags = blog.tags.map(t => t.idTag).join(',');

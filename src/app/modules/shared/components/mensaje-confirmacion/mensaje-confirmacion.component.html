@@ -7,68 +7,64 @@
     'dialog-warning': type === 'warning'
   }"
 >
-  <div class="dialog-header">
+  <button class="close-button" (click)="close()">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+  </button>
+
+  <div class="dialog-content">
     <div class="dialog-icon">
       <!-- Icono SUCCESS -->
       <svg
         *ngIf="type === 'success'"
         xmlns="http://www.w3.org/2000/svg"
+        fill="none"
         viewBox="0 0 24 24"
-        class="icon-svg"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="icon-svg icon-success"
       >
-        <circle cx="12" cy="12" r="10" fill="#e6f6ec" />
-        <path
-          d="M9.5 12.8 7.3 10.6 6.2 11.7 9.5 15l8-8-1.1-1.1z"
-          fill="#16a34a"
-        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
 
       <!-- Icono ERROR -->
       <svg
         *ngIf="type === 'error'"
         xmlns="http://www.w3.org/2000/svg"
+        fill="none"
         viewBox="0 0 24 24"
-        class="icon-svg"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="icon-svg icon-error"
       >
-        <circle cx="12" cy="12" r="10" fill="#fee2e2" />
-        <path
-          d="M15.5 8.5 12 12l3.5 3.5-1.5 1.5L10.5 13.5 7 17l-1.5-1.5L9 12 5.5 8.5 7 7l3.5 3.5L14 7z"
-          fill="#dc2626"
-        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
 
-      <!-- Icono INFO (signo de exclamación) -->
+      <!-- Icono INFO -->
       <svg
         *ngIf="type === 'info'"
         xmlns="http://www.w3.org/2000/svg"
+        fill="none"
         viewBox="0 0 24 24"
-        class="icon-svg"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="icon-svg icon-info"
       >
-        <circle cx="12" cy="12" r="10" fill="#e0f2fe" />
-        <path
-          d="M11 10h2v6h-2v-6zm0-4h2v2h-2V6z"
-          fill="#0369a1"
-        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
       </svg>
 
       <!-- Icono WARNING -->
       <svg
         *ngIf="type === 'warning'"
         xmlns="http://www.w3.org/2000/svg"
+        fill="none"
         viewBox="0 0 24 24"
-        class="icon-svg"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="icon-svg icon-warning"
       >
-        <g
-          fill="none"
-          stroke="#f59e0b"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M12 3L2 21h20L12 3z" />
-          <path d="M12 9v5" />
-          <path d="M12 17h0.01" />
-        </g>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
       </svg>
     </div>
 
@@ -79,73 +75,94 @@
       </p>
     </div>
   </div>
-
-  <div class="dialog-actions">
-    <button
-      mat-button
-      color="primary"
-      (click)="close()"
-    >
-      Aceptar
-    </button>
-  </div>
 </div>
 
 <style>
   .dialog-container {
-    min-width: 320px;
-    max-width: 420px;
-    padding: 16px 20px;
+    position: relative;
+    min-width: 380px;
+    max-width: 500px;
+    padding: 32px;
     box-sizing: border-box;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  .dialog-success {
-    /* tonos verdes suaves */
+  .close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #9ca3af;
+    transition: color 0.2s;
+    width: 24px;
+    height: 24px;
   }
 
-  .dialog-error {
-    /* tonos rojos suaves */
+  .close-button:hover {
+    color: #4b5563;
   }
 
-  .dialog-info {
-    /* tonos azules suaves */
+  .close-button svg {
+    width: 100%;
+    height: 100%;
   }
 
-  .dialog-warning {
-    background-color: #fffbeb; /* amarillo muy claro */
-    border-left: 4px solid #f59e0b;
-  }
-
-  .dialog-header {
+  .dialog-content {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
   .dialog-icon {
-    flex-shrink: 0;
+    margin-bottom: 20px;
   }
 
   .icon-svg {
-    width: 32px;
-    height: 32px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .icon-success {
+    color: #10b981;
+    stroke-width: 2;
+  }
+
+  .icon-error {
+    color: #ef4444;
+    stroke-width: 2;
+  }
+
+  .icon-info {
+    color: #3b82f6;
+    stroke-width: 2;
+  }
+
+  .icon-warning {
+    color: #f59e0b;
+    stroke-width: 2;
+  }
+
+  .dialog-text {
+    width: 100%;
   }
 
   .dialog-title {
-    margin: 0 0 4px;
-    font-size: 16px;
-    font-weight: 600;
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
   }
 
   .dialog-subtitle {
     margin: 0;
-    font-size: 14px;
-    color: #4b5563;
-  }
-
-  .dialog-actions {
-    margin-top: 16px;
-    display: flex;
-    justify-content: flex-end;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #6b7280;
   }
 </style>
