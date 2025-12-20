@@ -13,6 +13,7 @@ export interface BlogCreate {
 }
 
 export interface BlogArticle {
+  idArticulo: number;
 	id: number;
 	titulo: string;
 	descripcionCorta: string;
