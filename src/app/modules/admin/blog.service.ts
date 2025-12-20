@@ -102,13 +102,13 @@ export class BlogService {
   }
 
   // Crear artículo
-  createBlog(blog: BlogCreate): Observable<any> {
+  createBlog(blog: BlogCreate, estado: string = 'PUBLICADO'): Observable<any> {
     const idUsuario = localStorage.getItem('idUsuario') || '1';
     const formData = new FormData();
     formData.append('titulo', blog.titulo);
     formData.append('descripcionCorta', blog.resumen);
     formData.append('contenido', blog.contenido);
-    formData.append('estado', 'PUBLICADO');
+    formData.append('estado', estado);
 
     const nombresTags = blog.tags.map(t => t.nombre).join(',');
     const idsTags = blog.tags.map(t => t.idTag).join(',');

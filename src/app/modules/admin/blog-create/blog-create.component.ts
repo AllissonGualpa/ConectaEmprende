@@ -18,7 +18,7 @@ import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-co
     FormsModule,
     NavbarAdminComponent,
     HttpClientModule,
-    MatDialogModule // NUEVO
+    MatDialogModule
   ],
   templateUrl: './blog-create.component.html',
   styleUrls: ['./blog-create.component.css']
@@ -47,7 +47,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   mostrarFormularioTag = false;
   nuevoTagNombre = '';
 
-  publicando = false;
+  guardando = false;
   loading = false;
 
   // Flag: indica si el contenido del blog ya fue cargado desde el backend
@@ -58,7 +58,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private blogService: BlogService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private dialog: MatDialog // NUEVO
+    private dialog: MatDialog
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
@@ -271,47 +271,103 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     this.blog.urlImagen = null;
   }
 
-  guardar() {
+  // Nuevos métodos para los tres botones
+  publicar() {
     if (!this.validarBlog()) return;
-    if (this.publicando) return;
 
-    this.publicando = true;
+    const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        type: 'confirm',
+        title: 'Publicar artículo',
+        subtitle: '¿Estás seguro de que quieres publicar este artículo? Será visible para todos los usuarios.'
+      }
+    });
 
-    if (this.mode === 'create') {
-      this.crearArticulo();
-    } else {
-      this.actualizarArticulo();
-    }
-  }
-
-  private crearArticulo() {
-    this.blogService.createBlog(this.blog).subscribe({
-      next: () => {
-        this.dialog.open(MensajeConfirmacionComponent, {
-          data: {
-            type: 'success',
-            subject: 'Blog',
-            subtitle: 'El artículo se publicó correctamente.'
-          }
-        }).afterClosed().subscribe(() => {
-          this.publicando = false;
-          this.router.navigate(['/admin/blog']);
-        });
-      },
-      error: () => {
-        this.dialog.open(MensajeConfirmacionComponent, {
-          data: {
-            type: 'error',
-            subject: 'Blog',
-            subtitle: 'No se pudo crear el artículo. Revisa la información e inténtalo nuevamente.'
-          }
-        });
-        this.publicando = false;
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.guardarArticulo('PUBLICADO');
       }
     });
   }
 
-  private actualizarArticulo() {
+  guardarComoBorrador() {
+    if (!this.validarBlog()) return;
+
+    const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        type: 'confirm',
+        title: 'Guardar como borrador',
+        subtitle: '¿Guardar este artículo como borrador? Podrás editarlo y publicarlo más tarde.'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.guardarArticulo('BORRADOR');
+      }
+    });
+  }
+
+  cancelar() {
+    const dialogRef = this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        type: 'confirm',
+        title: 'Cancelar cambios',
+        subtitle: '¿Estás seguro de que quieres cancelar? Los cambios no guardados se perderán.'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.router.navigate(['/admin/blog']);
+      }
+    });
+  }
+
+  private guardarArticulo(estado: string) {
+    if (this.guardando) return;
+    this.guardando = true;
+
+    if (this.mode === 'create') {
+      this.crearArticulo(estado);
+    } else {
+      this.actualizarArticulo(estado);
+    }
+  }
+
+  private crearArticulo(estado: string) {
+    this.blogService.createBlog(this.blog, estado).subscribe({
+      next: () => {
+        const mensaje = estado === 'PUBLICADO'
+          ? 'El artículo se publicó correctamente.'
+          : 'El artículo se guardó como borrador.';
+
+        this.dialog.open(MensajeConfirmacionComponent, {
+          data: {
+            type: 'success',
+            subject: 'Blog',
+            subtitle: mensaje
+          }
+        }).afterClosed().subscribe(() => {
+          this.guardando = false;
+          this.router.navigate(['/admin/blog']);
+        });
+      },
+      error: (err) => {
+        console.error('Error al crear el artículo:', err);
+        this.dialog.open(MensajeConfirmacionComponent, {
+          data: {
+            type: 'error',
+            subject: 'Blog',
+            subtitle: 'No se pudo guardar el artículo. Revisa la información e inténtalo nuevamente.'
+          }
+        });
+        this.guardando = false;
+      }
+    });
+  }
+
+  private actualizarArticulo(estado: string) {
     if (!this.blogId) {
       this.dialog.open(MensajeConfirmacionComponent, {
         data: {
@@ -320,7 +376,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
           subtitle: 'No pudimos identificar el artículo a editar. Vuelve al listado e inténtalo otra vez.'
         }
       });
-      this.publicando = false;
+      this.guardando = false;
       return;
     }
 
@@ -328,7 +384,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     formData.append('titulo', this.blog.titulo);
     formData.append('descripcionCorta', this.blog.resumen);
     formData.append('contenido', this.blog.contenido);
-    formData.append('estado', this.blog.estado);
+    formData.append('estado', estado);
 
     if (this.blog.imagenDestacada instanceof File) {
       formData.append('imagen', this.blog.imagenDestacada);
@@ -339,18 +395,22 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       formData.append('idsTags', id.toString());
     });
 
-    const idUsuario = localStorage.getItem('idUsuario') || 1;
+    const idUsuario = localStorage.getItem('idUsuario') || '1';
 
     this.blogService.updateArticle(this.blogId, formData, Number(idUsuario)).subscribe({
       next: () => {
+        const mensaje = estado === 'PUBLICADO'
+          ? 'El artículo se publicó correctamente.'
+          : 'El artículo se guardó como borrador.';
+
         this.dialog.open(MensajeConfirmacionComponent, {
           data: {
             type: 'success',
             subject: 'Blog',
-            subtitle: 'Los cambios se guardaron correctamente.'
+            subtitle: mensaje
           }
         }).afterClosed().subscribe(() => {
-          this.publicando = false;
+          this.guardando = false;
           this.router.navigate(['/admin/blog']);
         });
       },
@@ -363,7 +423,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
             subtitle: 'No se pudo actualizar el artículo. Verifica los datos e inténtalo de nuevo.'
           }
         });
-        this.publicando = false;
+        this.guardando = false;
       }
     });
   }
@@ -405,25 +465,4 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  cancelar() {
-    if (confirm('¿Estás seguro de cancelar? Los cambios no guardados se perderán.')) {
-      this.router.navigate(['/admin/blog']);
-    }
-  }
-
-  editarBlog() {
-    // ya no es necesario: el propio componente soporta edición
-  }
-
-  archivarBlog() {
-    if (confirm('¿Seguro que quieres archivar el artículo?')) {
-      this.dialog.open(MensajeConfirmacionComponent, {
-        data: {
-          type: 'info',
-          subject: 'Blog',
-          subtitle: 'El artículo se marcó como archivado (acción simulada).'
-        }
-      });
-    }
-  }
 }
