@@ -31,7 +31,7 @@ export class BlogDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // 🔥 ESCUCHAR CAMBIO DE ID
+    // ESCUCHAR CAMBIO DE ID
     this.route.paramMap.subscribe(params => {
       const id = Number(params.get('id'));
       if (id) {

@@ -429,40 +429,73 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   }
 
   private validarBlog(): boolean {
-    if (!this.blog.titulo.trim()) {
-      this.dialog.open(MensajeConfirmacionComponent, {
-        data: {
-          type: 'info',
-          title: 'Falta el título',
-          subtitle: 'Escribe un título para el blog antes de continuar.'
-        }
-      });
+
+    // TÍTULO
+    if (!this.blog.titulo || !this.blog.titulo.trim()) {
+      this.mostrarError('Falta el título', 'Escribe un título para el blog.');
       return false;
     }
 
-    if (!this.blog.contenido.trim()) {
-      this.dialog.open(MensajeConfirmacionComponent, {
-        data: {
-          type: 'info',
-          title: 'Contenido vacío',
-          subtitle: 'Agrega el contenido del artículo para poder guardarlo.'
-        }
-      });
+    // RESUMEN
+    if (!this.blog.resumen || !this.blog.resumen.trim()) {
+      this.mostrarError('Falta el resumen', 'Agrega un resumen corto del artículo.');
       return false;
     }
 
-    if (this.mode === 'create' && !this.blog.imagenDestacada) {
-      this.dialog.open(MensajeConfirmacionComponent, {
-        data: {
-          type: 'info',
-          title: 'Imagen requerida',
-          subtitle: 'Selecciona una imagen destacada para el artículo.'
-        }
-      });
+    // CONTENIDO (limpiar HTML vacío de Quill)
+    const contenidoPlano = this.blog.contenido
+      ?.replace(/<(.|\n)*?>/g, '')
+      .replace(/&nbsp;/g, '')
+      .trim();
+
+    if (!contenidoPlano) {
+      this.mostrarError(
+        'Contenido vacío',
+        'Escribe el contenido del artículo antes de continuar.'
+      );
+      return false;
+    }
+
+    // TAGS
+    if (!this.blog.tags || this.blog.tags.length === 0) {
+      this.mostrarError(
+        'Sin tags',
+        'Selecciona al menos un tag para el artículo.'
+      );
+      return false;
+    }
+
+    // IMAGEN
+    const noTieneImagen =
+      !this.blog.imagenDestacada && !this.blog.urlImagen;
+
+    if (this.mode === 'create' && noTieneImagen) {
+      this.mostrarError(
+        'Imagen requerida',
+        'Selecciona una imagen destacada para el artículo.'
+      );
+      return false;
+    }
+
+    if (this.mode === 'edit' && noTieneImagen) {
+      this.mostrarError(
+        'Imagen requerida',
+        'El artículo debe tener una imagen destacada.'
+      );
       return false;
     }
 
     return true;
+  }
+
+  private mostrarError(titulo: string, mensaje: string): void {
+    this.dialog.open(MensajeConfirmacionComponent, {
+      data: {
+        type: 'info',
+        title: titulo,
+        subtitle: mensaje
+      }
+    });
   }
 
 }
