@@ -12,6 +12,7 @@ import { EmprendimientoService } from '../../../modules/emprendimiento.service';
 export interface Emprendimiento {
   id: number;
   nombreComercial: string;
+  estadoEmprendimiento?: string;
 }
 
 @Component({
@@ -61,24 +62,27 @@ export class EmprendimientoSelectorComponent implements OnInit, ControlValueAcce
   }
 
   private loadEmprendimientos(): void {
-    this.isLoading = true;
-    this.error = null;
+      this.isLoading = true;
+      this.error = null;
 
-    this.emprendimientoService.getMisEmprendimientos().subscribe({
-      next: (response) => {
-        this.emprendimientos = response || [];
-        this.filteredEmprendimientos = [...this.emprendimientos];
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando emprendimientos:', err);
-        this.error = 'Error al cargar los emprendimientos';
-        this.isLoading = false;
-        this.emprendimientos = [];
-        this.filteredEmprendimientos = [];
-      }
-    });
-  }
+      this.emprendimientoService.getMisEmprendimientos().subscribe({
+        next: (response) => {
+          // Filtrar solo los emprendimientos PUBLICADOS
+          this.emprendimientos = (response || []).filter(
+            (emp: any) => emp.estadoEmprendimiento === 'PUBLICADO'
+          );
+          this.filteredEmprendimientos = [...this.emprendimientos];
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error cargando emprendimientos:', err);
+          this.error = 'Error al cargar los emprendimientos';
+          this.isLoading = false;
+          this.emprendimientos = [];
+          this.filteredEmprendimientos = [];
+        }
+      });
+    }
 
   filterEmprendimientos(searchText: string): void {
     this.searchText = searchText;
