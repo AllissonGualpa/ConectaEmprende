@@ -51,31 +51,63 @@ mapEstado(estado: string): string {
   }
 }
 
-  loadEmprendimientos(): void {
-    this.loading = true;
-    this.emprendimientoService.getMisEmprendimientos().subscribe({
-      next: (data) => {
-        console.log('Emprendimientos cargados:', data);
-        this.emprendimientos = data;
-        this.cardsArray = this.emprendimientos.map((e) => ({
-          id: e.id,
-          title: e.nombreComercial || 'Emprendimiento sin nombre',
-          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad || 'sin ciudad'}`,
-          image: e.multimedia && e.multimedia.length > 0 ? e.multimedia[0].urlArchivo :'/assets/img/inicio/foto5.png',
-          category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
-          location: e.nombreCiudad || 'Sin ubicación',
+loadEmprendimientos(): void {
+  this.loading = true;
+  this.emprendimientoService.getMisEmprendimientos().subscribe({
+    next: (response) => {
+      console.log('Respuesta completa:', response);
+      
+      // Extraer el array de emprendimientos
+      let data: any[];
+      if (response?.content && Array.isArray(response.content)) {
+        data = response.content;
+      } else if (Array.isArray(response)) {
+        data = response;
+      } else {
+        console.warn('Formato inesperado:', response);
+        this.emprendimientos = [];
+        this.cardsArray = [];
+        this.loading = false;
+        return;
+      }
+
+      console.log('Emprendimientos encontrados:', data.length);
+      this.emprendimientos = data;
+      
+      this.cardsArray = data.map((e) => {
+        // Obtener la primera imagen
+        const imagenPrincipal = e.multimedia && e.multimedia.length > 0 
+          ? e.multimedia[0].urlArchivo 
+          : '/assets/img/inicio/foto5.png';
+
+        // Obtener nombres de categorías
+        const categoriasTexto = e.categorias && e.categorias.length > 0
+          ? e.categorias.map((cat: any) => cat.nombre).join(', ')
+          : 'Sin categoría';
+
+        return {
+          id: e.idEmprendimiento,
+          title: e.nombreComercialEmprendimiento || 'Emprendimiento sin nombre',
+          description: `${e.subTipoEmprendimiento || 'Tipo desconocido'} en ${e.ciudadNombre || 'sin ciudad'}`,
+          image: imagenPrincipal,
+          category: categoriasTexto,
+          location: `${e.ciudadNombre || 'Sin ciudad'}, ${e.provinciaNombre || ''}`,
           views: Math.floor(Math.random() * 20000) + 1000,
           status: this.mapEstado(e.estadoEmprendimiento),
-          rawStatus: e.estadoEmprendimiento // CORREGIDO: ahora con 'S' mayúscula
-        }));
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar emprendimientos', err);
-        this.loading = false;
-      }
-    });
-  }
+          rawStatus: e.estadoEmprendimiento
+        };
+      });
+      
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar emprendimientos', err);
+      this.emprendimientos = [];
+      this.cardsArray = [];
+      this.loading = false;
+    }
+  });
+}
 
   openCreateSolicitudModal(): void {
     this.showCreateSolicitudModal = true;
