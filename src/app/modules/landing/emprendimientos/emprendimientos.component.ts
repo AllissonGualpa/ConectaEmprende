@@ -137,7 +137,7 @@ export class EmprendimientosComponent implements OnInit {
       next: (response) => {
         console.log('Datos recibidos:', response);
         
-        // Manejar respuesta paginada o array directo
+        // Manejar respuesta paginada
         let data: any[];
         if (response?.content && Array.isArray(response.content)) {
           data = response.content;
@@ -151,25 +151,30 @@ export class EmprendimientosComponent implements OnInit {
           return;
         }
 
-        // Filtrar los emprendimientos (id 2 y 4)
-        const emprendimientos = data.filter(
-          (e) =>
-            (e.tipoEmprendimientoId === 2 || e.tipoEmprendimientoId === 4) &&
-            e.estadoEmprendimiento === 'PUBLICADO'
-        );
+        console.log('Emprendimientos encontrados:', data.length);
 
-        console.log('Emprendimientos filtrados:', emprendimientos.length);
+        // Mapear a formato de tarjetas con los nombres correctos de la API
+        this.cardsArray = data.map((e) => {
+          // Obtener la primera imagen del array multimedia
+          const imagenPrincipal = e.multimedia && e.multimedia.length > 0 
+            ? e.multimedia[0].urlArchivo 
+            : '/assets/img/inicio/foto5.png';
 
-        // Mapear a formato de tarjetas
-        this.cardsArray = emprendimientos.map((e) => ({
-          id: e.id,
-          title: e.nombreComercial || 'Emprendimiento sin nombre',
-          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobado en ${e.nombreCiudad || 'sin ciudad'}`,
-          image: e.multimedia && e.multimedia.length > 0 ? e.multimedia[0].urlArchivo :'/assets/img/inicio/foto5.png',
-          category: e.nombreTipoEmprendimiento?.trim() || 'Emprendimiento',
-          location: e.nombreCiudad || 'Sin ubicación',
-          views: Math.floor(Math.random() * 20000) + 1000,
-        }));
+          // Obtener nombres de categorías
+          const categoriasTexto = e.categorias && e.categorias.length > 0
+            ? e.categorias.map((cat: any) => cat.nombre).join(', ')
+            : 'Sin categoría';
+
+          return {
+            id: e.idEmprendimiento,
+            title: e.nombreComercialEmprendimiento || 'Emprendimiento sin nombre',
+            description: `${e.subTipoEmprendimiento || 'Tipo desconocido'} en ${e.ciudadNombre || 'sin ciudad'}`,
+            image: imagenPrincipal,
+            category: categoriasTexto,
+            location: `${e.ciudadNombre || 'Sin ciudad'}, ${e.provinciaNombre || ''}`,
+            views: Math.floor(Math.random() * 20000) + 1000,
+          };
+        });
 
         this.filteredCards = [...this.cardsArray];
         console.log('Cards mapeadas:', this.filteredCards.length);

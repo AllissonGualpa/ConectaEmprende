@@ -108,63 +108,67 @@ export class StartupsComponent implements OnInit {
     ];
   }
 
-  /**
-   * Cargar las startups desde el servicio.
-   * Filtra solo los de tipoEmprendimientoId = 1 o 3 (Startups)
-   */
-  fetchStartups(filters?: EmprendimientosFilter) {
-    this.loading = true;
+/**
+ * Cargar las startups desde el servicio.
+ */
+fetchStartups(filters?: EmprendimientosFilter) {
+  this.loading = true;
 
-    this.emprendimientoService.getEmprendimientos(filters).subscribe({
-      next: (response) => {
-        console.log('Datos recibidos:', response);
+  this.emprendimientoService.getEmprendimientos(filters).subscribe({
+    next: (response) => {
+      console.log('Datos recibidos:', response);
 
-        // Manejar respuesta paginada o array directo
-        let data: any[];
-        if (response?.content && Array.isArray(response.content)) {
-          data = response.content;
-        } else if (Array.isArray(response)) {
-          data = response;
-        } else {
-          console.warn('Formato inesperado de datos:', response);
-          this.cardsArray = [];
-          this.filteredCards = [];
-          this.loading = false;
-          return;
-        }
-
-        // Filtrar las startups (id 1 y 3)
-        const startups = data.filter(
-          (e) =>
-            (e.tipoEmprendimientoId === 1 || e.tipoEmprendimientoId === 3) &&
-            e.estadoEmprendimiento === 'PUBLICADO'
-        );
-
-        console.log('Startups filtradas:', startups.length);
-
-        // Mapear a formato de tarjetas
-        this.cardsArray = startups.map((e) => ({
-          id: e.id,
-          title: e.nombreComercial || 'Startup sin nombre',
-          description: `${e.nombreTipoEmprendimiento?.trim() || 'Tipo desconocido'} aprobada en ${e.nombreCiudad || 'sin ciudad'}`,
-          image: e.multimedia && e.multimedia.length > 0 ? e.multimedia[0].urlArchivo :'/assets/img/inicio/foto5.png',
-          category: e.nombreTipoEmprendimiento?.trim() || 'Startup',
-          location: e.nombreCiudad || 'Sin ubicación',
-          views: Math.floor(Math.random() * 20000) + 1000,
-        }));
-
-        this.filteredCards = [...this.cardsArray];
-        console.log('Cards mapeadas:', this.filteredCards.length);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar startups:', err);
+      // Manejar respuesta paginada o array directo
+      let data: any[];
+      if (response?.content && Array.isArray(response.content)) {
+        data = response.content;
+      } else if (Array.isArray(response)) {
+        data = response;
+      } else {
+        console.warn('Formato inesperado de datos:', response);
         this.cardsArray = [];
         this.filteredCards = [];
         this.loading = false;
-      },
-    });
-  }
+        return;
+      }
+
+      console.log('Startups encontradas:', data.length);
+
+      // Mapear a formato de tarjetas con los nombres correctos de la API
+      this.cardsArray = data.map((e) => {
+        // Obtener la primera imagen del array multimedia
+        const imagenPrincipal = e.multimedia && e.multimedia.length > 0 
+          ? e.multimedia[0].urlArchivo 
+          : '/assets/img/inicio/foto5.png';
+
+        // Obtener nombres de categorías
+        const categoriasTexto = e.categorias && e.categorias.length > 0
+          ? e.categorias.map((cat: any) => cat.nombre).join(', ')
+          : 'Sin categoría';
+
+        return {
+          id: e.idEmprendimiento,
+          title: e.nombreComercialEmprendimiento || 'Startup sin nombre',
+          description: `${e.subTipoEmprendimiento || 'Tipo desconocido'} en ${e.ciudadNombre || 'sin ciudad'}`,
+          image: imagenPrincipal,
+          category: categoriasTexto,
+          location: `${e.ciudadNombre || 'Sin ciudad'}, ${e.provinciaNombre || ''}`,
+          views: Math.floor(Math.random() * 20000) + 1000,
+        };
+      });
+
+      this.filteredCards = [...this.cardsArray];
+      console.log('Cards mapeadas:', this.filteredCards.length);
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar startups:', err);
+      this.cardsArray = [];
+      this.filteredCards = [];
+      this.loading = false;
+    },
+  });
+}
 
   // Filtro de búsqueda - llama al backend con los filtros
   onSearch(payload: { query: string; [key: string]: any }) {
