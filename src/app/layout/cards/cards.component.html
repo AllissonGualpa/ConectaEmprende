@@ -10,6 +10,7 @@
     <article
       *ngFor="let item of pagedItems"
       class="group flex flex-col mx-auto w-full max-w-[320px]"
+      [class.h-full]="fixedHeightCards"
     >
       <!-- IMAGEN -->
       <div class="relative">
@@ -72,9 +73,10 @@
       </div>
 
       <!-- CONTENIDO -->
-      <div class="mt-4 flex flex-col flex-1">
+      <div class="mt-4 flex flex-col flex-1" [class.h-full]="fixedHeightCards">
         <!-- Categoría y estado -->
-        <div class="flex items-center gap-2 mb-2 flex-wrap">
+        <div class="flex items-center gap-2 mb-2 flex-wrap" 
+             [class.min-h-[28px]]="fixedHeightCards">
           <span
             class="inline-block px-3 py-1 rounded-full text-xs font-medium"
             style="background-color:#FFF4C8; color:#C0A537"
@@ -94,12 +96,17 @@
         </div>
 
         <!-- Título -->
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2"
+            [class.min-h-[56px]]="fixedHeightCards"
+            [class.line-clamp-2]="fixedHeightCards">
           {{ item.title }}
         </h3>
 
         <!-- Descripción -->
-        <p class="text-sm text-gray-600 leading-relaxed line-clamp-3 mb-4">
+        <p class="text-sm text-gray-600 leading-relaxed mb-4"
+           [class.line-clamp-3]="fixedHeightCards"
+           [class.min-h-[60px]]="fixedHeightCards"
+           [class.flex-grow]="fixedHeightCards">
           {{
             item.description ||
               'Descubre los próximos eventos que impulsan el ecosistema emprendedor.'
@@ -108,10 +115,12 @@
 
         <!-- BOTONES: Si existe actionTemplate usarlo, sino usar el botón por defecto -->
         <ng-container *ngIf="actionTemplate; else defaultButton">
-          <ng-container
-            [ngTemplateOutlet]="actionTemplate"
-            [ngTemplateOutletContext]="{ $implicit: item }">
-          </ng-container>
+          <div [class.mt-auto]="fixedHeightCards">
+            <ng-container
+              [ngTemplateOutlet]="actionTemplate"
+              [ngTemplateOutletContext]="{ $implicit: item }">
+            </ng-container>
+          </div>
         </ng-container>
 
         <ng-template #defaultButton>
@@ -120,10 +129,11 @@
             (click)="!isEditDisabled(item) && onDiscover(item)"
             [disabled]="isEditDisabled(item)"
             [title]="isEditDisabled(item) ? 'No puedes editar un emprendimiento en revisión o rechazado.' : ''"
-            class="mt-auto w-full py-2 rounded-lg transition
+            class="w-full py-2 rounded-lg transition
                   bg-orange-500 hover:bg-orange-600 text-white
                   disabled:bg-gray-300 disabled:text-gray-500
-                  disabled:cursor-not-allowed disabled:hover:bg-gray-300">
+                  disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+            [class.mt-auto]="fixedHeightCards">
             {{ ctaLabel }}
           </button>
         </ng-template>

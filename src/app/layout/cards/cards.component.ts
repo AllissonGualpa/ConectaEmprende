@@ -14,7 +14,7 @@ export interface CardItem {
   favorites?: number;
   status?: string; // aprobado, pendiente, rechazado
   rawStatus?: string;
-   formLink?: string;
+  formLink?: string;
 }
 
 @Component({
@@ -41,6 +41,9 @@ export class CardsComponent {
   @Input() showRoadmapButton = false;  // Nuevo: controla si se muestra el botón Roadmap
   @Input() roadmapLabel = 'Roadmap';   // Nuevo: texto del botón Roadmap
   @Input() showStatus = false;
+  
+  // NUEVO: Control para cards de altura fija (específico para eventos)
+  @Input() fixedHeightCards: boolean = false;
 
   @Output() discover = new EventEmitter<CardItem>();
   @Output() toggleFavorite = new EventEmitter<CardItem>();
