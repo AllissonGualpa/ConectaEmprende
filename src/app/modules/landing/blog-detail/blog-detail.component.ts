@@ -14,12 +14,14 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   styleUrls: ['./blog-detail.component.css']
 })
 export class BlogDetailComponent implements OnInit {
+
   articulo: BlogArticle | null = null;
   cargando = true;
   error: string | null = null;
 
-  // contenido HTML saneado para mostrar en la vista
   contenidoSeguro: SafeHtml | null = null;
+
+  articulosRelacionados: BlogArticle[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -29,13 +31,14 @@ export class BlogDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.cargarArticulo(Number(id));
-    } else {
-      this.error = 'Artículo no encontrado.';
-      this.cargando = false;
-    }
+    // ESCUCHAR CAMBIO DE ID
+    this.route.paramMap.subscribe(params => {
+      const id = Number(params.get('id'));
+      if (id) {
+        this.cargando = true;
+        this.cargarArticulo(id);
+      }
+    });
   }
 
   private cargarArticulo(id: number): void {
@@ -46,19 +49,36 @@ export class BlogDetailComponent implements OnInit {
           fechaPublicacion: this.blogService.formatDisplayDate(data.fechaCreacion)
         };
 
-        // Marcar el contenido como HTML seguro
         this.contenidoSeguro = this.sanitizer.bypassSecurityTrustHtml(
           this.articulo.contenido || ''
         );
 
+        this.cargarArticulosRelacionados(id);
         this.cargando = false;
       },
-      error: (err: any) => {
-        console.error('Error al cargar el artículo:', err);
+      error: () => {
         this.error = 'No se pudo cargar el artículo.';
         this.cargando = false;
       }
     });
+  }
+
+  private cargarArticulosRelacionados(idActual: number): void {
+    this.blogService.getPublicArticles({ page: 0, size: 50 }).subscribe({
+      next: (response: any) => {
+        this.articulosRelacionados = (response.content || [])
+          .filter((a: BlogArticle) => a.idArticulo !== idActual)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+      },
+      error: () => {
+        this.articulosRelacionados = [];
+      }
+    });
+  }
+
+  abrirDetalle(articulo: BlogArticle): void {
+    this.router.navigate(['/blog', articulo.idArticulo]);
   }
 
   volverAlBlog(): void {

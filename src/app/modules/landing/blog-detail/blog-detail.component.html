@@ -1,55 +1,104 @@
 <app-navbar></app-navbar>
 
 <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-  <div *ngIf="cargando" class="flex flex-col items-center justify-center py-12">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <span class="text-gray-500 text-sm">Cargando articulo...</span>
-    </div>
 
-  <div *ngIf="error" class="text-center text-red-500 py-10">{{ error }}</div>
+  <!-- Volver -->
+  <a (click)="volverAlBlog()"
+    class="flex items-center text-gray-600 hover:text-gray-800 mb-6 text-sm group cursor-pointer">
+    <svg 
+    class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" 
+    fill="none" 
+    stroke="currentColor"
+      viewBox="0 0 24 24"
+      >
+      <path 
+      stroke-linecap="round" 
+      stroke-linejoin="round" 
+      stroke-width="2" 
+      d="M15 19l-7-7 7-7" 
+      />
+    </svg>
+    Volver al blog
+  </a>
 
+  <!-- LOADING -->
+  <div *ngIf="cargando" class="flex flex-col items-center py-12">
+    <span class="text-gray-500">Cargando artículo...</span>
+  </div>
+
+  <!-- ERROR -->
+  <div *ngIf="error" class="text-center text-red-500 py-10">
+    {{ error }}
+  </div>
+
+  <!-- CONTENIDO -->
   <ng-container *ngIf="!cargando && articulo">
-    <!-- Fecha de publicación -->
-    <p class="text-sm text-gray-400 mb-3 text-center">Publicado el {{ articulo.fechaPublicacion }}</p>
 
-    <!-- Título en color naranja -->
-    <h1 class="text-3xl sm:text-4xl font-bold mb-4 font-poppins text-center" style="color: #ED6C1C;">
+    <p class="text-sm text-gray-400 mb-3 text-center">
+      Publicado el {{ articulo.fechaPublicacion }}
+    </p>
+
+    <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-center text-orange-500">
       {{ articulo.titulo }}
     </h1>
 
-    <!-- Descripción corta -->
-    <p class="text-sm text-gray-400 mb-6 text-center max-w-3xl mx-auto">
+    <p class="text-sm text-gray-400 mb-6 text-center">
       {{ articulo.descripcionCorta }}
     </p>
 
-    <!-- Tags -->
     <div class="flex flex-wrap justify-center gap-2 mb-6">
       <span *ngFor="let tag of articulo.tags" class="text-xs font-medium px-3 py-1 rounded-full border"
-        [style.borderColor]="'#C0A537'" [style.color]="'#C0A537'">
+        style="border-color:#C0A537;color:#C0A537">
         {{ tag.nombre }}
       </span>
     </div>
 
-    <!-- Imagen -->
     <img [src]="articulo.urlImagen" [alt]="articulo.titulo"
       class="w-full h-72 object-cover rounded-lg shadow-md mb-8" />
 
-    <!-- Contenido completo -->
-    <div
-      class="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line prose max-w-none"
-      [innerHTML]="contenidoSeguro"
-    ></div>
+    <div class="prose max-w-none text-gray-700" [innerHTML]="contenidoSeguro"></div>
 
-    <!-- Botón volver -->
-    <div class="mt-10 text-center">
-      <button (click)="volverAlBlog()"
-        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-md shadow transition-colors">
-        ← Volver al blog
-      </button>
-    </div>
+    <!-- Podría interesarte -->
+    <section *ngIf="articulosRelacionados.length" class="mt-16">
+      <h2 class="text-2xl font-bold text-orange-500 mb-6">
+        Podría interesarte...
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article *ngFor="let art of articulosRelacionados" (click)="abrirDetalle(art)"
+          class="bg-white rounded-lg shadow-md hover:shadow-lg cursor-pointer overflow-hidden flex flex-col">
+          <!-- Imagen -->
+          <img [src]="art.urlImagen || '/assets/img/blog/default.jpg'" [alt]="art.titulo"
+            class="w-full h-40 object-cover" />
+
+          <!-- Contenido -->
+          <div class="p-4 flex flex-col flex-1">
+            <p class="text-xs text-gray-500 mb-1">
+              {{ art.fechaCreacion | date:'dd/MM/yyyy' }}
+            </p>
+
+            <h3 class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2">
+              {{ art.titulo }}
+            </h3>
+
+            <!-- Resumen -->
+            <p class="text-xs text-gray-600 mb-3 line-clamp-3">
+              {{ art.descripcionCorta }}
+            </p>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-1 mt-auto">
+              <span *ngFor="let tag of art.tags" class="text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                style="border-color:#C0A537;color:#C0A537">
+                {{ tag.nombre }}
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+
   </ng-container>
 </main>
 

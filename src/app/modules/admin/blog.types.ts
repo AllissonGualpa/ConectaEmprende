@@ -9,9 +9,11 @@ export interface BlogCreate {
 	contenido: string;
 	tags: Tag[];
 	imagenDestacada: File | null;
+	estado: string;
 }
 
 export interface BlogArticle {
+  idArticulo: number;
 	id: number;
 	titulo: string;
 	descripcionCorta: string;

@@ -108,7 +108,12 @@ export class EventosComponent implements OnInit {
   }
 
   onRegister(item: CardItem) {
-    this.onDiscover(item);
+    // Abre el enlace del formulario en una nueva pestaña
+    if (item.formLink) {
+      window.open(item.formLink, '_blank');
+    } else {
+      console.warn('No hay enlace de formulario para este evento');
+    }
   }
 
   // LOAD EVENTS
@@ -153,6 +158,7 @@ export class EventosComponent implements OnInit {
       ? String(dateRaw).split('T')[0]
       : dateRaw;
     const location = it.lugar || it.direccion || '';
+    const formLink = it.linkInscripcion || it.link || it.url || '';
 
     return {
       id: Number(id),
@@ -160,7 +166,8 @@ export class EventosComponent implements OnInit {
       description,
       image,
       date,
-      location
+      location,
+      formLink
     } as CardItem;
   }
 }

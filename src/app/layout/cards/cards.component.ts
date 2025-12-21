@@ -12,8 +12,9 @@ export interface CardItem {
   date?: string | Date;
   views?: number;
   favorites?: number;
-  status?: string; //aprobado, pendiente, rechazado
-  rawStatus?:string;
+  status?: string; // aprobado, pendiente, rechazado
+  rawStatus?: string;
+   formLink?: string;
 }
 
 @Component({
@@ -40,7 +41,6 @@ export class CardsComponent {
   @Input() showRoadmapButton = false;  // Nuevo: controla si se muestra el botón Roadmap
   @Input() roadmapLabel = 'Roadmap';   // Nuevo: texto del botón Roadmap
   @Input() showStatus = false;
-
 
   @Output() discover = new EventEmitter<CardItem>();
   @Output() toggleFavorite = new EventEmitter<CardItem>();
@@ -77,9 +77,10 @@ export class CardsComponent {
   onRoadmap(item: CardItem) {
     this.roadmap.emit(item);
   }
+
   isEditDisabled(item: any): boolean {
     return item?.rawStatus === 'PENDIENTE'
       || item?.rawStatus === 'PENDIENTE_APROBACION'
       || item?.rawStatus === 'RECHAZADO';
-}
+  }
 }

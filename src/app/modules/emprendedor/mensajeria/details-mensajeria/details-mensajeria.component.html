@@ -1,121 +1,99 @@
-<div class="relative">
+<div class="relative rounded-2xl overflow-hidden shadow-xl bg-white">
+
   <!-- Header del modal con botón cerrar -->
-  <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-lg">
-    <div class="flex items-center justify-between">
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white">
-        {{ notificacion?.tipoNombre || 'Notificación' }}
-      </span>
-      <button 
-        mat-icon-button 
-        (click)="cerrar()" 
-        class="text-white hover:bg-white hover:bg-opacity-10 rounded-full -mr-2"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+  <div class="bg-gradient-to-r from-[#276BC7] to-[#1f56a6] px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+        <mat-icon class="text-white">notifications</mat-icon>
+      </div>
+      <div>
+        <p class="text-white text-sm opacity-80">Notificación</p>
+        <p class="text-white font-semibold">
+          {{ notificacion?.tipoNombre || 'Mensaje del sistema' }}
+        </p>
+      </div>
     </div>
+
+    <!-- X cerrar -->
+    <button
+      mat-icon-button
+      (click)="cerrar()"
+      class="text-white hover:bg-white hover:bg-opacity-20 rounded-full"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
   <!-- Loading -->
-  <div *ngIf="loading" class="px-6 py-12 text-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-    <p class="mt-4 text-gray-600">Cargando notificación...</p>
+  <div *ngIf="loading" class="py-14 text-center">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-[#276BC7] mx-auto"></div>
+    <p class="mt-4 text-gray-500 text-sm">Cargando notificación…</p>
   </div>
 
   <!-- Error -->
-  <div *ngIf="error && !loading" class="px-6 py-8">
-    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-      <div class="flex items-center">
-        <svg class="h-6 w-6 text-red-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="text-red-800 font-medium">No se pudo cargar la notificación</p>
-      </div>
+  <div *ngIf="error && !loading" class="p-6">
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+      No se pudo cargar la notificación.
     </div>
   </div>
 
-  <!-- Contenido de la notificación -->
-  <div *ngIf="notificacion && !loading" class="px-6 py-6 max-h-[70vh] overflow-y-auto">
+  <!-- Contenido -->
+  <div *ngIf="notificacion && !loading" class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+
     <!-- Badge de estado -->
-    <div class="mb-4" *ngIf="!notificacion.leida">
-      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-        Nueva
+    <div *ngIf="!notificacion.leida">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-[#ED6C1C]/10 text-[#ED6C1C]">
+        <span class="h-2 w-2 rounded-full bg-[#ED6C1C]"></span>
+        Nueva notificación
       </span>
     </div>
 
-    <!-- Título (mensaje del backend) -->
-    <h2 class="text-2xl font-bold text-gray-900 mb-4">
-      {{ notificacion.mensaje }}
-    </h2>
-
-    <!-- Mensaje (título del backend) -->
-    <div class="prose prose-blue max-w-none mb-6">
-      <p class="text-gray-700 text-base leading-relaxed whitespace-pre-line">
+    <!-- Mensaje principal -->
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">
+        {{ notificacion.mensaje }}
+      </h2>
+      <p class="text-gray-600 leading-relaxed whitespace-pre-line">
         {{ notificacion.titulo }}
       </p>
     </div>
 
-    <!-- Información adicional -->
-    <div class="border-t border-gray-200 pt-6 space-y-4">
+    <!-- Info -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+
       <!-- Emprendimiento -->
-      <div class="flex items-start" *ngIf="notificacion.nombreEmprendimiento">
-        <svg class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
+      <div *ngIf="notificacion.nombreEmprendimiento" class="flex gap-3">
+        <mat-icon class="text-gray-400">store</mat-icon>
         <div>
-          <p class="text-sm font-medium text-gray-500">Emprendimiento</p>
-          <p class="text-base text-gray-900">{{ notificacion.nombreEmprendimiento }}</p>
+          <p class="text-xs text-gray-500">Emprendimiento</p>
+          <p class="font-medium text-gray-800">
+            {{ notificacion.nombreEmprendimiento }}
+          </p>
         </div>
       </div>
 
-      <!-- Fecha de creación -->
-      <div class="flex items-start">
-        <svg class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+      <!-- Fecha -->
+      <div class="flex gap-3">
+        <mat-icon class="text-gray-400">calendar_today</mat-icon>
         <div>
-          <p class="text-sm font-medium text-gray-500">Fecha</p>
-          <p class="text-base text-gray-900">{{ formatFecha(notificacion.fechaCreacion) }}</p>
+          <p class="text-xs text-gray-500">Fecha</p>
+          <p class="font-medium text-gray-800">
+            {{ formatFecha(notificacion.fechaCreacion) }}
+          </p>
         </div>
       </div>
 
-      <!-- Solicitud ID -->
-      <div class="flex items-start" *ngIf="notificacion.solicitudId">
-        <svg class="h-5 w-5 text-gray-400 mr-3 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+      <!-- Solicitud -->
+      <div *ngIf="notificacion.solicitudId" class="flex gap-3">
+        <mat-icon class="text-gray-400">description</mat-icon>
         <div>
-          <p class="text-sm font-medium text-gray-500">Número de Solicitud</p>
-          <p class="text-base text-gray-900">#{{ notificacion.solicitudId }}</p>
+          <p class="text-xs text-gray-500">Solicitud</p>
+          <p class="font-medium text-gray-800">
+            #{{ notificacion.solicitudId }}
+          </p>
         </div>
       </div>
+
     </div>
-  </div>
-
-  <!-- Footer con botones de acción -->
-  <div *ngIf="notificacion && !loading" class="bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-lg flex justify-end items-center gap-3">
-    <button 
-      mat-stroked-button 
-      (click)="cerrar()"
-      class="px-4 py-2"
-    >
-      Cerrar
-    </button>
-    <button 
-      *ngIf="notificacion.enlace" 
-      mat-raised-button 
-      color="primary" 
-      (click)="irADetalle()"
-      class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700"
-    >
-      <span class="flex items-center">
-        Ver detalles
-        <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-        </svg>
-      </span>
-    </button>
   </div>
 </div>

@@ -35,39 +35,39 @@
         <table mat-table [dataSource]="notificaciones" class="min-w-full bg-white">
           <!-- ID -->
           <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">ID</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.id }}</td>
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-left font-semibold w-16">ID</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-sm">{{ row.id }}</td>
           </ng-container>
 
           <!-- Título -->
           <ng-container matColumnDef="titulo">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Emprendimiento</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.nombreEmprendimiento }}</td>
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-left font-semibold">Emprendimiento</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-sm">{{ row.nombreEmprendimiento }}</td>
           </ng-container>
 
           <!-- Mensaje -->
           <ng-container matColumnDef="mensaje">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Mensaje</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ row.mensaje }}</td>
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-left font-semibold">Mensaje</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-sm max-w-xs truncate" [title]="row.mensaje">{{ row.mensaje }}</td>
           </ng-container>
 
           <!-- Fecha -->
           <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Fecha</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ getFecha(row.fechaCreacion) }}</td>
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-left font-semibold whitespace-nowrap w-28">Fecha</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-sm whitespace-nowrap">{{ getFecha(row.fechaCreacion) }}</td>
           </ng-container>
 
           <!-- Hora -->
           <ng-container matColumnDef="hora">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Hora</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">{{ getHora(row.fechaCreacion) }}</td>
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-left font-semibold whitespace-nowrap w-24">Hora</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-sm whitespace-nowrap">{{ getHora(row.fechaCreacion) }}</td>
           </ng-container>
 
           <!-- Estado -->
           <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Estado</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">
-              <span [ngClass]="row.leida ? 'px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold' : 'px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold'">
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-center font-semibold whitespace-nowrap w-28">Estado</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-center">
+              <span [ngClass]="row.leida ? 'px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold whitespace-nowrap inline-block' : 'px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold whitespace-nowrap inline-block'">
                 {{ row.leida ? 'Leída' : 'No leída' }}
               </span>
             </td>
@@ -75,9 +75,9 @@
 
           <!-- Acción -->
           <ng-container matColumnDef="accion">
-            <th mat-header-cell *matHeaderCellDef class="px-4 py-3 text-left font-semibold">Acción</th>
-            <td mat-cell *matCellDef="let row" class="px-4 py-3">
-              <button mat-button color="primary" class="bg-orange-500 text-white px-4 py-1 rounded" (click)="abrirNotificacion(row)">
+            <th mat-header-cell *matHeaderCellDef class="px-3 py-3 text-center font-semibold w-24">Acción</th>
+            <td mat-cell *matCellDef="let row" class="px-3 py-3 text-center">
+              <button mat-button color="primary" class="bg-orange-500 text-white px-3 py-1 rounded text-sm whitespace-nowrap" (click)="abrirNotificacion(row)">
                 Abrir
               </button>
             </td>
