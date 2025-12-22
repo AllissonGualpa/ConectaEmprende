@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormularioDto, PreguntaDto, ValoracionService } from '../valoracion.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-autoevaluacion-modal',
@@ -32,12 +33,24 @@ export class AutoevaluacionComponent implements OnInit {
     private fb: FormBuilder,
     private valoracionService: ValoracionService,
     public dialogRef: MatDialogRef<AutoevaluacionComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { idEmprendimiento: number }
+    @Inject(MAT_DIALOG_DATA) public data: { idEmprendimiento: number } | null, //solo presentacion borrar desp.
+    private route: ActivatedRoute
   ) {
-    this.idEmprendimiento = data.idEmprendimiento;
+    // Permitir obtener el idEmprendimiento desde el modal o desde la ruta //solo presentacion borrar desp.
+    if (data && data.idEmprendimiento) { //solo presentacion borrar desp.
+      this.idEmprendimiento = data.idEmprendimiento; //ESTO NO BORRAR
+    } else { //borrar desp.
+      // Si no viene por modal, buscar en la ruta //solo presentacion borrar desp.
+      this.idEmprendimiento = Number(this.route.snapshot.paramMap.get('id')) || 0; //solo presentacion borrar desp.
+    } //borrar desp.
   }
 
   ngOnInit(): void {
+    //borrar desp.
+    // Si no hay idEmprendimiento, intentar obtenerlo de la ruta (para navegación directa) //solo presentacion borrar desp.
+    if (!this.idEmprendimiento) { //solo presentacion borrar desp.
+      this.idEmprendimiento = Number(this.route.snapshot.paramMap.get('id')) || 0; //solo presentacion borrar desp.
+    } //solo presentacion borrar desp.
     this.cargarFormulario();
   }
 

@@ -59,6 +59,25 @@ export class SeccionMensajeriaComponent implements OnInit {
         this.totalPages = resp?.totalPages ?? Math.ceil((this.totalElements || 0) / this.size);
         this.page = resp?.number ?? pageIndex;
         this.loading = false;
+        // --- NOTIFICACIÓN SIMULADA (MENSAJE QUEMADO PARA DEMO) ---
+        //borrar desp
+        const yaExiste = this.notificaciones.some(n => n.id === 9999);
+        if (!yaExiste) {
+          this.notificaciones = [
+            {
+              id: 9999,
+              nombreEmprendimiento: 'HealthLoop App',
+              mensaje: 'Tu emprendimiento ha recibido una baja valoración. Debes realizar una autoevaluación.',
+              fechaCreacion: new Date().toISOString(),
+              leida: false,
+              tipoNombre: 'Alerta',
+              // ...otros campos necesarios para la tabla...
+            } as any,
+            ...this.notificaciones
+          ];
+          this.totalElements++;
+        }
+        // --- FIN MENSAJE QUEMADO ---
       },
       error: (err) => {
         console.error('Error al cargar notificaciones paginadas:', err);
@@ -106,6 +125,24 @@ export class SeccionMensajeriaComponent implements OnInit {
   }
 
   abrirNotificacion(notificacion: NotificationDto): void {
+    // --- LÓGICA PARA MENSAJE QUEMADO (DEMO) ---
+    // Puedes borrar este if después de la presentación
+    if (notificacion.id === 9999) {
+      // Abrir el modal de detalle con mensaje especial
+      this.dialog.open(DetailsMensajeriaComponent, {
+        width: '700px',
+        maxWidth: '95vw',
+        maxHeight: '90vh',
+        data: {
+          notificacionId: 9999,
+          mensajeEspecial: true
+        },
+        panelClass: 'custom-dialog-container'
+      });
+      return;
+    }
+    // --- FIN MENSAJE QUEMADO ---
+    
     console.log('Abriendo notificación en modal:', notificacion);
     
     // Abrir modal con los datos de la notificación

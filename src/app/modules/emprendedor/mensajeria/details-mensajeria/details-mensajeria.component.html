@@ -50,12 +50,31 @@
 
     <!-- Mensaje principal -->
     <div>
-      <h2 class="text-xl font-bold text-gray-900 mb-2">
-        {{ notificacion.mensaje }}
-      </h2>
-      <p class="text-gray-600 leading-relaxed whitespace-pre-line">
-        {{ notificacion.titulo }}
-      </p>
+      <!--borrar desp-->
+      <ng-container *ngIf="mensajeEspecial; else normalDetail">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">
+          Tu emprendimiento ha recibido una baja valoración
+        </h2>
+        <p class="text-gray-600 leading-relaxed whitespace-pre-line mb-4">
+          Uno de tus visitantes ha dejado una valoración baja en el perfil de tu emprendimiento.
+          <br>
+          <span class="font-semibold text-gray-600">Tienes que realizar una autoevaluación para continuar.</span>
+        </p>
+        <button
+          (click)="irAAutoevaluacion()"
+          class="inline-block mt-2 px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition"
+        >
+          Ir a autoevaluación
+        </button>
+      </ng-container>
+      <ng-template #normalDetail><!--borrar desp-->
+        <h2 class="text-xl font-bold text-gray-900 mb-2">
+          {{ notificacion.mensaje }}
+        </h2>
+        <p class="text-gray-600 leading-relaxed whitespace-pre-line">
+          {{ notificacion.titulo }}
+        </p>
+      </ng-template><!--borrar desp-->
     </div>
 
     <!-- Info -->

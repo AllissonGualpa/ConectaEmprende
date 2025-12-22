@@ -47,6 +47,7 @@ export const routes: Routes = [
   { path: 'evaluacion/:id', component: EvaluacionComponent },
   {path: 'roadmap', component: RoadmapComponent},
   { path: 'autoevaluacion/:id', component: AutoevaluacionComponent },
+  {path: 'autoevaluacion', component: AutoevaluacionComponent },
 
 
   // Emprendedor
