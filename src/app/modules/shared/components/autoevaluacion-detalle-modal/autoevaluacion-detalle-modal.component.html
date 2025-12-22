@@ -1,0 +1,88 @@
+<div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl p-6">
+
+  <!-- Botón cerrar -->
+  <button
+    (click)="cerrar()"
+    class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">
+        Emprendimiento: <span class="font-bold">RockFeld</span>
+      </h2>
+
+      <!-- Valoración -->
+      <div class="flex items-center gap-1 mb-4">
+        <span class="text-sm text-gray-700 mr-2">Valoración:</span>
+        <mat-icon class="text-yellow-400 text-base">star</mat-icon>
+        <mat-icon class="text-yellow-400 text-base">star</mat-icon>
+        <mat-icon class="text-gray-300 text-base">star</mat-icon>
+        <mat-icon class="text-gray-300 text-base">star</mat-icon>
+        <mat-icon class="text-gray-300 text-base">star</mat-icon>
+      </div>
+
+      <!-- Comentario -->
+      <div class="mb-4">
+        <p class="text-sm font-semibold text-gray-800 mb-1">Comentario:</p>
+        <p class="text-sm text-gray-600 leading-relaxed">
+          El producto está bien pero el empaque es horrible. La caja llegó toda
+          aplastada y el plástico se rompió antes de abrirlo. Para el precio que
+          cobran deberían invertir en mejor packaging. Mi experiencia de
+          unboxing fue decepcionante.
+        </p>
+      </div>
+
+      <!-- Fechas -->
+      <div class="text-sm text-gray-600 space-y-1">
+        <p><span class="font-semibold">Fecha de envío:</span> 31/07/2025</p>
+        <p><span class="font-semibold">Fecha de respuesta:</span> 31/07/2025</p>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA -->
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        Respuestas
+      </h3>
+
+      <div class="space-y-4 text-sm text-gray-700">
+
+        <div>
+          <p class="font-semibold mb-1">
+            ¿Qué crees que pudo haber causado esta experiencia negativa?
+          </p>
+          <p>
+            Mala atención o falta de respuesta al cliente.<br>
+            El cliente tuvo una mala interpretación o expectativa.
+          </p>
+        </div>
+
+        <div>
+          <p class="font-semibold mb-1">
+            ¿Qué acciones estás planeando tomar para mejorar esta situación?
+          </p>
+          <p>
+            Mejorar mi comunicación con los clientes.<br>
+            Incluir descripciones claras del producto o servicio.
+          </p>
+        </div>
+
+        <div>
+          <p class="font-semibold mb-1">
+            ¿Cuál de estas áreas estás priorizando actualmente en tu emprendimiento?
+          </p>
+          <p>
+            Comunicación en redes sociales o canales digitales.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

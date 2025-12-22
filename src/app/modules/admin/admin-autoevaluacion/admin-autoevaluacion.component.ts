@@ -15,6 +15,7 @@ import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { AutoevaluacionService } from '../autoevaluacion.service';
 import { Autoevaluacion } from '../autoevaluacion.types';
+import { AutoevaluacionDetalleModalComponent } from '../../shared/components/autoevaluacion-detalle-modal/autoevaluacion-detalle-modal.component';
 
 @Component({
   selector: 'app-admin-autoevaluacion',
@@ -217,10 +218,19 @@ export class AdminAutoevaluacionComponent implements OnInit {
     this.router.navigate(['/admin/autoevaluacion/create']);
   }
 
-  /** Editar */
+  /** Editar 
   editarAutoevaluacion(a: Autoevaluacion): void {
     this.router.navigate(['/admin/autoevaluacion/edit', a.id]);
+  }*/
+
+  verAutoevaluacion(): void {
+    this.dialog.open(AutoevaluacionDetalleModalComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      panelClass: 'rounded-xl'
+    });
   }
+
 
   /** Obtener lista de categorías para chips */
   getCategorias(categorias: string | null | undefined): string[] {
