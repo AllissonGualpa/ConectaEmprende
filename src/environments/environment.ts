@@ -1,4 +1,4 @@
-export const Environment = {
+export const environment  = {
     api_url: 'https://eureka.osc-fr1.scalingo.io',
     api_auth: '/v1/auth',
     api_blog: '/v1/blog',

@@ -1,0 +1,46 @@
+<mat-form-field appearance="outline" class="w-full">
+  <mat-label>{{ placeholder }}</mat-label>
+  
+  <input 
+    type="text"
+    matInput
+    [formControl]="provinciaControl"
+    [matAutocomplete]="autoProvincia"
+    placeholder="Escriba para buscar..."
+    (blur)="onTouched()">
+  
+  <button
+    *ngIf="provinciaControl.value"
+    matSuffix
+    mat-icon-button
+    type="button"
+    tabindex="-1"
+    aria-label="Limpiar selección"
+    (click)="clear($event)">
+    <mat-icon>close</mat-icon>
+  </button>
+  
+  <mat-autocomplete 
+    #autoProvincia="matAutocomplete" 
+    [displayWith]="showNombreProvincia"
+    (optionSelected)="onProvinciaSelected($event)">
+    
+    <mat-option 
+      *ngFor="let provincia of (provinciaFiltered$ | async); trackBy: trackByFn" 
+      [value]="provincia">
+      {{ provincia.nombre | titlecase }}
+    </mat-option>
+    
+    <!-- Mensaje cuando no hay resultados -->
+    <mat-option 
+      *ngIf="(provinciaFiltered$ | async)?.length === 0" 
+      disabled>
+      No se encontraron provincias
+    </mat-option>
+    
+  </mat-autocomplete>
+  
+  <mat-error *ngIf="provinciaControl.hasError('required')">
+    La provincia es requerida
+  </mat-error>
+</mat-form-field>

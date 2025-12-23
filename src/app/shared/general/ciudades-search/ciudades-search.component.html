@@ -1,0 +1,38 @@
+<mat-form-field appearance="outline" class="w-full">
+  <mat-label>{{ placeholder }}</mat-label>
+  <mat-select
+    [formControl]="ciudadControl"
+    [required]="required"
+    [compareWith]="compareCiudades"
+    (selectionChange)="onCiudadSelected($event.value)">
+    
+    <!-- Lista de ciudades -->
+    <mat-option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad">
+      {{ ciudad.nombreCiudad }}
+    </mat-option>
+    
+    <!-- Sin provincia seleccionada -->
+    <mat-option *ngIf="!provinciaId" disabled>
+      Primero seleccione una provincia
+    </mat-option>
+    
+    <!-- Sin ciudades -->
+    <mat-option *ngIf="provinciaId && ciudadesFiltradas.length === 0" disabled>
+      No hay ciudades disponibles para esta provincia
+    </mat-option>
+  </mat-select>
+  
+  <!-- Botón limpiar -->
+  <button
+    *ngIf="ciudadControl.value && !ciudadControl.disabled"
+    matSuffix
+    mat-icon-button
+    type="button"
+    (click)="clear(); $event.stopPropagation()">
+    <mat-icon>close</mat-icon>
+  </button>
+  
+  <mat-error *ngIf="ciudadControl.hasError('required')">
+    La ciudad es requerida
+  </mat-error>
+</mat-form-field>
