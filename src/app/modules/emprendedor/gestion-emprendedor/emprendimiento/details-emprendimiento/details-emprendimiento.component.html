@@ -1,0 +1,335 @@
+<div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+  
+  <!-- SECCIÓN 1: Información del representante -->
+  <div *ngIf="currentStep === 1">
+    <h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
+      Información del representante
+    </h2>
+
+    <form [formGroup]="emprendimientoForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Nombre Completo</mat-label>
+          <input matInput formControlName="nombreCompleto" placeholder="Jose Roberto Lopez Santamaria">
+          <mat-error *ngIf="emprendimientoForm.get('nombreCompleto')?.hasError('required')">
+            El nombre completo es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Número Telefónico</mat-label>
+          <input matInput formControlName="numeroTelefonico" placeholder="0987744988">
+          <mat-error *ngIf="emprendimientoForm.get('numeroTelefonico')?.hasError('required')">
+            El número telefónico es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Correo electrónico coorporativo</mat-label>
+          <input matInput formControlName="correoCoorporativo" type="email" placeholder="Jlopez$antamaria@eyclorp">
+          <mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('required')">
+            El correo corporativo es requerido
+          </mat-error>
+          <mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('email')">
+            Ingrese un correo válido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Correo electrónico UEES/personal</mat-label>
+          <input matInput formControlName="correoPersonal" type="email" placeholder="jlopez@uees.edu.ec">
+          <mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('required')">
+            El correo personal es requerido
+          </mat-error>
+          <mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('email')">
+            Ingrese un correo válido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            *¿Cómo se identifica?
+          </label>
+          <mat-radio-group formControlName="identificacion" class="flex flex-col gap-2">
+            <mat-radio-button value="Estudiante" class="mb-2">Estudiante</mat-radio-button>
+            <mat-radio-button value="Alumni" class="mb-2">Alumni</mat-radio-button>
+            <mat-radio-button value="Externo">Externo</mat-radio-button>
+          </mat-radio-group>
+          <mat-error *ngIf="emprendimientoForm.get('identificacion')?.invalid && emprendimientoForm.get('identificacion')?.touched" class="text-red-500 text-xs mt-1">
+            Debe seleccionar una opción
+          </mat-error>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            *¿Tiene algún pariente que trabaje en la UEES?
+          </label>
+          <mat-radio-group formControlName="tienePariente" class="flex flex-col gap-2">
+            <mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
+            <mat-radio-button value="NO">NO</mat-radio-button>
+          </mat-radio-group>
+          <mat-error *ngIf="emprendimientoForm.get('tienePariente')?.invalid && emprendimientoForm.get('tienePariente')?.touched" class="text-red-500 text-xs mt-1">
+            Debe seleccionar una opción
+          </mat-error>
+        </div>
+      </div>
+
+      <div *ngIf="showCarreraFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Carrera</mat-label>
+          <input matInput formControlName="carrera" placeholder="Ingeniería Industrial">
+          <mat-error *ngIf="emprendimientoForm.get('carrera')?.hasError('required')">
+            La carrera es requerida
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Año de graduación</mat-label>
+          <input matInput formControlName="anoGraduacion" type="number" placeholder="2020">
+          <mat-error *ngIf="emprendimientoForm.get('anoGraduacion')?.hasError('required')">
+            El año de graduación es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div *ngIf="showParienteField" class="mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Nombre del pariente</mat-label>
+          <input matInput formControlName="nombrePariente" placeholder="Ingrese el nombre del pariente">
+          <mat-error *ngIf="emprendimientoForm.get('nombrePariente')?.hasError('required')">
+            El nombre del pariente es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>*Integrantes del Emprendedor</mat-label>
+          <input matInput formControlName="integrantesEmprendedor" placeholder="Edgar Trejos">
+          <mat-error *ngIf="emprendimientoForm.get('integrantesEmprendedor')?.hasError('required')">
+            Los integrantes del emprendedor son requeridos
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="flex justify-center mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SECCIÓN 2: Información del emprendimiento -->
+  <div *ngIf="currentStep === 2">
+    <h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
+      Información del emprendimiento
+    </h2>
+
+    <form [formGroup]="emprendimientoForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Nombre comercial</mat-label>
+          <input matInput formControlName="nombreComercial" placeholder="Gatoulu">
+          <mat-error *ngIf="emprendimientoForm.get('nombreComercial')?.hasError('required')">
+            El nombre comercial es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Año de creación</mat-label>
+          <input matInput formControlName="anoCreacion" type="number" placeholder="2010">
+          <mat-error *ngIf="emprendimientoForm.get('anoCreacion')?.hasError('required')">
+            El año de creación es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <app-provincias-search
+          [placeholder]="'Provincia'"
+          [required]="false"
+          (provinciaSelected)="onProvinciaSelected($event)">
+        </app-provincias-search>
+
+        <app-ciudades-search
+          [placeholder]="'Ciudad'"
+          [required]="false"
+          [provinciaId]="provinciaSeleccionada?.id ?? null"
+          (ciudadSelected)="onCiudadSelected($event)">
+        </app-ciudades-search>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Tipo de emprendimiento
+          </label>
+          <mat-radio-group formControlName="tipoEmprendimiento" class="flex flex-col gap-2">
+            <mat-radio-button 
+              *ngFor="let tipo of tiposEmprendimiento" 
+              [value]="tipo.id" 
+              class="mb-2">
+              {{ tipo.subTipo }}
+            </mat-radio-button>
+          </mat-radio-group>
+          <mat-error 
+            *ngIf="emprendimientoForm.get('tipoEmprendimiento')?.invalid && emprendimientoForm.get('tipoEmprendimiento')?.touched"
+            class="text-red-500 text-xs mt-1">
+            Debe seleccionar un tipo de emprendimiento
+          </mat-error>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            ¿El emprendimiento esta actualmente activo?
+          </label>
+          <mat-radio-group formControlName="emprendimientoActivo" class="flex flex-col gap-2">
+            <mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
+            <mat-radio-button value="NO">NO</mat-radio-button>
+          </mat-radio-group>
+          <mat-error 
+            *ngIf="emprendimientoForm.get('emprendimientoActivo')?.invalid && emprendimientoForm.get('emprendimientoActivo')?.touched"
+            class="text-red-500 text-xs mt-1">
+            Debe seleccionar una opción
+          </mat-error>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          ¿Con qué tipo de personería jurídica o registro tributario cuenta actualmente su emprendimiento?
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <mat-radio-group formControlName="personaJuridica" class="flex flex-col gap-2">
+            <mat-radio-button 
+              *ngFor="let opcion of opcionesPersonaJuridica" 
+              [value]="opcion.id" 
+              class="mb-2">
+              {{ opcion.opcion }}
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+        <mat-error 
+          *ngIf="emprendimientoForm.get('personaJuridica')?.invalid && emprendimientoForm.get('personaJuridica')?.touched"
+          class="text-red-500 text-xs mt-1">
+          Debe seleccionar una opción
+        </mat-error>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="atras()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Atrás
+        </button>
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
+    <!-- SECCIÓN 3: Categorías del emprendimiento -->
+  <div *ngIf="currentStep === 3">
+    <h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
+      Categorías del emprendimiento
+    </h2>
+    
+    <p class="text-center text-gray-600 mb-8">
+      Selecciona el rubro que mejor represente tu emprendimiento<br>
+      (puedes escoger hasta 2)
+    </p>
+
+    <form [formGroup]="emprendimientoForm">
+      <div class="mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div 
+            *ngFor="let categoria of categorias" 
+            class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+            [class.border-orange-500]="isCategoriaSelected(categoria.id)"
+            [class.bg-orange-50]="isCategoriaSelected(categoria.id)"
+            (click)="toggleCategoria(categoria.id)">
+            <mat-checkbox
+              [checked]="isCategoriaSelected(categoria.id)"
+              [disabled]="!isCategoriaSelected(categoria.id) && categoriasSeleccionadas.length >= 2"
+              (change)="onCategoriaChange(categoria.id, $event)"
+              (click)="$event.stopPropagation()"
+              class="mr-3">
+            </mat-checkbox>
+            <span class="text-gray-800">{{ categoria.nombre }}</span>
+          </div>
+
+          <!-- Opción "Otro" -->
+          <div 
+            class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+            [class.border-orange-500]="showOtraCategoria"
+            [class.bg-orange-50]="showOtraCategoria"
+            (click)="toggleOtraCategoria()">
+            <mat-checkbox
+              [checked]="showOtraCategoria"
+              [disabled]="!showOtraCategoria && categoriasSeleccionadas.length >= 2"
+              (change)="onOtraCategoriaChange($event)"
+              (click)="$event.stopPropagation()"
+              class="mr-3">
+            </mat-checkbox>
+            <span class="text-gray-800">Otro</span>
+          </div>
+        </div>
+
+        <!-- Campo de texto para "Otro" -->
+        <div *ngIf="showOtraCategoria" class="mt-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Especifica la categoría</mat-label>
+            <input matInput formControlName="otraCategoria" placeholder="Ingrese la categoría">
+            <mat-error *ngIf="emprendimientoForm.get('otraCategoria')?.hasError('required')">
+              Debe especificar la categoría
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-error 
+          *ngIf="emprendimientoForm.get('categorias')?.invalid && emprendimientoForm.get('categorias')?.touched"
+          class="text-red-500 text-sm mt-2 block">
+          Debe seleccionar al menos una categoría
+        </mat-error>
+
+        <p class="text-sm text-gray-500 mt-3">
+          Categorías seleccionadas: {{ categoriasSeleccionadas.length }} / 2
+        </p>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="atras()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Atrás
+        </button>
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>

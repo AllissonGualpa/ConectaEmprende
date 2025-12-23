@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
-import { EmprendimientoService } from '../../../emprendimiento.service';
-import { CardsComponent, CardItem } from '../../../../layout/cards/cards.component';
-import { CreateSolicitudEmprendimientoComponent } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
-import { EditSolicitudEmprendimientoComponent } from '../edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
 import { Router } from '@angular/router';
+import { CardItem, CardsComponent } from '../../../../../layout/cards/cards.component';
+import { CreateSolicitudEmprendimientoComponent } from '../../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
+import { EditSolicitudEmprendimientoComponent } from '../../edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
+import { DetailsEmprendimientoComponent } from '../details-emprendimiento/details-emprendimiento.component';
+import { EmprendimientoService } from '../../../../emprendimiento.service';
 
 @Component({
   selector: 'app-seccion-emprendimiento',
@@ -14,7 +15,8 @@ import { Router } from '@angular/router';
     CommonModule,
     CardsComponent,
     CreateSolicitudEmprendimientoComponent,
-    EditSolicitudEmprendimientoComponent
+    EditSolicitudEmprendimientoComponent,
+    DetailsEmprendimientoComponent
   ],
   templateUrl: './seccion-emprendimiento.component.html',
   styleUrls: ['./seccion-emprendimiento.component.css']
