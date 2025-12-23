@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 // DTOs básicos según la respuesta de la API
 export interface ProvinciaDto {
@@ -21,9 +21,9 @@ export interface CiudadDto {
 })
 export class LocationService {
   // Ajusta esta baseUrl según tu configuración real (environment, etc.)
-  private readonly baseUrl = Environment.api_url;
-  private readonly apiProvincia = this.baseUrl + Environment.api_provincia;
-  private readonly apiCiudad = this.baseUrl + Environment.api_ciudades;
+  private readonly baseUrl = environment.api_url;
+  private readonly apiProvincia = this.baseUrl + environment.api_provincia;
+  private readonly apiCiudad = this.baseUrl + environment.api_ciudades;
 
   constructor(private http: HttpClient) {}
 
