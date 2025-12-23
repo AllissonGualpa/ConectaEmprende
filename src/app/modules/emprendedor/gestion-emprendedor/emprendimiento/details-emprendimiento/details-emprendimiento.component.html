@@ -332,4 +332,420 @@
     </form>
   </div>
 
+  <!-- SECCIÓN 4: Descripción del emprendimiento -->
+  <div *ngIf="currentStep === 4">
+    <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
+      Descripción del emprendimiento
+    </h2>
+
+    <form [formGroup]="emprendimientoForm">
+      <!-- Resumen general del emprendimiento -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          *Resumen general del emprendimiento
+        </label>
+        <textarea
+          class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          formControlName="resumenGeneral"
+          rows="5"
+          [maxlength]="getMaxLength('resumenGeneral')"
+          placeholder="Describe tu emprendimiento..."></textarea>
+        <div class="flex justify-between items-center mt-1">
+          <mat-error 
+            *ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('required') && emprendimientoForm.get('resumenGeneral')?.touched" 
+            class="text-xs text-red-500">
+            Este campo es requerido
+          </mat-error>
+          <mat-error 
+            *ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('maxlength')" 
+            class="text-xs text-red-500">
+            Excede el límite de caracteres permitido
+          </mat-error>
+          <span class="text-xs text-gray-500 ml-auto">
+            {{ getRemainingChars('resumenGeneral') }} caracteres restantes
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- ¿Qué lo hace diferente o innovador? -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            *¿Qué lo hace diferente o innovador?
+          </label>
+          <textarea
+            class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            formControlName="queLoHaceDiferente"
+            rows="5"
+            [maxlength]="getMaxLength('queLoHaceDiferente')"
+            placeholder="Nuestro emprendimiento se diferencia por..."></textarea>
+          <div class="flex justify-between items-center mt-1">
+            <mat-error 
+              *ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('required') && emprendimientoForm.get('queLoHaceDiferente')?.touched" 
+              class="text-xs text-red-500">
+              Este campo es requerido
+            </mat-error>
+            <mat-error 
+              *ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('maxlength')" 
+              class="text-xs text-red-500">
+              Excede el límite de caracteres
+            </mat-error>
+            <span class="text-xs text-gray-500 ml-auto">
+              {{ getRemainingChars('queLoHaceDiferente') }} caracteres restantes
+            </span>
+          </div>
+        </div>
+
+        <!-- ¿A qué público objetivo te diriges? -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            *¿A qué público objetivo te diriges?
+          </label>
+          <textarea
+            class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            formControlName="publicoObjetivo"
+            rows="5"
+            [maxlength]="getMaxLength('publicoObjetivo')"
+            placeholder="Nos dirigimos principalmente a personas que..."></textarea>
+          <div class="flex justify-between items-center mt-1">
+            <mat-error 
+              *ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('required') && emprendimientoForm.get('publicoObjetivo')?.touched" 
+              class="text-xs text-red-500">
+              Este campo es requerido
+            </mat-error>
+            <mat-error 
+              *ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('maxlength')" 
+              class="text-xs text-red-500">
+              Excede el límite de caracteres
+            </mat-error>
+            <span class="text-xs text-gray-500 ml-auto">
+              {{ getRemainingChars('publicoObjetivo') }} caracteres restantes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ¿Cuál es el propósito o misión como emprendedor/a? -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          *¿Cuál es el propósito o misión como emprendedor/a?
+        </label>
+        <textarea
+          class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          formControlName="proposito"
+          rows="5"
+          [maxlength]="getMaxLength('proposito')"
+          placeholder="Nuestro propósito es..."></textarea>
+        <div class="flex justify-between items-center mt-1">
+          <mat-error 
+            *ngIf="emprendimientoForm.get('proposito')?.hasError('required') && emprendimientoForm.get('proposito')?.touched" 
+            class="text-xs text-red-500">
+            Este campo es requerido
+          </mat-error>
+          <mat-error 
+            *ngIf="emprendimientoForm.get('proposito')?.hasError('maxlength')" 
+            class="text-xs text-red-500">
+            Excede el límite de caracteres
+          </mat-error>
+          <span class="text-xs text-gray-500 ml-auto">
+            {{ getRemainingChars('proposito') }} caracteres restantes
+          </span>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="atras()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Atrás
+        </button>
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SECCIÓN 5: Historia del emprendimiento y Presencia Digital -->
+  <div *ngIf="currentStep === 5">
+    <form [formGroup]="emprendimientoForm">
+      <!-- Resumen general del emprendimiento (Historia) -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Historia del emprendimiento
+        </label>
+        <textarea
+          class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          formControlName="historiaEmprendimiento"
+          rows="5"
+          [maxlength]="getMaxLength('historiaEmprendimiento')"
+          placeholder="Nuestro emprendimiento de dulces nace con la pasión de endulzar los momentos más especiales de la vida. Elaboramos una amplia variedad de productos artesanales, desde chocolates y galletas hasta postres tradicionales y confitería creativa, siempre utilizando ingredientes de alta calidad y cuidando cada detalle en su preparación. Nos enfocamos en ofrecer combinaciones únicas de sabores y presentaciones atractivas que conquisten tanto el paladar como la vista."></textarea>
+        <div class="flex justify-between items-center mt-1">
+          <mat-error 
+            *ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('required') && emprendimientoForm.get('historiaEmprendimiento')?.touched" 
+            class="text-xs text-red-500">
+            Este campo es requerido
+          </mat-error>
+          <mat-error 
+            *ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('maxlength')" 
+            class="text-xs text-red-500">
+            Excede el límite de caracteres permitido
+          </mat-error>
+          <span class="text-xs text-gray-500 ml-auto">
+            {{ getRemainingChars('historiaEmprendimiento') }} caracteres restantes
+          </span>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center mt-8">
+        Presencia digital y contacto
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Instagram -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Instagram (u otra red principal)</mat-label>
+          <input matInput formControlName="instagram" placeholder="@dulceMania">
+        </mat-form-field>
+
+        <!-- Sitio Web -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Sitio Web</mat-label>
+          <input matInput formControlName="sitioWeb" placeholder="http://www.dulcemania.com">
+        </mat-form-field>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- WhatsApp de contacto -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>WhatsApp de contacto</mat-label>
+          <input matInput formControlName="whatsapp" placeholder="+593 99 123 4567">
+        </mat-form-field>
+
+        <!-- TikTok -->
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Tiktok</mat-label>
+          <input matInput formControlName="tiktok" placeholder="@dulceMania">
+        </mat-form-field>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="atras()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Atrás
+        </button>
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SECCIÓN 6: Material multimedia -->
+  <div *ngIf="currentStep === 6">
+    <h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
+      Material multimedia
+    </h2>
+    
+    <p class="text-center text-gray-600 mb-8">
+      Adjunte los siguiente elementos para completar tu perfil
+    </p>
+
+    <form [formGroup]="emprendimientoForm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Logo del emprendimiento -->
+        <div class="text-center">
+          <h3 class="font-semibold text-gray-800 mb-2">
+            Logo del emprendimiento
+          </h3>
+          <p class="text-sm text-gray-600 mb-4">
+            (formato JPG o PNG, fondo blanco o transparente).
+          </p>
+          
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px] flex flex-col items-center justify-center">
+            <div *ngIf="!logoPreview" class="text-center">
+              <mat-icon class="text-gray-400 text-6xl mb-4">image</mat-icon>
+              <label class="cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/jpeg,image/png" 
+                  (change)="onLogoSelected($event)"
+                  class="hidden">
+                <span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+                  Seleccionar logo
+                </span>
+              </label>
+            </div>
+            
+            <div *ngIf="logoPreview" class="relative">
+              <img [src]="logoPreview" alt="Logo preview" class="max-w-full max-h-48 rounded-lg">
+              <button 
+                type="button"
+                (click)="removeLogo()"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
+                <mat-icon class="text-sm">close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mínimo 2 fotos de productos -->
+        <div class="text-center">
+          <h3 class="font-semibold text-gray-800 mb-2">
+            Mínimo 2 fotos de productos o
+          </h3>
+          <p class="text-sm text-gray-600 mb-4">
+            servicios representativos (buena calidad).
+          </p>
+          
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px]">
+            <div *ngIf="fotosProductosPreview.length === 0" class="text-center h-full flex flex-col items-center justify-center">
+              <mat-icon class="text-gray-400 text-6xl mb-4">photo_library</mat-icon>
+              <label class="cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple
+                  (change)="onFotosProductosSelected($event)"
+                  class="hidden">
+                <span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+                  Seleccionar fotos (máx. 2)
+                </span>
+              </label>
+            </div>
+            
+            <div *ngIf="fotosProductosPreview.length > 0" class="grid grid-cols-2 gap-4">
+              <div *ngFor="let preview of fotosProductosPreview; let i = index" class="relative">
+                <img [src]="preview" alt="Foto producto" class="w-full h-32 object-cover rounded-lg">
+                <button 
+                  type="button"
+                  (click)="removeFotoProducto(i)"
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs">
+                  <mat-icon class="text-sm">close</mat-icon>
+                </button>
+              </div>
+              
+              <!-- Botón para agregar más fotos si no hay 2 -->
+              <div *ngIf="fotosProductosPreview.length < 2" class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                <label class="cursor-pointer text-center p-4">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    (change)="onFotosProductosSelected($event)"
+                    class="hidden">
+                  <mat-icon class="text-gray-400 text-4xl">add_photo_alternate</mat-icon>
+                  <p class="text-xs text-gray-500 mt-2">Agregar foto</p>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <!-- Video corto de presentación -->
+        <div class="text-center">
+          <h3 class="font-semibold text-gray-800 mb-2">
+            Video corto de presentación
+          </h3>
+          <p class="text-sm text-gray-600 mb-4">
+            (máx. 1 minuto)
+          </p>
+          
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+            <div *ngIf="!videoPreview" class="text-center">
+              <mat-icon class="text-gray-400 text-6xl mb-4">videocam</mat-icon>
+              <label class="cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="video/*" 
+                  (change)="onVideoSelected($event)"
+                  class="hidden">
+                <span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+                  Seleccionar video (opcional)
+                </span>
+              </label>
+            </div>
+            
+            <div *ngIf="videoPreview" class="relative w-full">
+              <video [src]="videoPreview" controls class="w-full max-h-48 rounded-lg"></video>
+              <button 
+                type="button"
+                (click)="removeVideo()"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
+                <mat-icon class="text-sm">close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Portada personalizada -->
+        <div class="text-center">
+          <h3 class="font-semibold text-gray-800 mb-2">
+            Portada personalizada
+          </h3>
+          <p class="text-sm text-gray-600 mb-4">
+            (estilo banner)
+          </p>
+          
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+            <div *ngIf="!bannerPreview" class="text-center">
+              <mat-icon class="text-gray-400 text-6xl mb-4">panorama</mat-icon>
+              <label class="cursor-pointer">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  (change)="onBannerSelected($event)"
+                  class="hidden">
+                <span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+                  Seleccionar banner (opcional)
+                </span>
+              </label>
+            </div>
+            
+            <div *ngIf="bannerPreview" class="relative w-full">
+              <img [src]="bannerPreview" alt="Banner preview" class="w-full max-h-32 object-cover rounded-lg">
+              <button 
+                type="button"
+                (click)="removeBanner()"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
+                <mat-icon class="text-sm">close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-4 mt-8">
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="atras()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Atrás
+        </button>
+        <button 
+          mat-raised-button 
+          type="button"
+          (click)="siguiente()"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+          Siguiente
+        </button>
+      </div>
+    </form>
+  </div>
+
 </div>
