@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 // DTOs para /admin
 export interface AdminEventoItemDto {
@@ -32,7 +32,7 @@ export interface AdminEventosResponseDto {
 @Injectable({ providedIn: 'root' })
 export class EventoService {
 
-    private baseUrl = Environment.api_url + Environment.api_eventos;
+    private baseUrl = environment.api_url + environment.api_eventos;
 
     constructor(private http: HttpClient) { }
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 // ============================================
 // INTERFACES
@@ -72,7 +72,7 @@ export interface SolicitudResponse {
   providedIn: 'root'
 })
 export class SolicitudService {
-  private baseApiUrl = `${Environment.api_url}${Environment.api_solicitudes}`;
+  private baseApiUrl = `${environment.api_url}${environment.api_solicitudes}`;
 
   constructor(private http: HttpClient) {}
 

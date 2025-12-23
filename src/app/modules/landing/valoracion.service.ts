@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 // DTOs para Formularios
 export interface OpcionRespuestaDto {
@@ -46,7 +46,7 @@ export interface EnviarValoracionDto {
 })
 export class ValoracionService {
 
-    private baseUrl = Environment.api_url + '/v1/formularios';
+    private baseUrl = environment.api_url + '/v1/formularios';
 
     constructor(private http: HttpClient) { }
 

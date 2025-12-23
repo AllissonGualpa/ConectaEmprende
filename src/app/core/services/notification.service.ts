@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 export interface NotificationDto {
   id: number;
@@ -28,7 +28,7 @@ export interface NotificationDto {
   providedIn: 'root'
 })
 export class NotificationService {
-  private baseUrl = `${Environment.api_url}${Environment.api_notificaciones}`;
+  private baseUrl = `${environment.api_url}${environment.api_notificaciones}`;
 
   constructor(private http: HttpClient) {}
 

@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Tag, BlogCreate, BlogArticle, AdminBlog, PaginatedResponse } from './blog.types';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BlogService {
-  private baseApiUrl = Environment.api_url + Environment.api_blog;
+  private baseApiUrl = environment.api_url + environment.api_blog;
 
   constructor(private http: HttpClient) {}
 

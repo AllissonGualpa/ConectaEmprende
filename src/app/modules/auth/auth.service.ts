@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 // Interfaz usada en register.component.ts
 export interface RegisterData {
@@ -43,8 +43,8 @@ export interface RegisterData {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = Environment.api_url + Environment.api_auth;
-  private apiUrlUsuarios = Environment.api_url + Environment.api_usuarios;
+  private apiUrl = environment.api_url + environment.api_auth;
+  private apiUrlUsuarios = environment.api_url + environment.api_usuarios;
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   private perfilKey = 'perfil';

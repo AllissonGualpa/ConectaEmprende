@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Categoria } from '../../models/categoria.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriaService {
 
-    private baseUrl = Environment.api_url + Environment.api_categorias;
+    private baseUrl = environment.api_url + environment.api_categorias;
 
     constructor(private http: HttpClient) { }
 

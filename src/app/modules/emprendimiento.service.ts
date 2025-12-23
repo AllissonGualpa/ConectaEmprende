@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Environment } from '../../environments/environment';
+import { environment } from '../../environments/environment';
 import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 import { VistaEmprendedorDTO } from './admin/admin-solicitudes/solicitud.service';
 
@@ -100,8 +100,8 @@ export interface EmprendimientoPublico {
     providedIn: 'root'
 })
 export class EmprendimientoService {
-    private baseUrl = `${Environment.api_url}${Environment.api_mi_emprendimiento}`;
-    private baseUrlEmprendimientos = `${Environment.api_url}${Environment.api_emprendimientos}`;
+    private baseUrl = `${environment.api_url}${environment.api_mi_emprendimiento}`;
+    private baseUrlEmprendimientos = `${environment.api_url}${environment.api_emprendimientos}`;
 
     constructor(private http: HttpClient) {}
 
@@ -230,7 +230,7 @@ export class EmprendimientoService {
      */
     obtenerVistaEmprendedor(emprendimientoId: number): Observable<VistaEmprendedorDTO> {
         return this.http.get<VistaEmprendedorDTO>(
-            `${Environment.api_url}/api/solicitudes/emprendimiento/${emprendimientoId}/mi-vista`,
+            `${environment.api_url}/api/solicitudes/emprendimiento/${emprendimientoId}/mi-vista`,
             { headers: this.getHeaders() }
         );
     }
@@ -339,7 +339,7 @@ export class EmprendimientoService {
      */
     getTiposEmprendimiento(): Observable<TipoEmprendimiento[]> {
         return this.http.get<TipoEmprendimiento[]>(
-            `${Environment.api_url}${Environment.api_tipos}`, 
+            `${environment.api_url}${environment.api_tipos}`, 
             { headers: this.getHeaders() }
         );
     }

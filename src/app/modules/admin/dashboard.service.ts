@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError, map } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 // Interfaces
 export interface EmprendimientoMenosVisto {
@@ -77,7 +77,7 @@ export interface MetricasGenerales {
 })
 export class DashboardService {
 
-  private baseUrl = Environment.api_url;
+  private baseUrl = environment.api_url;
 
   constructor(private http: HttpClient) {}
 
@@ -210,7 +210,7 @@ export class DashboardService {
   // TODOS LOS EMPRENDIMIENTOS
   // ============================
   getTodosEmprendimientos(): Observable<any[]> {
-    const url = `${this.baseUrl}${Environment.api_emprendimientos}`;
+    const url = `${this.baseUrl}${environment.api_emprendimientos}`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<any>(res)),
