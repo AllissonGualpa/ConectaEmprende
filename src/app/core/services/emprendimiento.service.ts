@@ -148,5 +148,13 @@ export class EmprendimientoService {
         );
     }
 
+    /**
+     * Crear emprendimiento
+     * @param formData
+     */
+    crearEmprendimiento(formData: FormData): Observable<any> {
+        return this._httpClient.post(`${environment.api_url}/emprendimientos`, formData);
+    }
+
 }
 
