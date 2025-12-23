@@ -4,7 +4,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
-import { Environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-startups-detail',
@@ -45,7 +45,7 @@ export class StartupsDetailComponent implements OnInit {
    * Carga el detalle de la startup desde la lista general de emprendimientos.
    */
   fetchStartupDetail(id: string) {
-    const url = Environment.api_url + Environment.api_emprendimientos;
+    const url = environment.api_url + environment.api_emprendimientos;
 
     this.http.get<any>(url).subscribe({
       next: (response) => {

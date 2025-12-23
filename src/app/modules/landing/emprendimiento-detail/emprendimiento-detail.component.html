@@ -220,19 +220,24 @@
         </section>
 
       </div>
-
-      <!-- QR -->
-      <section *ngIf="qrCodeUrl && !esStartup" class="bg-white rounded-xl shadow-sm p-6 text-center">
-        <h3 class="text-lg font-semibold text-[#ED6C1C] mb-4">
+<!-- SECCIÓN DE EVALUACIÓN -->
+      <div *ngIf="!esStartup && qrCodeUrl" class="bg-white rounded-xl shadow-sm p-8 mt-6 text-center">
+        <h2 class="text-2xl font-bold text-[#ED6C1C] mb-4">
           Califica nuestro emprendimiento
-        </h3>
-        <img [src]="qrCodeUrl" class="w-44 h-44 mx-auto border rounded-lg p-2">
-        <p class="text-xs text-gray-500 mt-3">
+        </h2>
+        
+        <p class="text-gray-600 mb-6">
           Escanea el código QR para valorar este emprendimiento
         </p>
-      </section>
 
-    </div>
+        <div class="flex justify-center">
+          <img 
+            [src]="qrCodeUrl" 
+            alt="QR Code de Evaluación"
+            class="w-64 h-64 border-4 border-gray-200 rounded-lg">
+        </div>
+      </div>
+      </div>
   </div>
 
   <!-- MODAL -->

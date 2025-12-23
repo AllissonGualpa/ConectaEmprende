@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { Environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -70,10 +70,10 @@ export class AdminEmprendimientosComponent implements OnInit {
   selectedEditId: number | null = null;
 
   private apiEmprendimientos =
-    Environment.api_url + Environment.api_emprendimientos;
-  private apiTipos = Environment.api_url + Environment.api_tipos;
-  private apiCategorias = Environment.api_url + Environment.api_categorias;
-  private apiCiudades = Environment.api_url + Environment.api_ciudades;
+    environment.api_url + environment.api_emprendimientos;
+  private apiTipos = environment.api_url + environment.api_tipos;
+  private apiCategorias = environment.api_url + environment.api_categorias;
+  private apiCiudades = environment.api_url + environment.api_ciudades;
 
   constructor(
     private http: HttpClient,

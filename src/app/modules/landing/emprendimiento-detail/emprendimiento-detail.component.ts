@@ -60,11 +60,15 @@ export class EmprendimientoDetailComponent implements OnInit {
         const tipo = data?.nombreTipoEmprendimiento?.toLowerCase() || '';
         this.esStartup = tipo.includes('startup');
 
-        if (!this.esStartup && typeof window !== 'undefined') {
-          const evaluacionUrl = `${window.location.origin}/evaluacion/${id}`;
+        // EmprendimientoDetailComponent
+        if (!this.esStartup) {
+          const host = 'http://192.168.68.72:4000'; // IP de tu PC en la red WiFi
+          const evaluacionUrl = `${host}/evaluacion/${id}`;
+
           this.qrCodeUrl =
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
         }
+
 
         this.cargando = false;
       },

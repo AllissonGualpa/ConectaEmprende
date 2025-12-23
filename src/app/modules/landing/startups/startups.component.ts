@@ -9,7 +9,7 @@ import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component';
 import { EmprendimientoService, EmprendimientosFilter } from '../../emprendimiento.service';
-import { Environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-startups',
@@ -36,8 +36,8 @@ export class StartupsComponent implements OnInit {
   // Filtros dinámicos
   searchFilters: any[] = [];
 
-  private apiCategorias = Environment.api_url + Environment.api_categorias;
-  private apiCiudades = Environment.api_url + Environment.api_ciudades;
+  private apiCategorias = environment.api_url + environment.api_categorias;
+  private apiCiudades = environment.api_url + environment.api_ciudades;
 
   constructor(
     private emprendimientoService: EmprendimientoService,

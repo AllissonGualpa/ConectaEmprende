@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { Environment } from '../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-inicio',
@@ -28,8 +28,8 @@ export class InicioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Ajusta esta lógica según tu mecanismo de auth real
-    const token = localStorage.getItem('authToken');
+    if (typeof window !== 'undefined' && window.localStorage) {
+ const token = localStorage.getItem('authToken');
     this.isLoggedIn = !!token;
     // Suscribirse al estado de autenticación
     this.authService.isAuthenticated$.subscribe(status => {
@@ -38,7 +38,7 @@ export class InicioComponent implements OnInit {
 
     this.loading = true;
     // Cargar categorías desde API
-    this.http.get<any[]>(Environment.api_url + Environment.api_categorias).subscribe({
+    this.http.get<any[]>(environment.api_url + environment.api_categorias).subscribe({
       next: (categorias) => {
         this.categoriasDestacadas = categorias.map(cat => ({
           nombre: cat.nombre,
@@ -52,6 +52,8 @@ export class InicioComponent implements OnInit {
         this.categoriasDestacadas = [];
         this.loading = false;
       }
-    });
+    });    // resto de tu lógica...
+  }
+  
   }
 }
