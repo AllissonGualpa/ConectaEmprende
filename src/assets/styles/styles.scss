@@ -107,3 +107,7 @@ body {
 .mat-mdc-option:hover:not(.mat-option-disabled) {
   background-color: rgba(249, 115, 22, 0.05);
 }
+
+.mdc-notched-outline__notch {
+  border-style: none;
+}
