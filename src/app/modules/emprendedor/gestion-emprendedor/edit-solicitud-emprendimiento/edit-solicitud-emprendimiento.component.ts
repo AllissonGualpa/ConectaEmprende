@@ -9,7 +9,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { EmprendimientoDto, EmprendimientoCategoriaDto, DescripcionDto, MetricaDto, PresenciaDigitalDto, ParticipacionComunidadDto, DeclaracionFinalDto, SolicitudEmprendimientoDataDto } from '../create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 import { Categoria } from '../../../../models/categoria.interface';
 import { CategoriaService } from '../../../admin/categoria.service';
-import { SolicitudService, VistaEmprendedorDTO } from '../../../admin/admin-solicitudes/solicitud.service';
+import { SolicitudService, VistaEmprendedorDTO } from '../../../admin/admin-solicitudes/solicitud3.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 

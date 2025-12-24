@@ -1,280 +1,226 @@
 <div class="flex h-screen bg-white overflow-hidden">
-  <app-navbar-admin class="h-full flex-shrink-0"></app-navbar-admin>
+	<app-navbar-admin class="h-full flex-shrink-0"></app-navbar-admin>
 
-  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-    <!-- Overlay de loading SOLO sobre el contenido principal -->
-    <div *ngIf="loading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <span class="text-gray-500 text-sm">Cargando solicitudes...</span>
-    </div>
+	<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+		<!-- Overlay de loading SOLO sobre el contenido principal -->
+		<div *ngIf="loading"
+			class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+			<svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+				viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+			</svg>
+			<span class="text-gray-500 text-sm">Cargando solicitudes...</span>
+		</div>
 
-    <div class="flex flex-col h-full p-6 overflow-hidden">
+		<div class="flex flex-col h-full p-6 overflow-hidden">
 
-      <!-- Tabs de estado de solicitudes -->
-      <div class="mb-4 flex justify-start">
-        <ul class="inline-flex text-sm font-medium text-center text-gray-700 bg-gray-100 rounded-full shadow-sm overflow-hidden">
-          <li>
-            <button 
-            (click)="setTab(0)"
-              [class]="selectedTab === 0
+			<!-- Tabs de estado de solicitudes -->
+			<div class="mb-4 flex justify-start">
+				<ul
+					class="inline-flex text-sm font-medium text-center text-gray-700 bg-gray-100 rounded-full shadow-sm overflow-hidden">
+					<li>
+						<button (click)="setTab(0)"
+							[class]="selectedTab === 0
                 ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
                 : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-              Pendientes
-            </button>
-          </li>
-          <li>
-            <button 
-            (click)="setTab(1)"
-              [class]="selectedTab === 1
+							Pendientes
+						</button>
+					</li>
+					<li>
+						<button (click)="setTab(1)"
+							[class]="selectedTab === 1
                 ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
                 : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-              En espera
-            </button>
-          </li>
-          <li>
-            <button 
-            (click)="setTab(2)"
-              [class]="selectedTab === 2
+							En espera
+						</button>
+					</li>
+					<li>
+						<button (click)="setTab(2)"
+							[class]="selectedTab === 2
                 ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
                 : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-              Pendientes de Actualizar
-            </button>
-          </li>
-        </ul>
-      </div>
+							Pendientes de Actualizar
+						</button>
+					</li>
+				</ul>
+			</div>
 
-      <!-- Tarjeta de filtros -->
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <div class="md:col-span-4">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-icon matPrefix class="text-gray-400">search</mat-icon>
-              <input 
-              matInput 
-              placeholder="Buscar solicitudes..." 
-              (ngModelChange)="onSearch($event)" 
-              />
-            </mat-form-field>
-          </div>
+			<!-- Tarjeta de filtros -->
+			<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+					<div class="md:col-span-4">
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-icon matPrefix class="text-gray-400">search</mat-icon>
+							<input matInput placeholder="Buscar solicitudes..." (input)="onSearch($event)" />
+						</mat-form-field>
+					</div>
 
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Estado</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()">
-                <mat-option value="">Todos</mat-option>
-                <mat-option value="PENDIENTE">Pendiente</mat-option>
-                <mat-option value="APROBADA">Aprobada</mat-option>
-                <mat-option value="RECHAZADA">Rechazada</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Estado</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-select [(ngModel)]="selectedEstado" (selectionChange)="onFilterChange()">
+								<mat-option value="">Todos</mat-option>
+								<mat-option value="PENDIENTE">Pendiente</mat-option>
+								<mat-option value="APROBADA">Aprobada</mat-option>
+								<mat-option value="RECHAZADA">Rechazada</mat-option>
+							</mat-select>
+						</mat-form-field>
+					</div>
 
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <input 
-              matInput 
-              [matDatepicker]="pickerInicio"
-              placeholder="Seleccionar fecha" 
-              [(ngModel)]="fechaInicio"
-                (dateChange)="onFilterChange()" 
-                />
-              <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-              <mat-datepicker #pickerInicio></mat-datepicker>
-            </mat-form-field>
-          </div>
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Fecha Inicio</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<input matInput [matDatepicker]="pickerInicio" placeholder="Seleccionar fecha"
+								[(ngModel)]="fechaInicio" (dateChange)="onFilterChange()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+							<mat-datepicker #pickerInicio></mat-datepicker>
+						</mat-form-field>
+					</div>
 
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <input 
-              matInput 
-              [matDatepicker]="pickerFin" 
-              placeholder="Seleccionar fecha" 
-              [(ngModel)]="fechaFin"
-                (dateChange)="onFilterChange()" 
-                />
-              <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
-              <mat-datepicker #pickerFin></mat-datepicker>
-            </mat-form-field>
-          </div>
-        </div>
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Fecha Fin</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<input matInput [matDatepicker]="pickerFin" placeholder="Seleccionar fecha"
+								[(ngModel)]="fechaFin" (dateChange)="onFilterChange()" />
+							<mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+							<mat-datepicker #pickerFin></mat-datepicker>
+						</mat-form-field>
+					</div>
+				</div>
 
-        <div class="flex justify-end mt-3 gap-2">
-          <button mat-raised-button color="primary" (click)="loadSolicitudes()">Consultar</button>
-          <button mat-stroked-button color="warn" (click)="clearFilters()">Limpiar filtros</button>
-        </div>
-      </div>
+				<div class="flex justify-end mt-3 gap-2">
+					<button mat-raised-button color="primary" (click)="loadSolicitudes()">Consultar</button>
+					<button mat-stroked-button color="warn" (click)="clearFilters()">Limpiar filtros</button>
+				</div>
+			</div>
 
-      <!-- CONTENIDO TAB PENDIENTES -->
-      <ng-container *ngIf="selectedTab === 0">
-        <div class="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-md">
-          <!-- Tabla con scroll -->
-          <div class="flex-1 overflow-y-auto">
-            <table class="min-w-full">
-              <thead class="bg-gray-50 sticky top-0 z-10">
-                <tr>
-                  <th class="w-16 px-6 py-3 text-left text-sm font-semibold text-gray-600">ID</th>
-                  <th class="w-48 px-6 py-3 text-left text-sm font-semibold text-gray-600">Emprendimiento</th>
-                  <th class="w-40 px-6 py-3 text-left text-sm font-semibold text-gray-600">Tipo</th>
-                  <th class="w-32 px-6 py-3 text-left text-sm font-semibold text-gray-600">Fecha</th>
-                  <th class="w-48 px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
-                </tr>
-              </thead>
+			<!-- CONTENIDO TAB PENDIENTES -->
+			<ng-container *ngIf="selectedTab === 0">
+				<div class="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-md">
+					<!-- Tabla con scroll -->
+					<div class="flex-1 overflow-y-auto">
+						<table class="min-w-full">
+							<thead class="bg-gray-50 sticky top-0 z-10">
+								<tr>
+									<th class="w-16 px-6 py-3 text-left text-sm font-semibold text-gray-600">ID</th>
+									<th class="w-48 px-6 py-3 text-left text-sm font-semibold text-gray-600">
+										Emprendimiento</th>
+									<th class="w-40 px-6 py-3 text-left text-sm font-semibold text-gray-600">Tipo Emprendimiento</th>
+									<th class="w-40 px-6 py-3 text-left text-sm font-semibold text-gray-600">Ciudad</th>
+									<th class="w-32 px-6 py-3 text-left text-sm font-semibold text-gray-600">Fecha
+										Solicitud</th>
+									<th class="w-48 px-6 py-3 text-center text-sm font-semibold text-gray-600">Acciones
+									</th>
+								</tr>
+							</thead>
 
-              <tbody class="divide-y divide-gray-200">
-                <tr 
-                *ngFor="let solicitud of filteredSolicitudes"
-                  class="transition-colors hover:bg-gray-50 even:bg-[#F7F6FE]">
-                  <!-- ID -->
-                  <td class="px-6 py-4 text-sm text-gray-900">
-                    {{ solicitud.id }}
-                  </td>
+							<tbody class="divide-y divide-gray-200">
+								<tr *ngFor="let solicitud of filteredSolicitudes"
+									class="transition-colors hover:bg-gray-50 even:bg-[#F7F6FE]">
 
-                  <!-- Nombre -->
-                  <td class="px-6 py-4 text-sm text-gray-900 truncate">
-                    {{ solicitud.nombreEmprendimiento }}
-                  </td>
+									<!-- ID -->
+									<td class="px-6 py-4 text-sm text-gray-900">
+										{{ solicitud.id }}
+									</td>
 
-                  <!-- Tipo -->
-                  <td class="px-6 py-4 text-sm text-gray-600 truncate">
-                    {{
-                    solicitud.datosPropuestos?.categorias?.[0]?.emprendimiento?.tipoEmprendimiento
-                    || 'No especificado'
-                    }}
-                  </td>
+									<!-- Nombre Emprendimiento -->
+									<td class="px-6 py-4 text-sm text-gray-900 truncate">
+										{{ solicitud.nombreEmprendimiento }}
+									</td>
 
-                  <!-- Fecha -->
-                  <td class="px-6 py-4 text-sm text-gray-600">
-                    {{ solicitud.fechaSolicitud | date:'dd/MM/yyyy' }}
-                  </td>
+									<td class="px-6 py-4 text-sm text-gray-600 truncate">
+										{{ solicitud.tipoEmprendimiento }}
+									</td>
 
-                  <!-- Acción -->
-                  <td class="px-6 py-4 align-middle overflow-visible">
-                    <div class="flex gap-2 justify-center items-center overflow-visible">
+									<!-- Ciudad -->
+									<td class="px-6 py-4 text-sm text-gray-600 truncate">
+										{{ solicitud.nombreCiudad }}
+									</td>
 
-                      <!-- Ver / Editar -->
-                      <button 
-                      (click)="verDetalle(solicitud)" title="Ver detalle de la solicitud" class="flex items-center justify-center
-             text-purple-600 hover:text-purple-800
-             transition-colors
-             p-2 rounded-full
-             hover:bg-purple-50
-             overflow-visible">
-                        <mat-icon class="!text-xl !leading-none">visibility</mat-icon>
-                      </button>
+									<!-- Fecha Solicitud -->
+									<td class="px-6 py-4 text-sm text-gray-600">
+										{{ solicitud.fechaSolicitud | date:'dd/MM/yyyy' }}
+									</td>
 
-                      <!-- Aprobar -->
-                      <button (click)="aprobarSolicitud(solicitud)" title="Aprobar solicitud" class="flex items-center justify-center
-             text-green-600 hover:text-green-800
-             transition-colors
-             p-2 rounded-full
-             hover:bg-green-50
-             overflow-visible">
-                        <mat-icon class="!text-xl !leading-none">check_circle</mat-icon>
-                      </button>
+									<!-- Acciones -->
+									<td class="px-6 py-4 align-middle overflow-visible">
+										<div class="flex gap-2 justify-center items-center overflow-visible">
 
-                      <!-- Rechazar -->
-                      <button (click)="rechazarSolicitud(solicitud)" title="Rechazar solicitud" class="flex items-center justify-center
-             text-red-600 hover:text-red-800
-             transition-colors
-             p-2 rounded-full
-             hover:bg-red-50
-             overflow-visible">
-                        <mat-icon class="!text-xl !leading-none">cancel</mat-icon>
-                      </button>
+											<!-- Ver / Editar -->
+											<button (click)="verDetalle(solicitud)" title="Ver detalle de la solicitud"
+												class="flex items-center justify-center text-purple-600 hover:text-purple-800 transition-colors p-2 rounded-full hover:bg-purple-50 overflow-visible">
+												<mat-icon class="!text-xl !leading-none">visibility</mat-icon>
+											</button>
 
-                      <!-- Enviar Observaciones -->
-                      <button (click)="enviarObservaciones(solicitud)" title="Enviar observaciones para corrección"
-                        class="flex items-center justify-center
-             text-orange-600 hover:text-orange-800
-             transition-colors
-             p-2 rounded-full
-             hover:bg-orange-50
-             overflow-visible">
-                        <mat-icon class="!text-xl !leading-none">comment</mat-icon>
-                      </button>
+											<!-- Aprobar -->
+											<button (click)="aprobarSolicitud(solicitud)" title="Aprobar solicitud"
+												class="flex items-center justify-center text-green-600 hover:text-green-800 transition-colors p-2 rounded-full hover:bg-green-50 overflow-visible">
+												<mat-icon class="!text-xl !leading-none">check_circle</mat-icon>
+											</button>
 
-                    </div>
-                  </td>
+											<!-- Rechazar -->
+											<button (click)="rechazarSolicitud(solicitud)" title="Rechazar solicitud"
+												class="flex items-center justify-center text-red-600 hover:text-red-800 transition-colors p-2 rounded-full hover:bg-red-50 overflow-visible">
+												<mat-icon class="!text-xl !leading-none">cancel</mat-icon>
+											</button>
 
-                </tr>
+											<!-- Enviar Observaciones -->
+											<button (click)="enviarObservaciones(solicitud)"
+												title="Enviar observaciones para corrección"
+												class="flex items-center justify-center text-orange-600 hover:text-orange-800 transition-colors p-2 rounded-full hover:bg-orange-50 overflow-visible">
+												<mat-icon class="!text-xl !leading-none">comment</mat-icon>
+											</button>
 
-                <tr *ngIf="filteredSolicitudes.length === 0 && !loading">
-                  <td colspan="5" class="px-6 py-6 text-center text-gray-500 text-sm">
-                    No se encontraron solicitudes
-                  </td>
-                </tr>
+										</div>
+									</td>
 
-                <tr *ngIf="loading">
-                  <td colspan="5" class="px-6 py-6 text-center">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i>
-                    <p class="mt-2 text-gray-600 text-sm">Cargando solicitudes...</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+								</tr>
 
-          <!-- Paginación -->
-          <div class="flex-shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-200"
-            *ngIf="!loading && filteredSolicitudes.length > 0">
-            <div class="flex flex-col items-center gap-3">
-              <div class="text-sm text-gray-700">
-                Mostrando <span class="font-semibold">{{ startIndex }}</span> a
-                <span class="font-semibold">{{ endIndex }}</span> de
-                <span class="font-semibold">{{ totalElements }}</span> resultados
-              </div>
+								<tr *ngIf="filteredSolicitudes.length === 0 && !loading">
+									<td colspan="5" class="px-6 py-6 text-center text-gray-500 text-sm">
+										No se encontraron solicitudes
+									</td>
+								</tr>
 
-              <div class="flex items-center gap-4">
-                <button (click)="previousPage()" [disabled]="currentPage === 0"
-                  class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
-                  <i class="fa-solid fa-chevron-left"></i>
-                  <span>Regresar</span>
-                </button>
+								<tr *ngIf="loading">
+									<td colspan="5" class="px-6 py-6 text-center">
+										<i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i>
+										<p class="mt-2 text-gray-600 text-sm">Cargando solicitudes...</p>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 
-                <div class="flex gap-2 items-center">
-                  <button *ngFor="let _ of pages; let i = index" (click)="goToPage(i)" [ngClass]="
-                i === currentPage
-                  ? 'bg-orange-500 text-white border-orange-500'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-              " class="w-8 h-8 rounded-full border text-sm font-medium flex items-center justify-center transition-colors">
-                    {{ i + 1 }}
-                  </button>
-                </div>
+					<!-- Paginación con Material -->
+					<div class="flex-shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-200"
+						*ngIf="!loading && filteredSolicitudes.length > 0">
+						<mat-paginator [length]="totalElements" [pageSize]="pageSize" [pageIndex]="pageIndex"
+							[pageSizeOptions]="pageSizeOptions" (page)="cambiarPagina($event)" showFirstLastButtons>
+						</mat-paginator>
+					</div>
+				</div>
+			</ng-container>
 
-                <button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
-                  class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
-                  <span>Siguiente</span>
-                  <i class="fa-solid fa-chevron-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-container>
-      <!-- CONTENIDO TAB EN ESPERA -->
-      <ng-container *ngIf="selectedTab === 1">
-        <div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
-          <p class="text-gray-400 text-lg">
-            Sección "En espera" aún no implementada.
-          </p>
-        </div>
-      </ng-container>
+			<!-- CONTENIDO TAB EN ESPERA -->
+			<ng-container *ngIf="selectedTab === 1">
+				<div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
+					<p class="text-gray-400 text-lg">
+						Sección "En espera" aún no implementada.
+					</p>
+				</div>
+			</ng-container>
 
-      <!-- CONTENIDO TAB PENDIENTES DE ACTUALIZAR -->
-      <ng-container *ngIf="selectedTab === 2">
-        <div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
-          <p class="text-gray-400 text-lg">
-            Sección "Pendientes de Actualizar" aún no implementada.
-          </p>
-        </div>
-      </ng-container>
+			<!-- CONTENIDO TAB PENDIENTES DE ACTUALIZAR -->
+			<ng-container *ngIf="selectedTab === 2">
+				<div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
+					<p class="text-gray-400 text-lg">
+						Sección "Pendientes de Actualizar" aún no implementada.
+					</p>
+				</div>
+			</ng-container>
 
-    </div>
-  </main>
+		</div>
+	</main>
 </div>

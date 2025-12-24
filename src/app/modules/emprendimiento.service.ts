@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
-import { VistaEmprendedorDTO } from './admin/admin-solicitudes/solicitud.service';
+import { VistaEmprendedorDTO } from './admin/admin-solicitudes/solicitud3.service';
 
 // ============================================
 // INTERFACES
