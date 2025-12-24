@@ -1,288 +1,236 @@
 <div class="flex h-screen bg-white overflow-hidden">
-  <!-- Navbar lateral -->
-  <app-navbar-admin class="h-full flex-shrink-0"></app-navbar-admin>
+	<!-- Navbar lateral -->
+	<app-navbar-admin class="h-full flex-shrink-0"></app-navbar-admin>
 
-  <!-- Contenido principal -->
-  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-    <!-- Overlay de loading SOLO sobre el contenido principal -->
-    <div *ngIf="loading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <span class="text-gray-500 text-sm">Cargando emprendimientos...</span>
-    </div>
+	<!-- Contenido principal -->
+	<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+		<!-- Overlay de loading -->
+		<div *ngIf="loading"
+			class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
+			<svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+				viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+			</svg>
+			<span class="text-gray-500 text-sm">Cargando emprendimientos...</span>
+		</div>
 
-    <!-- Contenedor interior -->
-    <div class="flex flex-col h-full p-6 overflow-hidden">
-      <!-- Título -->
-      <h1 class="text-2xl font-semibold text-center mb-4">
-        Emprendimientos Publicados
-      </h1>
+		<!-- Contenedor interior -->
+		<div class="flex flex-col h-full p-6 overflow-hidden">
+			<!-- Título -->
+			<h1 class="text-2xl font-semibold text-center mb-4">
+				Emprendimientos Publicados
+			</h1>
 
-      <!-- Sección de filtros y botones (similar a admin-blog) -->
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          <!-- Buscador -->
-          <div class="md:col-span-2">
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-icon matPrefix class="text-gray-400">search</mat-icon>
-              <input
-                matInput
-                placeholder="Buscar emprendimientos..."
-                [(ngModel)]="searchTerm"
-                (ngModelChange)="applyFilters()"
-              />
-            </mat-form-field>
-          </div>
+			<!-- Sección de filtros -->
+			<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+				<div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+					<!-- Buscador -->
+					<div class="md:col-span-2">
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-icon matPrefix class="text-gray-400">search</mat-icon>
+							<input matInput placeholder="Buscar emprendimientos..." [(ngModel)]="searchTerm" />
+						</mat-form-field>
+					</div>
 
-          <!-- Ciudad -->
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Ciudad</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select
-                [(ngModel)]="selectedCiudad"
-                (selectionChange)="applyFilters()"
-              >
-                <mat-option value="">Todas</mat-option>
-                <mat-option *ngFor="let c of ciudades" [value]="c.nombreCiudad">
-                  {{ c.nombreCiudad }} ({{ c.provincia?.nombre }})
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+					<!-- Subtipo - NUEVO -->
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Subtipo</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-select [(ngModel)]="selectedSubtipo">
+								<mat-option value="">Todos</mat-option>
+								<mat-option *ngFor="let subtipo of subtipos" [value]="subtipo.value">
+									{{ subtipo.label }}
+								</mat-option>
+							</mat-select>
+						</mat-form-field>
+					</div>
 
-          <!-- Categoría -->
-          <div class="md:col-span-1">
-            <label class="block text-xs text-gray-600 mb-1">Categoría</label>
-            <mat-form-field appearance="outline" class="w-full">
-              <mat-select
-                [(ngModel)]="selectedCategory"
-                (selectionChange)="applyFilters()"
-              >
-                <mat-option value="">Todas</mat-option>
-                <mat-option *ngFor="let cat of categorias" [value]="cat.nombre">
-                  {{ cat.nombre }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
+					<!-- Ciudad -->
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Ciudad</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-select [(ngModel)]="selectedCiudad">
+								<mat-option value="">Todas</mat-option>
+								<mat-option *ngFor="let c of ciudades" [value]="c.nombre">
+									{{ c.nombreCiudad }}
+								</mat-option>
+							</mat-select>
+						</mat-form-field>
+					</div>
 
-        <!-- Botones -->
-        <div class="flex justify-end mt-3 gap-2">
-          <button mat-raised-button color="primary" (click)="loadData()">
-            Consultar
-          </button>
-          <button mat-stroked-button color="warn" (click)="reload()">
-            Limpiar filtros
-          </button>
-        </div>
-      </div>
+					<!-- Categoría -->
+					<div class="md:col-span-1">
+						<label class="block text-xs text-gray-600 mb-1">Categoría</label>
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-select [(ngModel)]="selectedCategory">
+								<mat-option value="">Todas</mat-option>
+								<mat-option *ngFor="let cat of categorias" [value]="cat.nombre">
+									{{ cat.nombre }}
+								</mat-option>
+							</mat-select>
+						</mat-form-field>
+					</div>
+				</div>
 
-      <!-- Tabla desplazable (estilo admin-blog) -->
-      <div class="flex-1 overflow-y-auto bg-white rounded-xl shadow-md">
-        <div class="overflow-x-auto">
-          <table class="min-w-full">
-            <thead class="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  ID
-                </th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  Nombre
-                </th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  Tipo
-                </th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  Subtipo
-                </th>
-                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">
-                  Fecha
-                </th>
-                <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">
-                  Hora
-                </th>
-                <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">
-                  Acción
-                </th>
-              </tr>
-            </thead>
+				<!-- Botones -->
+				<div class="flex justify-end mt-3 gap-2">
+					<button mat-raised-button color="primary" (click)="applyFilters()">
+						Consultar
+					</button>
+					<button mat-stroked-button color="warn" (click)="reload()">
+						Limpiar filtros
+					</button>
+				</div>
+			</div>
 
-            <tbody class="divide-y divide-gray-200">
-              <tr
-                *ngFor="let emp of filteredEmprendimientos; let i = index"
-                class="transition-colors hover:bg-gray-50"
-                [ngClass]="{ 'bg-[#F7F6FE]': i % 2 !== 0 }"
-              >
-                <td class="px-6 py-3 text-sm text-gray-900">
-                  {{ emp.id }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-600">
-                  {{ emp.nombreComercial }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-600">
-                  {{ emp.tipoInfo.tipo }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-600">
-                  {{ emp.tipoInfo.subTipo }}
-                </td>
-                <td class="px-6 py-3 text-sm text-gray-600">
-                  {{ formatFecha(emp.fechaCreacion) }}
-                </td>
-                <td class="px-6 py-3 text-sm text-center">
-                  <span
-                    class="px-3 py-1 rounded-full font-medium inline-block text-sm"
-                    [ngClass]="getHoraColor(i)"
-                  >
-                    {{ formatHora(emp.anioCreacion) }}
-                  </span>
-                </td>
-                <td class="px-6 py-3 text-center">
-                  <div class="flex gap-3 justify-center">
-                    <!-- Botón editar -->
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="editarEmprendimiento(emp)"
-                      title="Editar emprendimiento"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <!-- Botón inactivar -->
-                    <button
-                      (click)="desactivarEmprendimiento(emp)"
-                      class="text-orange-600 hover:text-orange-800 transition-colors p-1"
-                      title="Inactivar"
-                    >
-                      <mat-icon class="text-base">block</mat-icon>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+			<!-- Tabla desplazable -->
+			<div class="flex-1 overflow-y-auto bg-white rounded-xl shadow-md">
+				<div class="overflow-x-auto">
+					<table class="min-w-full">
+						<thead class="bg-gray-50 sticky top-0 z-10">
+							<tr>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">ID</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Nombre</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Tipo</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Subtipo</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Ciudad</th>
+								<th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Fecha</th>
+								<th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
+							</tr>
+						</thead>
 
-              <!-- Mensaje sin datos -->
-              <tr *ngIf="filteredEmprendimientos.length === 0 && !loading">
-                <td
-                  colspan="8"
-                  class="px-6 py-6 text-center text-gray-500 text-sm"
-                >
-                  No se encontraron emprendimientos
-                </td>
-              </tr>
+						<tbody class="divide-y divide-gray-200">
+							<tr *ngFor="let emp of emprendimientos; let i = index"
+								class="transition-colors hover:bg-gray-50" [ngClass]="{ 'bg-[#F7F6FE]': i % 2 !== 0 }">
+								<td class="px-6 py-3 text-sm text-gray-900">
+									{{ emp.idEmprendimiento }}
+								</td>
+								<td class="px-6 py-3 text-sm text-gray-600">
+									{{ emp.nombreComercialEmprendimiento }}
+								</td>
+								<td class="px-6 py-3 text-sm text-gray-600">
+									{{ emp.tipoInfo.tipo }}
+								</td>
+								<td class="px-6 py-3 text-sm text-gray-600">
+									{{ emp.tipoInfo.subTipo }}
+								</td>
+								<td class="px-6 py-3 text-sm text-gray-600">
+									{{ emp.ciudadNombre }}
+								</td>
+								<td class="px-6 py-3 text-sm text-gray-600">
+									{{ formatFecha(emp.fechaCreacion) }}
+								</td>
+								<td class="px-6 py-3 text-center">
+									<div class="flex gap-3 justify-center">
+										<button mat-icon-button color="primary" (click)="editarEmprendimiento(emp)"
+											title="Editar emprendimiento">
+											<mat-icon>edit</mat-icon>
+										</button>
+										<button (click)="desactivarEmprendimiento(emp)"
+											class="text-orange-600 hover:text-orange-800 transition-colors p-1"
+											title="Inactivar">
+											<mat-icon class="text-base">block</mat-icon>
+										</button>
+									</div>
+								</td>
+							</tr>
 
-              <!-- Cargando dentro de la tabla -->
-              <tr *ngIf="loading">
-                <td colspan="8" class="px-6 py-6 text-center">
-                  <i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i>
-                  <p class="mt-2 text-gray-600 text-sm">
-                    Cargando emprendimientos...
-                  </p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+							<!-- Mensaje sin datos -->
+							<tr *ngIf="emprendimientos.length === 0 && !loading">
+								<td colspan="7" class="px-6 py-6 text-center text-gray-500 text-sm">
+									No se encontraron emprendimientos
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 
-      <!-- Paginación (mismo estilo que admin-evento) -->
-      <div
-        class="flex-shrink-0 px-6 py-6 bg-gray-50 border-t border-gray-200 text-center"
-        *ngIf="!loading && totalElements > 0"
-      >
-        <div class="flex flex-col items-center gap-3">
-          <div class="text-sm text-gray-700">
-            Mostrando
-            <span class="font-semibold">{{ startIndex }}</span>
-            a
-            <span class="font-semibold">{{ endIndex }}</span>
-            de
-            <span class="font-semibold">{{ totalElements }}</span>
-            resultados
-          </div>
+			<!-- Paginación -->
+			<div class="flex-shrink-0 px-6 py-6 bg-gray-50 border-t border-gray-200 text-center"
+				*ngIf="!loading && totalElements > 0">
+				<div class="flex flex-col items-center gap-3">
+					<div class="text-sm text-gray-700">
+						Mostrando
+						<span class="font-semibold">{{ startIndex }}</span>
+						a
+						<span class="font-semibold">{{ endIndex }}</span>
+						de
+						<span class="font-semibold">{{ totalElements }}</span>
+						resultados
+					</div>
 
-          <div class="flex items-center gap-4">
-            <button
-              (click)="prevPage()"
-              [disabled]="currentPage === 0"
-              class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2"
-            >
-              <i class="fa-solid fa-chevron-left"></i>
-              <span>Regresar</span>
-            </button>
+					<div class="flex items-center gap-4">
+						<button (click)="prevPage()" [disabled]="currentPage === 0"
+							class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
+							<i class="fa-solid fa-chevron-left"></i>
+							<span>Regresar</span>
+						</button>
 
-            <div class="flex gap-2 items-center">
-              <button
-                *ngFor="let _ of pages; let i = index"
-                (click)="goToPage(i)"
-                [ngClass]="
+						<div class="flex gap-2 items-center">
+							<button *ngFor="let _ of pages; let i = index" (click)="goToPage(i)" [ngClass]="
                   i === currentPage
                     ? 'bg-orange-500 text-white border-orange-500'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                "
-                class="w-8 h-8 rounded-full border text-sm font-medium flex items-center justify-center transition-colors"
-              >
-                {{ i + 1 }}
-              </button>
-            </div>
+                " class="w-8 h-8 rounded-full border text-sm font-medium flex items-center justify-center transition-colors">
+								{{ i + 1 }}
+							</button>
+						</div>
 
-            <button
-              (click)="nextPage()"
-              [disabled]="currentPage >= totalPages - 1"
-              class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2"
-            >
-              <span>Siguiente</span>
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+						<button (click)="nextPage()" [disabled]="currentPage >= totalPages - 1"
+							class="px-3 py-1 rounded-md text-sm text-gray-700 disabled:opacity-50 hover:bg-gray-100 transition-colors flex items-center gap-2">
+							<span>Siguiente</span>
+							<i class="fa-solid fa-chevron-right"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
 
-  <!-- Modal de confirmación para desactivar emprendimiento -->
-  <ng-container *ngIf="showDesactivarModal">
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-8 relative flex flex-col">
-        <div class="flex items-center mb-4">
-          <div class="bg-yellow-100 text-yellow-600 rounded-full w-10 h-10 flex items-center justify-center mr-3">
-            <span class="text-xl font-bold">!</span>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-1">¿Estás seguro de inactivar el emprendimiento?</h3>
-            <p class="text-sm text-gray-600">Esta acción inactivará el emprendimiento <span class="font-bold">"{{ emprendimientoAInactivar?.nombreComercial }}"</span> y dejará de estar disponible para los usuarios.</p>
-          </div>
-        </div>
-        <div class="flex justify-end gap-3 mt-6">
-          <button (click)="showDesactivarModal = false" class="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition">Cancelar</button>
-          <button (click)="confirmarDesactivarEmprendimiento()" class="px-6 py-2 rounded-lg bg-orange-500 text-white font-bold hover:bg-orange-600 transition">Desactivar</button>
-        </div>
-      </div>
-    </div>
-  </ng-container>
+	<!-- Modal de confirmación para desactivar -->
+	<ng-container *ngIf="showDesactivarModal">
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+			<div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-8 relative flex flex-col">
+				<div class="flex items-center mb-4">
+					<div
+						class="bg-yellow-100 text-yellow-600 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+						<span class="text-xl font-bold">!</span>
+					</div>
+					<div>
+						<h3 class="text-lg font-semibold text-gray-900 mb-1">¿Estás seguro de inactivar el
+							emprendimiento?</h3>
+						<p class="text-sm text-gray-600">Esta acción inactivará el emprendimiento <span
+								class="font-bold">"{{ emprendimientoAInactivar?.nombreComercialEmprendimiento }}"</span>
+						</p>
+					</div>
+				</div>
+				<div class="flex justify-end gap-3 mt-6">
+					<button (click)="showDesactivarModal = false"
+						class="px-6 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition">Cancelar</button>
+					<button (click)="confirmarDesactivarEmprendimiento()"
+						class="px-6 py-2 rounded-lg bg-orange-500 text-white font-bold hover:bg-orange-600 transition">Desactivar</button>
+				</div>
+			</div>
+		</div>
+	</ng-container>
 
-  <!-- Modal inline para editar solicitud de emprendimiento -->
-  <ng-container *ngIf="showEditSolicitudModal && selectedEditId !== null">
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div class="bg-white rounded-xl shadow-lg w-full max-w-5xl mx-4 h-[80vh] flex flex-col overflow-hidden">
-        <!-- Cabecera del modal -->
-        <div class="px-6 py-4 border-b flex items-center justify-between">
-          <h3 class="text-lg font-semibold">Editar solicitud de emprendimiento</h3>
-          <button (click)="closeEditSolicitudModal()" class="text-gray-500 hover:text-gray-700">Cerrar ✕</button>
-        </div>
-
-        <!-- Contenido scrollable -->
-        <div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
-          <!-- Pasar el id seleccionado al componente de edición -->
-          <app-edit-solicitud-emprendimiento
-            [emprendimientoId]="selectedEditId"
-            (updated)="onEmprendimientoUpdated()"
-            (close)="closeEditSolicitudModal()"
-          ></app-edit-solicitud-emprendimiento>
-        </div>
-      </div>
-    </div>
-  </ng-container>
-
+	<!-- Modal inline para editar -->
+	<ng-container *ngIf="showEditSolicitudModal && selectedEditId !== null">
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+			<div class="bg-white rounded-xl shadow-lg w-full max-w-5xl mx-4 h-[80vh] flex flex-col overflow-hidden">
+				<div class="px-6 py-4 border-b flex items-center justify-between">
+					<h3 class="text-lg font-semibold">Editar solicitud de emprendimiento</h3>
+					<button (click)="closeEditSolicitudModal()" class="text-gray-500 hover:text-gray-700">Cerrar
+						✕</button>
+				</div>
+				<div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
+					<app-edit-solicitud-emprendimiento [emprendimientoId]="selectedEditId"
+						(updated)="onEmprendimientoUpdated()"
+						(close)="closeEditSolicitudModal()"></app-edit-solicitud-emprendimiento>
+				</div>
+			</div>
+		</div>
+	</ng-container>
 </div>

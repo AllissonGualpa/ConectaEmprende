@@ -1,404 +1,272 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { environment } from '../../../../environments/environment';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { MatDialog } from '@angular/material/dialog';
-
-// Imports de Angular Material para que se vea como admin-blog
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule }      from '@angular/material/input';
-import { MatSelectModule }     from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatButtonModule }     from '@angular/material/button';
-import { MatIconModule }       from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../auth/auth.service';
 import { EditSolicitudEmprendimientoComponent } from '../../emprendedor/gestion-emprendedor/edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
-
+import { EmprendimientoService } from '../../../core/services/emprendimiento.service';
+import { SharedGeneralService } from '../../../shared/general/shared-general.service';
 @Component({
-  selector: 'app-admin-emprendimientos',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    NavbarAdminComponent,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    EditSolicitudEmprendimientoComponent,
-    MatNativeDateModule,
-    MatButtonModule,
-    MatIconModule,
-  ],
-  templateUrl: './admin-emprendimientos.component.html'
+	selector: 'app-admin-emprendimientos',
+	standalone: true,
+	imports: [
+		CommonModule,
+		FormsModule,
+		NavbarAdminComponent,
+		MatFormFieldModule,
+		MatInputModule,
+		MatSelectModule,
+		MatButtonModule,
+		MatIconModule,
+		EditSolicitudEmprendimientoComponent,
+	],
+	templateUrl: './admin-emprendimientos.component.html'
 })
 export class AdminEmprendimientosComponent implements OnInit {
-  emprendimientos: any[] = [];
-  tiposEmprendimiento: any[] = [];
-  filteredEmprendimientos: any[] = [];
-  categorias: any[] = [];
+	emprendimientos: any[] = [];
+	tiposEmprendimiento: any[] = [];
+	categorias: any[] = [];
+	ciudades: any[] = [];
 
-  ciudades: any[] = [];
-  selectedCiudad = '';
+	// Filtros
+	searchTerm = '';
+	selectedCategory = '';
+	selectedCiudad = '';
+	selectedSubtipo = ''; // NUEVO
 
-  searchTerm = '';
-  selectedCategory = '';
-  selectedDate: any = '';
+	loading = false;
 
-  loading = false;
+	// Paginación
+	pageSize: number = 10;
+	currentPage: number = 0;
+	totalElements: number = 0;
+	totalPages: number = 0;
+	pages: number[] = [];
+	startIndex: number = 0;
+	endIndex: number = 0;
 
-  // Estado de paginación
-  pageSize: number = 10;
-  currentPage: number = 0;
-  totalElements: number = 0;
-  totalPages: number = 0;
-  pages: number[] = [];
-  startIndex: number = 0;
-  endIndex: number = 0;
+	showDesactivarModal = false;
+	emprendimientoAInactivar: any = null;
 
-  showDesactivarModal = false;
-  emprendimientoAInactivar: any = null;
+	showEditSolicitudModal: boolean = false;
+	selectedEditId: number | null = null;
 
-  // Nuevo estado para modal inline
-  showEditSolicitudModal: boolean = false;
-  selectedEditId: number | null = null;
+	// Opciones de subtipo
+	subtipos = [
+		{ value: 'Servicio', label: 'Servicio' },
+		{ value: 'Producto', label: 'Producto' }
+	];
 
-  private apiEmprendimientos =
-    environment.api_url + environment.api_emprendimientos;
-  private apiTipos = environment.api_url + environment.api_tipos;
-  private apiCategorias = environment.api_url + environment.api_categorias;
-  private apiCiudades = environment.api_url + environment.api_ciudades;
+	constructor(
+		private emprendimientoService: EmprendimientoService,
+		private sharedGeneralService: SharedGeneralService,
+		private router: Router,
+		private dialog: MatDialog,
+		private authServices: AuthService
+	) { }
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private dialog: MatDialog,
-    private authServices: AuthService
-  ) {}
+	ngOnInit() {
+		this.loadData();
+	}
 
-  ngOnInit() {
-    this.loadData();
-  }
+	loadData() {
+		this.loading = true;
+		const token = localStorage.getItem('token');
 
-  loadData() {
-    this.loading = true;
-    const token = localStorage.getItem('token');
+		if (!token) {
+			this.loading = false;
+			this.dialog.open(MensajeConfirmacionComponent, {
+				width: '420px',
+				data: {
+					subject: 'Autenticación',
+					title: 'No estás autenticado',
+					subtitle: 'Por favor, inicia sesión para continuar.',
+					type: 'error',
+				},
+			});
+			this.router.navigate(['/login']);
+			return;
+		}
 
-    if (!token) {
-      this.loading = false;
-      this.dialog.open(MensajeConfirmacionComponent, {
-        width: '420px',
-        data: {
-          subject: 'Autenticación',
-          title: 'No estás autenticado',
-          subtitle: 'Por favor, inicia sesión para continuar.',
-          type: 'error',
-        },
-      });
-      this.router.navigate(['/login']);
-      return;
-    }
+		// Cargar datos iniciales
+		forkJoin({
+			tipos: this.emprendimientoService.getTiposEmprendimiento(),
+			categorias: this.sharedGeneralService.getCategorias(), // Ajusta según tu servicio
+			ciudades: this.sharedGeneralService.getCiudades(), // Ajusta según tu servicio
+		}).subscribe({
+			next: ({ tipos, categorias }) => {
+				this.tiposEmprendimiento = tipos;
+				this.categorias = categorias;
+				// this.ciudades = ciudades;
 
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+				// Cargar emprendimientos
+				this.applyFilters();
+			},
+			error: (error) => {
+				console.error('Error al cargar datos:', error);
+				this.loading = false;
+				this.handleAuthError(error);
+			},
+		});
+	}
 
-    // Carga inicial de combos + emprendimientos paginados
-    forkJoin({
-      tipos: this.http.get<any[]>(this.apiTipos, { headers }),
-      categorias: this.http.get<any[]>(this.apiCategorias, { headers }),
-      ciudades: this.http.get<any[]>(this.apiCiudades, { headers }),
-      emprendimientos: this.http.get<any>(this.apiEmprendimientos, {
-        headers,
-        params: new HttpParams()
-          .set('page', String(this.currentPage))
-          .set('size', String(this.pageSize)),
-      }),
-    }).subscribe({
-      next: ({ tipos, categorias, ciudades, emprendimientos }) => {
-        this.tiposEmprendimiento = tipos;
-        this.categorias = categorias;
-        this.ciudades = ciudades;
+	applyFilters() {
+		this.loading = true;
 
-        const lista = emprendimientos?.content ?? [];
-        const pageable = emprendimientos?.pageable;
+		this.emprendimientoService.getEmprendimientosFiltrado(
+			this.currentPage,
+			this.pageSize,
+			this.searchTerm || undefined,
+			undefined, // tipo
+			this.selectedSubtipo || undefined,
+			this.selectedCategory || undefined,
+			this.selectedCiudad || undefined
+		).subscribe({
+			next: (response) => {
+				this.emprendimientos = this.mapEmprendimientos(response.content);
 
-        if (pageable) {
-          this.totalElements =
-            typeof pageable.totalElements === 'number' &&
-            pageable.totalElements >= 0
-              ? pageable.totalElements
-              : lista.length;
-          this.pageSize =
-            typeof pageable.pageSize === 'number' && pageable.pageSize > 0
-              ? pageable.pageSize
-              : this.pageSize;
-          this.currentPage =
-            typeof pageable.pageNumber === 'number' && pageable.pageNumber >= 0
-              ? pageable.pageNumber
-              : 0;
-          this.totalPages =
-            typeof pageable.totalPages === 'number' && pageable.totalPages > 0
-              ? pageable.totalPages
-              : Math.max(
-                  1,
-                  Math.ceil(this.totalElements / this.pageSize)
-                );
-        } else {
-          this.totalElements = lista.length;
-          this.totalPages =
-            this.pageSize > 0
-              ? Math.max(1, Math.ceil(this.totalElements / this.pageSize))
-              : 1;
-        }
+				const pageable = response.pageable;
+				this.totalElements = pageable.length || 0;
+				this.pageSize = pageable.size || 10;
+				this.currentPage = pageable.page || 0;
+				this.totalPages = pageable.lastPage + 1 || 1;
 
-        if (this.totalPages === 0 && this.totalElements > 0) {
-          this.totalPages = 1;
-        }
+				this.computePaginationInfo();
+				this.loading = false;
+			},
+			error: (error) => {
+				console.error('Error al aplicar filtros:', error);
+				this.loading = false;
+				this.handleAuthError(error);
+			},
+		});
+	}
 
-        this.emprendimientos = this.mapEmprendimientos(lista);
-        this.filteredEmprendimientos = [...this.emprendimientos];
-        this.computePaginationInfo();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error al cargar emprendimientos:', error);
-        this.loading = false;
-        if (error.status === 401) {
-          this.dialog.open(MensajeConfirmacionComponent, {
-            width: '420px',
-            data: {
-              subject: 'Sesión expirada',
-              title: 'Tu sesión ha expirado',
-              subtitle: 'Por favor, inicia sesión nuevamente.',
-              type: 'error',
-            },
-          });
-          this.authServices.logout();
-          this.router.navigate(['/login']);
-        }
-      },
-    });
-  }
+	private mapEmprendimientos(lista: any[]): any[] {
+		return lista.map((emp) => {
+			const tipoData = this.tiposEmprendimiento.find(
+				(t) => t.id === emp.tipoEmprendimientoId
+			);
+			return {
+				...emp,
+				tipoInfo: {
+					tipo: tipoData ? tipoData.tipo : emp.tipoEmprendimiento || 'Desconocido',
+					subTipo: tipoData ? tipoData.subTipo.trim() : emp.subTipoEmprendimiento || 'N/A',
+				},
+			};
+		});
+	}
 
-  private mapEmprendimientos(lista: any[]): any[] {
-    return lista.map(
-      (emp: { tipoEmprendimientoId: any; nombreTipoEmprendimiento: any }) => {
-        const tipoData = this.tiposEmprendimiento.find(
-          (t) => t.id === emp.tipoEmprendimientoId
-        );
-        return {
-          ...emp,
-          tipoInfo: {
-            tipo: tipoData ? tipoData.tipo : 'Desconocido',
-            subTipo: tipoData
-              ? tipoData.subTipo.trim()
-              : emp.nombreTipoEmprendimiento,
-          },
-        };
-      }
-    );
-  }
+	reload() {
+		this.searchTerm = '';
+		this.selectedCategory = '';
+		this.selectedCiudad = '';
+		this.selectedSubtipo = '';
+		this.currentPage = 0;
+		this.applyFilters();
+	}
 
-  // Llamar al backend aplicando filtros como query params (con paginación)
-  applyFilters() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return;
-    }
+	private computePaginationInfo(): void {
+		this.currentPage = Number(this.currentPage) || 0;
 
-    this.loading = true;
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+		if (this.totalElements <= 0 || this.pageSize <= 0) {
+			this.totalPages = 0;
+			this.pages = [];
+			this.startIndex = 0;
+			this.endIndex = 0;
+			return;
+		}
 
-    let params = new HttpParams();
+		if (!this.totalPages || this.totalPages <= 0) {
+			this.totalPages = Math.max(1, Math.ceil(this.totalElements / this.pageSize));
+		}
 
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
-      params = params.set('nombre', this.searchTerm.trim());
-    }
+		if (this.currentPage >= this.totalPages) {
+			this.currentPage = this.totalPages - 1;
+		}
+		if (this.currentPage < 0) this.currentPage = 0;
 
-    if (this.selectedCategory && this.selectedCategory !== '') {
-      params = params.set('categoria', this.selectedCategory);
-    }
+		this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
 
-    if (this.selectedCiudad && this.selectedCiudad !== '') {
-      params = params.set('ciudad', this.selectedCiudad);
-    }
+		const baseIndex = this.currentPage * this.pageSize;
+		this.startIndex = baseIndex + 1;
+		this.endIndex = Math.min(baseIndex + this.pageSize, this.totalElements);
+	}
 
-    // paginación desde el estado
-    params = params
-      .set('page', String(this.currentPage))
-      .set('size', String(this.pageSize));
+	nextPage(): void {
+		if (this.currentPage < this.totalPages - 1) {
+			this.currentPage++;
+			this.applyFilters();
+		}
+	}
 
-    this.http
-      .get<any>(this.apiEmprendimientos, { headers, params })
-      .subscribe({
-        next: (resp) => {
-          const lista = resp?.content ?? resp ?? [];
-          const pageable = resp?.pageable;
+	prevPage(): void {
+		if (this.currentPage > 0) {
+			this.currentPage--;
+			this.applyFilters();
+		}
+	}
 
-          if (pageable) {
-            this.totalElements =
-              typeof pageable.totalElements === 'number' &&
-              pageable.totalElements >= 0
-                ? pageable.totalElements
-                : (Array.isArray(lista) ? lista.length : 0);
-            this.pageSize =
-              typeof pageable.pageSize === 'number' && pageable.pageSize > 0
-                ? pageable.pageSize
-                : this.pageSize;
-            this.currentPage =
-              typeof pageable.pageNumber === 'number' &&
-              pageable.pageNumber >= 0
-                ? pageable.pageNumber
-                : 0;
-            this.totalPages =
-              typeof pageable.totalPages === 'number' &&
-              pageable.totalPages > 0
-                ? pageable.totalPages
-                : Math.max(
-                    1,
-                    Math.ceil(this.totalElements / this.pageSize)
-                  );
-          } else {
-            const len = Array.isArray(lista) ? lista.length : 0;
-            this.totalElements = len;
-            this.totalPages =
-              this.pageSize > 0
-                ? Math.max(1, Math.ceil(len / this.pageSize))
-                : 1;
-          }
+	goToPage(page: number): void {
+		if (page < 0 || page >= this.totalPages) return;
+		this.currentPage = page;
+		this.applyFilters();
+	}
 
-          if (this.totalPages === 0 && this.totalElements > 0) {
-            this.totalPages = 1;
-          }
+	formatFecha(fecha: string): string {
+		if (!fecha) return '';
+		return new Date(fecha).toLocaleDateString('es-ES');
+	}
 
-          this.emprendimientos = this.mapEmprendimientos(
-            Array.isArray(lista) ? lista : []
-          );
-          this.filteredEmprendimientos = [...this.emprendimientos];
-          this.computePaginationInfo();
-          this.loading = false;
-        },
-        error: (error) => {
-          console.error('Error al aplicar filtros:', error);
-          this.loading = false;
-        },
-      });
-  }
+	editarEmprendimiento(emp: any) {
+		const id = emp?.idEmprendimiento ?? emp?.id ?? null;
+		this.selectedEditId = id ? Number(id) : null;
+		this.showEditSolicitudModal = true;
+	}
 
-  reload() {
-    this.searchTerm = '';
-    this.selectedCategory = '';
-    this.selectedCiudad = '';
-    this.selectedDate = '';
-    this.currentPage = 0;
-    this.loadData();
-  }
+	onEmprendimientoUpdated() {
+		this.showEditSolicitudModal = false;
+		this.selectedEditId = null;
+		this.applyFilters();
+	}
 
-  private computePaginationInfo(): void {
-    this.currentPage = Number(this.currentPage) || 0;
+	closeEditSolicitudModal() {
+		this.showEditSolicitudModal = false;
+		this.selectedEditId = null;
+	}
 
-    if (this.totalElements <= 0 || this.pageSize <= 0) {
-      this.totalPages = 0;
-      this.pages = [];
-      this.startIndex = 0;
-      this.endIndex = 0;
-      return;
-    }
+	desactivarEmprendimiento(emp: any) {
+		this.emprendimientoAInactivar = emp;
+		this.showDesactivarModal = true;
+	}
 
-    if (!this.totalPages || this.totalPages <= 0) {
-      this.totalPages = Math.max(
-        1,
-        Math.ceil(this.totalElements / this.pageSize)
-      );
-    }
+	confirmarDesactivarEmprendimiento() {
+		this.showDesactivarModal = false;
+		// TODO: Implementar lógica de desactivación
+	}
 
-    if (this.currentPage >= this.totalPages) {
-      this.currentPage = this.totalPages - 1;
-    }
-    if (this.currentPage < 0) this.currentPage = 0;
-
-    this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
-
-    const baseIndex = this.currentPage * this.pageSize;
-    this.startIndex = baseIndex + 1;
-    this.endIndex = Math.min(baseIndex + this.pageSize, this.totalElements);
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.applyFilters();
-    }
-  }
-
-  prevPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.applyFilters();
-    }
-  }
-
-  goToPage(page: number): void {
-    if (page < 0 || page >= this.totalPages) return;
-    this.currentPage = page;
-    this.applyFilters();
-  }
-
-  formatFecha(fecha: string): string {
-    if (!fecha) return '';
-    return new Date(fecha).toLocaleDateString('es-ES');
-  }
-
-  formatHora(fecha: string): string {
-    if (!fecha) return '';
-    return new Date(fecha).toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  getHoraColor(index: number): string {
-    const colors = [
-      'bg-green-50 text-green-700',
-      'bg-blue-50 text-blue-700',
-      'bg-yellow-50 text-yellow-700',
-      'bg-pink-50 text-pink-700',
-      'bg-purple-50 text-purple-700',
-    ];
-    return colors[index % colors.length];
-  }
-
-  editarEmprendimiento(emp: any) {
-    // Mostrar modal inline y pasar id
-    const id = emp?.id ?? emp?.emprendimientoId ?? emp?._id ?? null;
-    this.selectedEditId = id ? Number(id) : null;
-    this.showEditSolicitudModal = true;
-  }
-
-  // llamado cuando el componente hijo emite (updated)
-  onEmprendimientoUpdated() {
-    this.showEditSolicitudModal = false;
-    this.selectedEditId = null;
-    this.loadData();
-  }
-
-  // cerrar modal desde el hijo (close)
-  closeEditSolicitudModal() {
-    this.showEditSolicitudModal = false;
-    this.selectedEditId = null;
-  }
-
-  desactivarEmprendimiento(emp: any) {
-    this.emprendimientoAInactivar = emp;
-    this.showDesactivarModal = true;
-  }
-
-  confirmarDesactivarEmprendimiento() {
-    this.showDesactivarModal = false;
-  }
+	private handleAuthError(error: any) {
+		if (error.status === 401) {
+			this.dialog.open(MensajeConfirmacionComponent, {
+				width: '420px',
+				data: {
+					subject: 'Sesión expirada',
+					title: 'Tu sesión ha expirado',
+					subtitle: 'Por favor, inicia sesión nuevamente.',
+					type: 'error',
+				},
+			});
+			this.authServices.logout();
+			this.router.navigate(['/login']);
+		}
+	}
 }

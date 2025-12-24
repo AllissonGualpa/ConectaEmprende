@@ -50,6 +50,30 @@ export interface Multimedia {
     urlArchivo: string;
 }
 
+export interface EmprendimientoListado {
+    idEmprendimiento: number;
+    nombreComercialEmprendimiento: string;
+    fechaCreacion: string;
+    ciudadId: number;
+    ciudadNombre: string;
+    provinciaId: number;
+    provinciaNombre: string;
+    estatusEmprendimiento: boolean;
+    estadoEmprendimiento: string;
+    tipoEmprendimiento: string;
+    subTipoEmprendimiento: string;
+    tipoEmprendimientoId: number;
+    categorias: CategoriaEmprendimiento[];
+    multimedia: Multimedia[];
+}
+
+export interface EmprendimientosPaginated {
+    length: number;
+    size: number;
+    page: number;
+    lastPage: number;
+}
+
 export interface EmprendimientoPublico {
     id: number;
     nombreComercial: string;
