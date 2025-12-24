@@ -2,112 +2,118 @@
 
 <main class="min-h-screen bg-white">
 
-  <!-- Loading -->
-  <div *ngIf="cargando" class="flex items-center justify-center min-h-[60vh]">
-    <div class="text-center">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      </svg>
-      <p class="text-sm text-gray-600">{{ textoCarga }}</p>
-    </div>
-  </div>
+	<!-- Loading -->
+	<div *ngIf="cargando" class="flex items-center justify-center min-h-[60vh]">
+		<div class="text-center">
+			<svg class="animate-spin h-10 w-10 text-orange-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg"
+				fill="none" viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+			</svg>
+			<p class="text-sm text-gray-600">{{ textoCarga }}</p>
+		</div>
+	</div>
 
-  <!-- Error -->
-  <div *ngIf="error && !cargando" class="max-w-3xl mx-auto px-4 py-12 text-center">
-    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
-      <h2 class="text-xl font-bold text-red-600 mb-2">Error</h2>
-      <p class="text-sm text-gray-700">{{ error }}</p>
-    </div>
-  </div>
+	<!-- Error -->
+	<div *ngIf="error && !cargando" class="max-w-3xl mx-auto px-4 py-12 text-center">
+		<div class="bg-red-50 border border-red-200 rounded-xl p-6">
+			<h2 class="text-xl font-bold text-red-600 mb-2">Error</h2>
+			<p class="text-sm text-gray-700">{{ error }}</p>
+		</div>
+	</div>
 
-  <!-- Contenido -->
-  <div *ngIf="!cargando && !error && emprendimiento" class="max-w-6xl mx-auto px-6 py-6">
+	<!-- Contenido -->
+	<div *ngIf="!cargando && !error && emprendimiento" class="max-w-6xl mx-auto px-6 py-6">
 
-    <!-- Volver -->
-    <a [routerLink]="esStartup ? '/startups' : '/emprendimientos'"
-      class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
-      <svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor"
-        viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-      {{ esStartup ? 'Volver a Startups' : 'Volver a Emprendimientos' }}
-    </a>
+		<!-- Volver -->
+		<a [routerLink]="esStartup ? '/startups' : '/emprendimientos'"
+			class="flex items-center text-gray-600 hover:text-gray-800 mb-4 text-sm group">
+			<svg class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor"
+				viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+			</svg>
+			{{ esStartup ? 'Volver a Startups' : 'Volver a Emprendimientos' }}
+		</a>
 
-    <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
-      <div class="grid md:grid-cols-[280px,1fr] gap-6 p-6 items-start">
+		<!-- Header -->
+		<div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+			<div class="grid md:grid-cols-[280px,1fr] gap-6 p-6 items-start">
 
-        <!-- Imagen -->
-        <div class="flex justify-center">
-          <div class="w-64 h-64 rounded-xl overflow-hidden bg-gray-100">
-            <img [src]="emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
-              [alt]="emprendimiento.nombreComercial" class="w-full h-full object-cover" />
-          </div>
-        </div>
+				<!-- Imagen -->
+				<div class="flex justify-center">
+					<div class="w-64 h-64 rounded-xl overflow-hidden bg-gray-100">
+						<img [src]="getLogo() || emprendimiento.multimedia?.[0]?.urlArchivo || '/assets/img/emprendimiento/default.jpg'"
+							[alt]="emprendimiento.nombreComercial" class="w-full h-full object-cover" />
+					</div>
+				</div>
 
-        <!-- Info -->
-        <div class="flex flex-col space-y-6">
+				<!-- Info -->
+				<div class="flex flex-col space-y-6">
 
-          <h1 class="text-3xl md:text-4xl font-extrabold uppercase text-[#276BC7]">
-            {{ emprendimiento.nombreComercial }}
-          </h1>
+					<h1 class="text-3xl md:text-4xl font-extrabold uppercase text-[#276BC7]">
+						{{ emprendimiento.nombreComercial }}
+					</h1>
 
-          <!-- Fecha / Ubicación -->
-          <div class="flex flex-wrap gap-6">
+					<!-- Fecha / Ubicación -->
+					<div class="flex flex-wrap gap-6">
 
-            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              {{ emprendimiento.fechaCreacion | date:'dd/MM/yyyy' }}
-            </div>
+						<div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+							</svg>
+							{{ emprendimiento.fechaCreacion | date:'dd/MM/yyyy' }}
+						</div>
 
-            <div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" />
-              </svg>
-              {{ emprendimiento.nombreCiudad }}
-            </div>
+						<div class="flex items-center gap-3 border rounded-2xl px-6 py-3 text-gray-600">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M12 11c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" />
+							</svg>
+							{{ emprendimiento.nombreCiudad }}
+						</div>
 
-          </div>
+					</div>
 
-          <!-- Presencias digitales -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 text-sm text-gray-700 max-w-lg">
+					<!-- Presencias digitales -->
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 text-sm text-gray-700 max-w-lg">
 
-            <ng-container *ngFor="let p of emprendimiento.presenciasDigitales">
+						<ng-container *ngFor="let p of emprendimiento.presenciasDigitales">
 
-              <!-- Instagram -->
-              <div *ngIf="p.plataforma === 'instagram'" class="flex items-center gap-3">
-                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" class="w-5 h-5">
-                {{ p.descripcion }}
-              </div>
+							<!-- Instagram -->
+							<a *ngIf="p.plataforma === 'instagram'" [href]="p.descripcion" target="_blank"
+								class="flex items-center gap-3 hover:text-pink-600 transition-colors">
+								<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg"
+									class="w-5 h-5">
+								<span class="truncate">Instagram</span>
+							</a>
 
-              <!-- TikTok -->
-              <div *ngIf="p.plataforma === 'tiktok'" class="flex items-center gap-3">
-                <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" class="w-5 h-5">
-                {{ p.descripcion }}
-              </div>
+							<!-- TikTok -->
+							<a *ngIf="p.plataforma === 'tiktok'" [href]="p.descripcion" target="_blank"
+								class="flex items-center gap-3 hover:text-gray-900 transition-colors">
+								<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg"
+									class="w-5 h-5">
+								<span class="truncate">TikTok</span>
+							</a>
 
-              <!-- Email -->
-              <div *ngIf="p.plataforma === 'email'" class="flex items-center gap-3">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 12H8m8 0l-8-5m8 5l-8 5m14-9a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                </svg>
-                {{ p.descripcion }}
-              </div>
+							<!-- Email -->
+							<a *ngIf="p.plataforma === 'email'" [href]="'mailto:' + p.descripcion"
+								class="flex items-center gap-3 hover:text-blue-600 transition-colors">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M16 12H8m8 0l-8-5m8 5l-8 5m14-9a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								</svg>
+								<span class="truncate">{{ p.descripcion }}</span>
+							</a>
 
-              <!-- Sitio Web -->
-              <div *ngIf="p.plataforma === 'web' || p.plataforma === 'sitio web'" class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                  stroke="currentColor" class="w-5 h-5 text-gray-700">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747
+							<!-- Sitio Web -->
+							<a *ngIf="p.plataforma === 'web' || p.plataforma === 'sitio web'" [href]="p.descripcion"
+								target="_blank" class="flex items-center gap-3 hover:text-blue-600 transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+									stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747
              M12 21a9.004 9.004 0 0 1-8.716-6.747
              M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3
              m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3
@@ -121,144 +127,160 @@
              c-3.162 0-6.133-.815-8.716-2.247
              m0 0A9.015 9.015 0 0 1 3 12
              c0-1.605.42-3.113 1.157-4.418" />
-                </svg>
-                {{ p.descripcion }}
-              </div>
+								</svg>
+								<span class="truncate">Sitio Web</span>
+							</a>
 
-              <!-- Teléfono / WhatsApp -->
-              <div *ngIf="p.plataforma === 'whatsapp'" class="flex items-center gap-3">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h2a2 2 0 012 2v2
+							<!-- WhatsApp -->
+							<a *ngIf="p.plataforma === 'whatsapp'" [href]="getWhatsAppLink(p.descripcion)"
+								target="_blank" class="flex items-center gap-3 hover:text-green-600 transition-colors">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h2a2 2 0 012 2v2
              a2 2 0 01-2 2H7l1 2a11 11 0 005 5l2 1v-2
              a2 2 0 012-2h2a2 2 0 012 2v2
              a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                {{ p.descripcion }}
-              </div>
+								</svg>
+								<span class="truncate">{{ p.descripcion }}</span>
+							</a>
 
-            </ng-container>
+						</ng-container>
 
-          </div>
+					</div>
 
+				</div>
+			</div>
+		</div>
 
-        </div>
-      </div>
-    </div>
+		<!-- CONTENIDO PRINCIPAL -->
+		<div class="space-y-8">
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="space-y-8">
+			<!-- QUÉ OFRECE -->
+			<section *ngIf="getQueOfrece()" class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-2xl font-bold text-center mb-6 text-[#276BC7]">¿Qué Ofrece?</h2>
+				<p class="text-gray-700 whitespace-pre-line leading-relaxed">
+					{{ getQueOfrece() }}
+				</p>
+			</section>
 
-      <!-- HISTORIA -->
-      <section *ngIf="getDescripcionByType('HISTORIA')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-2xl font-bold text-center mb-6">Historia</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-4">
-          {{ getDescripcionByType('HISTORIA') }}
-        </p>
-        <div class="text-center mt-4">
-          <button (click)="abrirModal('Historia','HISTORIA')" class="text-[#ED6C1C] font-semibold hover:underline">
-            Ver historia completa
-          </button>
-        </div>
-      </section>
+			<!-- HISTORIA -->
+			<section *ngIf="getHistoria()" class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-2xl font-bold text-center mb-6 text-[#276BC7]">Historia</h2>
+				<p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-4">
+					{{ getHistoria() }}
+				</p>
+				<div class="text-center mt-4">
+					<button (click)="abrirModal('Historia del Emprendimiento','Historia del emprendimiento')"
+						class="text-[#ED6C1C] font-semibold hover:underline">
+						Ver historia completa
+					</button>
+				</div>
+			</section>
 
-      <!-- RESUMEN -->
-      <section *ngIf="getDescripcionByType('RESUMEN')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold mb-4">Resumen</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
-          {{ getDescripcionByType('RESUMEN') }}
-        </p>
-        <button (click)="abrirModal('Resumen','RESUMEN')"
-          class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
-          Ver más
-        </button>
-      </section>
+			<!-- QUÉ LO HACE DIFERENTE -->
+			<section *ngIf="getQueLoHaceDiferente()" class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-xl font-bold mb-4 text-[#276BC7]">¿Qué lo hace diferente o innovador?</h2>
+				<p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
+					{{ getQueLoHaceDiferente() }}
+				</p>
+				<button
+					(click)="abrirModal('¿Qué lo hace diferente o innovador?','¿Qué lo hace diferente o innovador?')"
+					class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+					Ver más
+				</button>
+			</section>
 
-      <!-- DIFERENCIAL -->
-      <section *ngIf="getDescripcionByType('DIFERENCIAL')" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold mb-4">Diferencial</h2>
-        <p class="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
-          {{ getDescripcionByType('DIFERENCIAL') }}
-        </p>
-        <button (click)="abrirModal('Diferencial','DIFERENCIAL')"
-          class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
-          Ver más
-        </button>
-      </section>
+			<!-- GALERÍA -->
+			<section *ngIf="getFotosProducto().length > 0" class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-xl font-bold mb-6 text-[#276BC7]">Galería de Productos</h2>
+				<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+					<img *ngFor="let foto of getFotosProducto()" [src]="foto" alt="Producto"
+						class="w-full h-64 object-cover rounded-lg hover:scale-105 transition-transform cursor-pointer">
+				</div>
+			</section>
 
-      <!-- GALERÍA -->
-      <section *ngIf="(emprendimiento.multimedia || []).length > 0" class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xl font-bold mb-6">Galería</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <img *ngFor="let m of emprendimiento.multimedia" [src]="m.urlArchivo" [alt]="m.nombreActivo"
-            class="w-full h-48 object-cover rounded-lg">
-        </div>
-      </section>
+			<!-- PUBLICO / PROPOSITO -->
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- PUBLICO / PROPOSITO -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<section *ngIf="getPublicoObjetivo()" class="bg-white rounded-xl shadow-sm p-6">
+					<h2 class="text-xl font-bold mb-4 text-[#276BC7]">Público Objetivo</h2>
+					<p class="line-clamp-3 text-gray-700 whitespace-pre-line">
+						{{ getPublicoObjetivo() }}
+					</p>
+					<button (click)="abrirModal('Público Objetivo','¿A qué público objetivo te diriges?')"
+						class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+						Ver más
+					</button>
+				</section>
 
-        <section *ngIf="getDescripcionByType('PUBLICO OBJETIVO')" class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold mb-4">Público Objetivo</h2>
-          <p class="line-clamp-3 text-gray-700 whitespace-pre-line">
-            {{ getDescripcionByType('PUBLICO OBJETIVO') }}
-          </p>
-          <button (click)="abrirModal('Público Objetivo','PUBLICO OBJETIVO')"
-            class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
-            Ver más
-          </button>
-        </section>
+				<section *ngIf="getProposito()" class="bg-white rounded-xl shadow-sm p-6">
+					<h2 class="text-xl font-bold mb-4 text-[#276BC7]">Propósito</h2>
+					<p class="line-clamp-3 text-gray-700 whitespace-pre-line">
+						{{ getProposito() }}
+					</p>
+					<button (click)="abrirModal('Propósito','¿Cuál es tu propósito o misión como emprendedor/a?')"
+						class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
+						Ver más
+					</button>
+				</section>
 
-        <section *ngIf="getDescripcionByType('PROPOSITO')" class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-xl font-bold mb-4">Propósito</h2>
-          <p class="line-clamp-3 text-gray-700 whitespace-pre-line">
-            {{ getDescripcionByType('PROPOSITO') }}
-          </p>
-          <button (click)="abrirModal('Propósito','PROPOSITO')"
-            class="mt-3 text-sm text-[#ED6C1C] font-semibold hover:underline">
-            Ver más
-          </button>
-        </section>
+			</div>
 
-      </div>
-<!-- SECCIÓN DE EVALUACIÓN -->
-      <div *ngIf="!esStartup && qrCodeUrl" class="bg-white rounded-xl shadow-sm p-8 mt-6 text-center">
-        <h2 class="text-2xl font-bold text-[#ED6C1C] mb-4">
-          Califica nuestro emprendimiento
-        </h2>
-        
-        <p class="text-gray-600 mb-6">
-          Escanea el código QR para valorar este emprendimiento
-        </p>
+			<!-- CATEGORÍAS -->
+			<section *ngIf="emprendimiento.categorias && emprendimiento.categorias.length > 0"
+				class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-xl font-bold mb-4 text-[#276BC7]">Categorías</h2>
+				<div class="flex flex-wrap gap-3">
+					<span *ngFor="let cat of emprendimiento.categorias!"
+						class="px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
+						{{ cat.nombre }}
+					</span>
+				</div>
+			</section>
 
-        <div class="flex justify-center">
-          <img 
-            [src]="qrCodeUrl" 
-            alt="QR Code de Evaluación"
-            class="w-64 h-64 border-4 border-gray-200 rounded-lg">
-        </div>
-      </div>
-      </div>
-  </div>
+			<!-- SECCIÓN DE EVALUACIÓN -->
+			<div *ngIf="!esStartup && qrCodeUrl"
+				class="bg-gradient-to-br from-orange-50 to-blue-50 rounded-xl shadow-sm p-8 mt-6 text-center">
+				<h2 class="text-2xl font-bold text-[#ED6C1C] mb-4">
+					🌟 Califica nuestro emprendimiento
+				</h2>
 
-  <!-- MODAL -->
-  <div *ngIf="modalAbierto" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-  
-      <!-- Header -->
-      <div class="flex justify-between items-center px-6 py-4 border-b">
-        <h3 class="text-xl font-bold text-[#ED6C1C]">{{ modalTitulo }}</h3>
-        <button (click)="cerrarModal()" class="text-2xl leading-none">&times;</button>
-      </div>
-  
-      <!-- Contenido -->
-      <div class="p-6 overflow-y-auto max-h-[65vh]">
-        <p class="whitespace-pre-line text-gray-700">
-          {{ modalContenido }}
-        </p>
-      </div>
-  
-    </div>
-  </div>
+				<p class="text-gray-600 mb-6">
+					Escanea el código QR para valorar este emprendimiento
+				</p>
+
+				<div class="flex justify-center">
+					<img [src]="qrCodeUrl" alt="QR Code de Evaluación"
+						class="w-64 h-64 border-4 border-white rounded-lg shadow-lg">
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- MODAL -->
+	<div *ngIf="modalAbierto" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+		(click)="cerrarModal()">
+		<div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+			(click)="$event.stopPropagation()">
+
+			<!-- Header -->
+			<div class="flex justify-between items-center px-6 py-4 border-b bg-[#ED6C1C]">
+				<h3 class="text-xl font-bold text-white">{{ modalTitulo }}</h3>
+				<button (click)="cerrarModal()"
+					class="text-white hover:text-gray-200 text-3xl leading-none w-8 h-8 flex items-center justify-center">
+					&times;
+				</button>
+			</div>
+
+			<!-- Contenido -->
+			<div class="p-6 overflow-y-auto max-h-[65vh]">
+				<p class="whitespace-pre-line text-gray-700 leading-relaxed">
+					{{ modalContenido }}
+				</p>
+			</div>
+
+		</div>
+	</div>
 
 </main>
 

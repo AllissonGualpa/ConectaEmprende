@@ -8,6 +8,7 @@ import {
     Descripcion,
     DeclaracionFinal,
     OpcionParticipacionComunidad,
+    EmprendimientoPublico
 } from '../types/emprendimiento.types';
 
 @Injectable({
@@ -20,6 +21,7 @@ export class EmprendimientoService {
     private readonly _descripciones = new BehaviorSubject<Descripcion[]>([]);
     private readonly _declaracionesFinales = new BehaviorSubject<DeclaracionFinal[]>([]);
     private readonly _opcionesParticipacionComunidad = new BehaviorSubject<OpcionParticipacionComunidad[]>([]);
+    private readonly _emprendimientoPublico = new BehaviorSubject<EmprendimientoPublico | null>(null);
 
     constructor(private _httpClient: HttpClient) { }
 
@@ -58,6 +60,13 @@ export class EmprendimientoService {
         return this._opcionesParticipacionComunidad.asObservable();
     }
 
+    /**
+     * Getter for emprendimiento publico
+     */
+    get emprendimientoPublico$(): Observable<EmprendimientoPublico | null> {
+        return this._emprendimientoPublico.asObservable();
+    }
+
 
     // -----------------------------------------------------------------------------------------------------
     // @ Reset BehaviorSubject
@@ -81,6 +90,10 @@ export class EmprendimientoService {
 
     resetOpcionesParticipacionComunidad(): void {
         this._opcionesParticipacionComunidad.next([]);
+    }
+
+    resetEmprendimientoPublico(): void {
+        this._emprendimientoPublico.next(null);
     }
 
 
@@ -149,6 +162,19 @@ export class EmprendimientoService {
     }
 
     /**
+     * Obtener emprendimiento público por ID
+     * @param id - ID del emprendimiento
+     * @returns Observable con los datos del emprendimiento público
+     */
+    obtenerEmprendimientoPublico(id: number): Observable<EmprendimientoPublico> {
+        return this._httpClient.get<EmprendimientoPublico>(`${environment.api_url}/v1/emprendimientos/publico/${id}`).pipe(
+            tap((emprendimiento) => {
+                this._emprendimientoPublico.next(emprendimiento);
+            }),
+        );
+    }
+
+    /**
      * Crear emprendimiento
      * @param formData
      */
@@ -157,4 +183,3 @@ export class EmprendimientoService {
     }
 
 }
-
