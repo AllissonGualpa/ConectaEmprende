@@ -1,15 +1,16 @@
 <app-navbar></app-navbar>
 
 <main class="min-h-screen bg-white font-poppins mb-24 sm:mb-0">
-  <!-- Sección Hero -->
-  <section class="relative bg-center bg-cover" style="background-image: url('/assets/img/inicio/fotoInicio.png');"
-    aria-label="Sección de bienvenida">
+  <!-- Sección Hero con lazy loading -->
+  <section class="relative bg-center bg-cover" 
+           style="background-image: url('/assets/img/inicio/fotoInicio.png');"
+           aria-label="Sección de bienvenida"
+           loading="lazy">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-black/10"></div>
 
     <!-- Contenido -->
-    <div
-      class="relative max-w-6xl mx-auto px-4 sm:px-8 min-h-[480px] md:min-h-[580px] flex items-center justify-center text-center">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-8 min-h-[480px] md:min-h-[580px] flex items-center justify-center text-center">
       <div class="text-white">
         <h1 class="text-3xl sm:text-5xl font-bold leading-tight mb-4 font-poppins !font-poppins">
           Descubre a Emprendedores del Ecuador
@@ -33,7 +34,7 @@
       <!--icon1-->
       <div>
         <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
-          <img src="/assets/img/inicio/ideaIcon.png" alt="Idea" class="w-12 h-12 object-contain" />
+          <img src="/assets/img/inicio/ideaIcon.png" alt="Idea" class="w-12 h-12 object-contain" loading="lazy" />
         </div>
         <h3 class="text-xl font-semibold mb-2 font-poppins !font-poppins">Descubre emprendimientos</h3>
         <p class="text-gray-600 text-base">
@@ -44,7 +45,7 @@
       <!--icon2-->
       <div>
         <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
-          <img src="/assets/img/inicio/starIcon.png" alt="Idea" class="w-12 h-12 object-contain" />
+          <img src="/assets/img/inicio/starIcon.png" alt="Idea" class="w-12 h-12 object-contain" loading="lazy" />
         </div>
         <h3 class="text-xl font-bold mb-2 font-poppins !font-poppins">Califica negocios</h3>
         <p class="text-gray-600 text-base">
@@ -55,7 +56,7 @@
       <!--icon3-->
       <div>
         <div class="w-20 h-20 flex items-center justify-center mx-auto mb-4 overflow-visible">
-          <img src="/assets/img/inicio/icon.png" alt="Idea" class="w-12 h-12 object-contain" />
+          <img src="/assets/img/inicio/icon.png" alt="Idea" class="w-12 h-12 object-contain" loading="lazy" />
         </div>
         <h3 class="text-xl font-semibold mb-2 font-poppins !font-poppins">Ayuda a la comunidad</h3>
         <p class="text-gray-600 text-base">
@@ -78,34 +79,45 @@
       </div>
 
       <!-- Loading Spinner -->
-      <div *ngIf="loading" class="flex justify-center py-20">
+      <div *ngIf="loading" class="flex justify-center items-center gap-3 py-20">
         <svg class="animate-spin h-10 w-10 text-orange-500" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
         </svg>
-        <span class="text-gray-500 text-sm">Cargando categorias...</span>
+        <span class="text-gray-500 text-sm">Cargando categorías...</span>
       </div>
 
       <!-- Grid de tarjetas dinámicas -->
       <div *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[220px]">
 
         <!-- Categorías normales (todas excepto las dos últimas) -->
-        <a *ngFor="let cat of categoriasDestacadas.slice(0, -2)" [routerLink]="['/emprendimientos']"
-          [queryParams]="{ categoria: cat.nombre }" class="relative rounded-2xl overflow-hidden group shadow-lg">
+        <a *ngFor="let cat of categoriasDestacadas.slice(0, -2)" 
+           [routerLink]="['/emprendimientos']"
+           [queryParams]="{ categoria: cat.nombre }" 
+           class="relative rounded-2xl overflow-hidden group shadow-lg">
 
+          <!-- Placeholder mientras carga -->
+          <div *ngIf="!cat.imagenCargada" 
+               class="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse">
+          </div>
+
+          <!-- Imagen con lazy loading -->
           <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-            [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"></div>
+               [class.opacity-0]="!cat.imagenCargada"
+               [class.opacity-100]="cat.imagenCargada"
+               [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }">
+          </div>
 
           <!-- Overlay -->
           <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
 
           <!-- Contenido -->
           <div class="relative h-full p-6 flex flex-col justify-between">
-            <h3 class="text-white text-lg font-semibold">
+            <h3 class="text-white text-lg font-semibold drop-shadow-lg">
               {{ cat.nombre }}
             </h3>
             <div class="flex justify-end">
-              <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center">
+              <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -118,24 +130,33 @@
         <!-- Contenedor para las dos últimas categorías -->
         <div *ngIf="categoriasDestacadas.length >= 2" class="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-          <a *ngFor="let cat of categoriasDestacadas.slice(-2)" [routerLink]="['/emprendimientos']"
-            [queryParams]="{ categoria: cat.nombre }"
-            class="relative rounded-2xl overflow-hidden group shadow-lg h-[220px]">
+          <a *ngFor="let cat of categoriasDestacadas.slice(-2)" 
+             [routerLink]="['/emprendimientos']"
+             [queryParams]="{ categoria: cat.nombre }"
+             class="relative rounded-2xl overflow-hidden group shadow-lg h-[220px]">
 
-            <!-- Imagen -->
+            <!-- Placeholder mientras carga -->
+            <div *ngIf="!cat.imagenCargada" 
+                 class="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse">
+            </div>
+
+            <!-- Imagen con lazy loading -->
             <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-              [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }"></div>
+                 [class.opacity-0]="!cat.imagenCargada"
+                 [class.opacity-100]="cat.imagenCargada"
+                 [ngStyle]="{ 'background-image': 'url(' + cat.imagen + ')' }">
+            </div>
 
             <!-- Overlay -->
             <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
 
             <!-- Contenido -->
             <div class="relative h-full p-6 flex flex-col justify-between">
-              <h3 class="text-white text-lg font-semibold">
+              <h3 class="text-white text-lg font-semibold drop-shadow-lg">
                 {{ cat.nombre }}
               </h3>
               <div class="flex justify-end">
-                <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center">
+                <span class="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-800" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -149,25 +170,5 @@
       </div>
     </div>
   </section>
-
-  <!--Eventos 
-<section>
-  <div class="text-center mb-10">
-      <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
-        Eventos que te pueden interesar
-      </h2>
-      <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
-    </div>
-</section> -->
-
-  <!--Emprendimiento
-<section>
-  <div class="text-center mb-10">
-      <h2 class="font-poppins text-3xl sm:text-4xl font-semibold text-gray-900">
-        Emprendimientos Destacados
-      </h2>
-      <div class="mt-3 w-24 h-1 bg-orange-500 rounded mx-auto"></div>
-    </div>
-</section>  -->
 </main>
 <app-footer></app-footer>
