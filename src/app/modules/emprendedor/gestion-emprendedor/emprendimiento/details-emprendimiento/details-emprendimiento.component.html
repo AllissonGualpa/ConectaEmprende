@@ -92,7 +92,15 @@
 					</mat-error>
 				</mat-form-field>
 
-				<mat-form-field appearance="outline" class="w-full">
+				<mat-form-field appearance="outline" class="w-full" *ngIf="showSemestreField">
+					<mat-label>*Semestre</mat-label>
+					<input matInput formControlName="semestre" type="number" placeholder="5" min="1" max="10">
+					<mat-error *ngIf="emprendimientoForm.get('semestre')?.hasError('required')">
+						El semestre es requerido
+					</mat-error>
+				</mat-form-field>
+
+				<mat-form-field appearance="outline" class="w-full" *ngIf="showAnoGraduacionField">
 					<mat-label>*Año de graduación</mat-label>
 					<input matInput formControlName="anoGraduacion" type="number" placeholder="2020">
 					<mat-error *ngIf="emprendimientoForm.get('anoGraduacion')?.hasError('required')">

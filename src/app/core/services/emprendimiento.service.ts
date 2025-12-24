@@ -179,7 +179,7 @@ export class EmprendimientoService {
      * @param formData
      */
     crearEmprendimiento(formData: FormData): Observable<any> {
-        return this._httpClient.post(`${environment.api_url}/emprendimientos`, formData);
+        return this._httpClient.post(`${environment.api_url}/v1/emprendimientos`, formData);
     }
 
 }

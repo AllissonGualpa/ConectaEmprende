@@ -3,153 +3,151 @@ import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CardItem, CardsComponent } from '../../../../../layout/cards/cards.component';
-import { CreateSolicitudEmprendimientoComponent } from '../../create-solicitud-emprendimiento/create-solicitud-emprendimiento.component';
 import { EditSolicitudEmprendimientoComponent } from '../../edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
 import { DetailsEmprendimientoComponent } from '../details-emprendimiento/details-emprendimiento.component';
 import { EmprendimientoService } from '../../../../emprendimiento.service';
 
 @Component({
-  selector: 'app-seccion-emprendimiento',
-  standalone: true,
-  imports: [
-    CommonModule,
-    CardsComponent,
-    CreateSolicitudEmprendimientoComponent,
-    EditSolicitudEmprendimientoComponent,
-    DetailsEmprendimientoComponent
-  ],
-  templateUrl: './seccion-emprendimiento.component.html',
-  styleUrls: ['./seccion-emprendimiento.component.css']
+	selector: 'app-seccion-emprendimiento',
+	standalone: true,
+	imports: [
+		CommonModule,
+		CardsComponent,
+		EditSolicitudEmprendimientoComponent,
+		DetailsEmprendimientoComponent
+	],
+	templateUrl: './seccion-emprendimiento.component.html',
+	styleUrls: ['./seccion-emprendimiento.component.css']
 })
 export class SeccionEmprendimientoComponent implements OnInit {
-  emprendimientos: any[] = [];
-  cardsArray: CardItem[] = [];
+	emprendimientos: any[] = [];
+	cardsArray: CardItem[] = [];
 
-  showCreateSolicitudModal = false;
-  showEditSolicitudModal = false;
-  selectedEditId: number | null = null;
-  loading = false;
+	showCreateSolicitudModal = false;
+	showEditSolicitudModal = false;
+	selectedEditId: number | null = null;
+	loading = false;
 
-  constructor(private emprendimientoService: EmprendimientoService, private router: Router) {}
+	constructor(private emprendimientoService: EmprendimientoService, private router: Router) { }
 
-  ngOnInit(): void {
-    this.loadEmprendimientos();
-  }
+	ngOnInit(): void {
+		this.loadEmprendimientos();
+	}
 
-mapEstado(estado: string): string {
-  switch (estado) {
-    case 'APROBADO':
-      return 'Aprobado';
-    case 'PENDIENTE_APROBACION':
-      return 'Pendiente de aprobación'; // ← Cambiar texto
-    case 'EN_REVISION':
-      return 'En revisión';
-    case 'RECHAZADO':
-      return 'Rechazado';
-    case 'BORRADOR':
-      return 'Borrador';
-    default:
-      return estado;
-  }
-}
+	mapEstado(estado: string): string {
+		switch (estado) {
+			case 'APROBADO':
+				return 'Aprobado';
+			case 'PENDIENTE_APROBACION':
+				return 'Pendiente de aprobación'; // ← Cambiar texto
+			case 'EN_REVISION':
+				return 'En revisión';
+			case 'RECHAZADO':
+				return 'Rechazado';
+			case 'BORRADOR':
+				return 'Borrador';
+			default:
+				return estado;
+		}
+	}
 
-loadEmprendimientos(): void {
-  this.loading = true;
-  this.emprendimientoService.getMisEmprendimientos().subscribe({
-    next: (response) => {
-      console.log('Respuesta completa:', response);
-      
-      // Extraer el array de emprendimientos
-      let data: any[];
-      if (response?.content && Array.isArray(response.content)) {
-        data = response.content;
-      } else if (Array.isArray(response)) {
-        data = response;
-      } else {
-        console.warn('Formato inesperado:', response);
-        this.emprendimientos = [];
-        this.cardsArray = [];
-        this.loading = false;
-        return;
-      }
+	loadEmprendimientos(): void {
+		this.loading = true;
+		this.emprendimientoService.getMisEmprendimientos().subscribe({
+			next: (response) => {
+				console.log('Respuesta completa:', response);
 
-      console.log('Emprendimientos encontrados:', data.length);
-      this.emprendimientos = data;
-      
-      this.cardsArray = data.map((e) => {
-        // Obtener la primera imagen
-        const imagenPrincipal = e.multimedia && e.multimedia.length > 0 
-          ? e.multimedia[0].urlArchivo 
-          : '/assets/img/inicio/foto5.png';
+				// Extraer el array de emprendimientos
+				let data: any[];
+				if (response?.content && Array.isArray(response.content)) {
+					data = response.content;
+				} else if (Array.isArray(response)) {
+					data = response;
+				} else {
+					console.warn('Formato inesperado:', response);
+					this.emprendimientos = [];
+					this.cardsArray = [];
+					this.loading = false;
+					return;
+				}
 
-        // Obtener nombres de categorías
-        const categoriasTexto = e.categorias && e.categorias.length > 0
-          ? e.categorias.map((cat: any) => cat.nombre).join(', ')
-          : 'Sin categoría';
+				console.log('Emprendimientos encontrados:', data.length);
+				this.emprendimientos = data;
 
-        return {
-          id: e.idEmprendimiento,
-          title: e.nombreComercialEmprendimiento || 'Emprendimiento sin nombre',
-          description: `${e.subTipoEmprendimiento || 'Tipo desconocido'} en ${e.ciudadNombre || 'sin ciudad'}`,
-          image: imagenPrincipal,
-          category: categoriasTexto,
-          location: `${e.ciudadNombre || 'Sin ciudad'}, ${e.provinciaNombre || ''}`,
-          views: Math.floor(Math.random() * 20000) + 1000,
-          status: this.mapEstado(e.estadoEmprendimiento),
-          rawStatus: e.estadoEmprendimiento
-        };
-      });
-      
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error al cargar emprendimientos', err);
-      this.emprendimientos = [];
-      this.cardsArray = [];
-      this.loading = false;
-    }
-  });
-}
+				this.cardsArray = data.map((e) => {
+					// Obtener la primera imagen
+					const imagenPrincipal = e.multimedia && e.multimedia.length > 0
+						? e.multimedia[0].urlArchivo
+						: '/assets/img/inicio/foto5.png';
 
-  openCreateSolicitudModal(): void {
-    this.showCreateSolicitudModal = true;
-  }
+					// Obtener nombres de categorías
+					const categoriasTexto = e.categorias && e.categorias.length > 0
+						? e.categorias.map((cat: any) => cat.nombre).join(', ')
+						: 'Sin categoría';
 
-  closeCreateSolicitudModal(): void {
-    this.showCreateSolicitudModal = false;
-  }
+					return {
+						id: e.idEmprendimiento,
+						title: e.nombreComercialEmprendimiento || 'Emprendimiento sin nombre',
+						description: `${e.subTipoEmprendimiento || 'Tipo desconocido'} en ${e.ciudadNombre || 'sin ciudad'}`,
+						image: imagenPrincipal,
+						category: categoriasTexto,
+						location: `${e.ciudadNombre || 'Sin ciudad'}, ${e.provinciaNombre || ''}`,
+						views: Math.floor(Math.random() * 20000) + 1000,
+						status: this.mapEstado(e.estadoEmprendimiento),
+						rawStatus: e.estadoEmprendimiento
+					};
+				});
 
-  openEditSolicitudModal(item: CardItem): void {
-    const estadosBloqueados = [
-      'PENDIENTE_APROBACION',
-      'RECHAZADO'
-    ];
+				this.loading = false;
+			},
+			error: (err) => {
+				console.error('Error al cargar emprendimientos', err);
+				this.emprendimientos = [];
+				this.cardsArray = [];
+				this.loading = false;
+			}
+		});
+	}
 
-    if (item.rawStatus && estadosBloqueados.includes(item.rawStatus)) {
-      alert('No puedes editar un emprendimiento en revisión o rechazado.');
-      return;
-    }
+	openCreateSolicitudModal(): void {
+		this.showCreateSolicitudModal = true;
+	}
 
-    this.selectedEditId = item.id;
-    this.showEditSolicitudModal = true;
-  }
+	closeCreateSolicitudModal(): void {
+		this.showCreateSolicitudModal = false;
+	}
 
-  closeEditSolicitudModal(): void {
-    this.selectedEditId = null;
-    this.showEditSolicitudModal = false;
-  }
+	openEditSolicitudModal(item: CardItem): void {
+		const estadosBloqueados = [
+			'PENDIENTE_APROBACION',
+			'RECHAZADO'
+		];
 
-  onEmprendimientoUpdated(): void {
-    this.closeEditSolicitudModal();
-    this.loadEmprendimientos();
-  }
+		if (item.rawStatus && estadosBloqueados.includes(item.rawStatus)) {
+			alert('No puedes editar un emprendimiento en revisión o rechazado.');
+			return;
+		}
 
-  onEmprendimientoCreated(): void {
-    this.closeCreateSolicitudModal();
-    this.loadEmprendimientos();
-  }
+		this.selectedEditId = item.id;
+		this.showEditSolicitudModal = true;
+	}
 
-  onRoadmapClick(item: any) {
-    this.router.navigate(['emprendedor/roadmap', item.id]);
-  }
+	closeEditSolicitudModal(): void {
+		this.selectedEditId = null;
+		this.showEditSolicitudModal = false;
+	}
+
+	onEmprendimientoUpdated(): void {
+		this.closeEditSolicitudModal();
+		this.loadEmprendimientos();
+	}
+
+	onEmprendimientoCreated(): void {
+		this.closeCreateSolicitudModal();
+		this.loadEmprendimientos();
+	}
+
+	onRoadmapClick(item: any) {
+		this.router.navigate(['emprendedor/roadmap', item.id]);
+	}
 }

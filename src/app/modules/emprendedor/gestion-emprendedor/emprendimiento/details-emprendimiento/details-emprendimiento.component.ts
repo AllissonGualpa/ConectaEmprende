@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +13,8 @@ import { Provincia, Ciudad, Categoria } from '../../../../../shared/general/shar
 import { OpcionPersonaJuridica, TipoEmprendimiento, Descripcion, OpcionParticipacionComunidad, DeclaracionFinal } from '../../../../../core/types/emprendimiento.types';
 import { EmprendimientoService } from '../../../../../core/services/emprendimiento.service';
 import { SharedGeneralService } from '../../../../../shared/general/shared-general.service';
+import { AuthService } from '../../../../auth/auth.service';
+import { SolicitudesService } from '../../../../../core/services/solicitudes.service';
 
 @Component({
 	selector: 'app-details-emprendimiento',
@@ -32,8 +34,11 @@ import { SharedGeneralService } from '../../../../../shared/general/shared-gener
 	]
 })
 export class DetailsEmprendimientoComponent implements OnInit {
+	@Output() emprendimientoCreado = new EventEmitter<void>();
 	emprendimientoForm!: FormGroup;
 	showCarreraFields = false;
+	showSemestreField = false;
+	showAnoGraduacionField = false;
 	showParienteField = false;
 	showOtraCategoria = false;
 	currentStep = 1;
@@ -69,7 +74,10 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	constructor(
 		private fb: FormBuilder,
 		private emprendimientoService: EmprendimientoService,
-		private sharedGeneralService: SharedGeneralService
+		private sharedGeneralService: SharedGeneralService,
+		private solicitudesService: SolicitudesService,
+		private authService: AuthService 
+
 	) { }
 
 	ngOnInit(): void {
@@ -89,6 +97,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			tienePariente: ['', Validators.required],
 			carrera: [''],
 			anoGraduacion: [''],
+			semestre: [''],
 			nombrePariente: [''],
 			integrantesEmprendedor: ['', Validators.required],
 
@@ -137,18 +146,30 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	setupConditionalValidations(): void {
 		this.emprendimientoForm.get('identificacion')?.valueChanges.subscribe(value => {
 			this.showCarreraFields = value === 'Estudiante' || value === 'Alumni';
+			this.showSemestreField = value === 'Estudiante';
+			this.showAnoGraduacionField = value === 'Alumni';
 
-			if (this.showCarreraFields) {
+			// Limpiar validadores primero
+			this.emprendimientoForm.get('carrera')?.clearValidators();
+			this.emprendimientoForm.get('semestre')?.clearValidators();
+			this.emprendimientoForm.get('anoGraduacion')?.clearValidators();
+
+			if (value === 'Estudiante') {
+				this.emprendimientoForm.get('carrera')?.setValidators([Validators.required]);
+				this.emprendimientoForm.get('semestre')?.setValidators([Validators.required]);
+				this.emprendimientoForm.get('anoGraduacion')?.setValue('');
+			} else if (value === 'Alumni') {
 				this.emprendimientoForm.get('carrera')?.setValidators([Validators.required]);
 				this.emprendimientoForm.get('anoGraduacion')?.setValidators([Validators.required]);
+				this.emprendimientoForm.get('semestre')?.setValue('');
 			} else {
-				this.emprendimientoForm.get('carrera')?.clearValidators();
-				this.emprendimientoForm.get('anoGraduacion')?.clearValidators();
 				this.emprendimientoForm.get('carrera')?.setValue('');
+				this.emprendimientoForm.get('semestre')?.setValue('');
 				this.emprendimientoForm.get('anoGraduacion')?.setValue('');
 			}
 
 			this.emprendimientoForm.get('carrera')?.updateValueAndValidity();
+			this.emprendimientoForm.get('semestre')?.updateValueAndValidity();
 			this.emprendimientoForm.get('anoGraduacion')?.updateValueAndValidity();
 		});
 
@@ -443,7 +464,13 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				'correoPersonal', 'identificacion', 'tienePariente', 'integrantesEmprendedor'];
 
 			if (this.showCarreraFields) {
-				seccion1Fields.push('carrera', 'anoGraduacion');
+				seccion1Fields.push('carrera');
+				if (this.showSemestreField) {
+					seccion1Fields.push('semestre');
+				}
+				if (this.showAnoGraduacionField) {
+					seccion1Fields.push('anoGraduacion');
+				}
 			}
 
 			if (this.showParienteField) {
@@ -623,9 +650,35 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	onSubmit(tipoAccion: 'CREAR' | 'BORRADOR' = 'CREAR'): void {
 		const formValues = this.emprendimientoForm.value;
 
+		const perfil = this.authService.getPerfilLocal();
+
+		if (!perfil || !perfil.id) {
+			alert('Debe iniciar sesión para crear un emprendimiento');
+			return;
+		}
+
+		// ✅ PREPARAR TIPOS DE MULTIMEDIA (esto SÍ va en el JSON)
+		const tiposMultimedia: string[] = [];
+
+		if (this.logoFile) {
+			tiposMultimedia.push('LOGO');
+		}
+
+		this.fotosProductos.forEach(() => {
+			tiposMultimedia.push('FOTO_PRODUCTO');
+		});
+
+		if (this.videoFile) {
+			tiposMultimedia.push('VIDEO');
+		}
+
+		if (this.bannerFile) {
+			tiposMultimedia.push('BANNER');
+		}
+
 		// Construir el objeto JSON según el formato requerido
 		const requestBody = {
-			usuarioId: 5, // TODO: Obtener del usuario logueado
+			usuarioId: perfil.id,
 			tipoAccion: tipoAccion,
 			emprendimiento: {
 				nombreComercialEmprendimiento: formValues.nombreComercial,
@@ -635,13 +688,34 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				ciudad: formValues.ciudad?.id || null,
 				tipoEmprendimientoId: formValues.tipoEmprendimiento
 			},
-			categorias: this.categoriasSeleccionadas,
+			informacionRepresentante: {
+				nombre: formValues.nombreCompleto,
+				telefono: formValues.numeroTelefonico,
+				correoCorporativo: formValues.correoCoorporativo,
+				correoPersonal: formValues.correoPersonal,
+				identificacion: formValues.identificacion,
+				carrera: formValues.carrera || null,
+				semestre: formValues.semestre || null,
+				fechaGraduacion: formValues.anoGraduacion || null,
+				tieneParientesUees: formValues.tienePariente === 'SI',
+				nombrePariente: formValues.nombrePariente || null,
+				integrantesEquipo: formValues.integrantesEmprendedor
+			},
+			categorias: this.categoriasSeleccionadas.map(id => {
+				const categoria = this.categorias.find(c => c.id === id);
+				return {
+					categoria: {
+						id: id,
+						nombre: categoria?.nombre || ''
+					}
+				};
+			}),
 			descripciones: [
 				{ idDescripcion: 1, respuesta: formValues.resumenGeneral },
-				{ idDescripcion: 2, respuesta: formValues.queLoHaceDiferente },
-				{ idDescripcion: 3, respuesta: formValues.publicoObjetivo },
-				{ idDescripcion: 4, respuesta: formValues.proposito },
-				{ idDescripcion: 5, respuesta: formValues.historiaEmprendimiento }
+				{ idDescripcion: 2, respuesta: formValues.historiaEmprendimiento }, // ✅ Orden correcto
+				{ idDescripcion: 3, respuesta: formValues.queLoHaceDiferente },
+				{ idDescripcion: 4, respuesta: formValues.publicoObjetivo },
+				{ idDescripcion: 5, respuesta: formValues.proposito }
 			],
 			metricas: [
 				{ metricaId: 1, valor: formValues.cantidadClientes },
@@ -650,7 +724,9 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			],
 			presenciasDigitales: [] as any[],
 			participacionesComunidad: [] as any[],
-			declaracionesFinales: [] as any[]
+			declaracionesFinales: [] as any[],
+			tiposMultimedia: tiposMultimedia // ✅ Solo tipos, NO archivos
+			// ❌ NO incluir "imagenes" aquí
 		};
 
 		// Agregar presencias digitales si tienen valor
@@ -705,21 +781,21 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		// Agregar el JSON como string
 		formData.append('data', JSON.stringify(requestBody));
 
-		// Agregar archivos multimedia
+		// ✅ Agregar archivos con la key "imagenes" (todos con la misma key)
 		if (this.logoFile) {
-			formData.append('logo', this.logoFile, this.logoFile.name);
+			formData.append('imagenes', this.logoFile);
 		}
 
-		this.fotosProductos.forEach((foto, index) => {
-			formData.append('fotosProductos', foto, foto.name);
+		this.fotosProductos.forEach((foto) => {
+			formData.append('imagenes', foto);
 		});
 
 		if (this.videoFile) {
-			formData.append('video', this.videoFile, this.videoFile.name);
+			formData.append('imagenes', this.videoFile);
 		}
 
 		if (this.bannerFile) {
-			formData.append('banner', this.bannerFile, this.bannerFile.name);
+			formData.append('imagenes', this.bannerFile);
 		}
 
 		console.log('Request Body:', requestBody);
@@ -729,10 +805,27 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		this.emprendimientoService.crearEmprendimiento(formData).subscribe({
 			next: (response) => {
 				console.log('Emprendimiento creado exitosamente:', response);
-				alert(tipoAccion === 'BORRADOR' 
-					? 'Borrador guardado correctamente!' 
-					: 'Emprendimiento creado correctamente!');
-				// TODO: Redirigir o mostrar mensaje de éxito
+				
+				if (tipoAccion === 'CREAR') {
+					// Si es CREAR, enviar automáticamente para aprobación
+					const emprendimientoId = response.id || response;
+					
+					this.solicitudesService.enviarParaAprobacion(emprendimientoId).subscribe({
+						next: (aprobacionResponse) => {
+							console.log('Enviado para aprobación:', aprobacionResponse);
+							alert('Emprendimiento creado y enviado para aprobación correctamente!');
+							this.emprendimientoCreado.emit();
+						},
+						error: (error) => {
+							console.error('Error al enviar para aprobación:', error);
+							alert('Emprendimiento creado, pero hubo un error al enviar para aprobación.');
+							this.emprendimientoCreado.emit();
+						}
+					});
+				} else {
+					alert('Borrador guardado correctamente!');
+					this.emprendimientoCreado.emit();
+				}
 			},
 			error: (error) => {
 				console.error('Error al crear emprendimiento:', error);
@@ -740,7 +833,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			}
 		});
 	}
-
 	guardarBorrador(): void {
 		this.onSubmit('BORRADOR');
 	}

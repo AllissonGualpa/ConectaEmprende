@@ -111,3 +111,8 @@ body {
 .mdc-notched-outline__notch {
   border-style: none;
 }
+
+.cdk-overlay-container,
+.cdk-global-overlay-wrapper {
+  z-index: 10000 !important; // o mayor que el z del modal
+}
