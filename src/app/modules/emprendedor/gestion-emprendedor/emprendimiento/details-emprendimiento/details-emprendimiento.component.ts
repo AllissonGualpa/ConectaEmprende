@@ -686,7 +686,8 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				estadoEmpredimiento: formValues.emprendimientoActivo === 'SI',
 				datosPublicos: formValues.aceptaMostrarDatos === 'SI',
 				ciudad: formValues.ciudad?.id || null,
-				tipoEmprendimientoId: formValues.tipoEmprendimiento
+				tipoEmprendimientoId: formValues.tipoEmprendimiento,
+				tipoPersonaJuridicaId: formValues.personaJuridica
 			},
 			informacionRepresentante: {
 				nombre: formValues.nombreCompleto,

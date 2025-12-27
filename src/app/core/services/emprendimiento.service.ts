@@ -10,7 +10,8 @@ import {
     OpcionParticipacionComunidad,
     EmprendimientoPublico,
     EmprendimientoListado,
-    EmprendimientosPaginated
+    EmprendimientosPaginated,
+    DetalleSolicitudAdmin
 } from '../types/emprendimiento.types';
 import { HttpParamsUtil } from '../../shared/utils/http-params.util';
 
@@ -27,6 +28,8 @@ export class EmprendimientoService {
     private readonly _emprendimientoPublico = new BehaviorSubject<EmprendimientoPublico | null>(null);
     private readonly _emprendimientos = new BehaviorSubject<EmprendimientoListado[]>([]);
     private readonly _emprendimientosPaginated = new BehaviorSubject<EmprendimientosPaginated | null>(null);
+    private readonly _detalleSolicitudAdmin = new BehaviorSubject<DetalleSolicitudAdmin | null>(null);
+
 
     constructor(private _httpClient: HttpClient) { }
 
@@ -86,6 +89,14 @@ export class EmprendimientoService {
         return this._emprendimientosPaginated.asObservable();
     }
 
+        /**
+     * Getter for detalle solicitud admin
+     */
+    get detalleSolicitudAdmin$(): Observable<DetalleSolicitudAdmin | null> {
+        return this._detalleSolicitudAdmin.asObservable();
+    }
+
+
 
     // -----------------------------------------------------------------------------------------------------
     // @ Reset BehaviorSubject
@@ -122,6 +133,11 @@ export class EmprendimientoService {
     resetEmprendimientosPaginated(): void {
         this._emprendimientosPaginated.next(null);
     }
+
+    resetDetalleSolicitudAdmin(): void {
+        this._detalleSolicitudAdmin.next(null);
+    }
+
 
 
     // -----------------------------------------------------------------------------------------------------
@@ -247,6 +263,21 @@ export class EmprendimientoService {
             tap((response) => {
                 this._emprendimientos.next(response.content);
                 this._emprendimientosPaginated.next(response.pageable);
+            })
+        );
+    }
+
+        /**
+     * Obtener detalle de solicitud con comparación (Admin)
+     * @param solicitudId - ID de la solicitud
+     * @returns Observable con los datos de la solicitud para revisión
+     */
+    obtenerDetalleSolicitudAdmin(solicitudId: number): Observable<DetalleSolicitudAdmin> {
+        return this._httpClient.get<DetalleSolicitudAdmin>(
+            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/detalle`
+        ).pipe(
+            tap((detalle) => {
+                this._detalleSolicitudAdmin.next(detalle);
             })
         );
     }
