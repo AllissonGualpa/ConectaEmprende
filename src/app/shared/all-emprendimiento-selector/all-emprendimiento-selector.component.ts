@@ -8,11 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { EmprendimientoService } from '../../modules/emprendimiento.service';
-
+import { EmprendimientoService } from '../../core/services/emprendimiento.service';
 export interface Emprendimiento {
-  id: number;
-  nombreComercial: string;
+  nombreEmprendimiento: string;
 }
 
 @Component({
@@ -42,13 +40,7 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
   @Input() label: string = 'Seleccionar Emprendimiento';
   @Input() placeholder: string = 'Seleccione un emprendimiento';
   @Input() required: boolean = false;
-  @Input() filters?: {
-    nombre?: string;
-    tipo?: string;
-    categoria?: string;
-    ciudad?: string;
-  };
-  @Output() emprendimientoSelected = new EventEmitter<number>();
+  @Output() emprendimientoSelected = new EventEmitter<string>();
 
   emprendimientoControl = new FormControl();
   emprendimientos: Emprendimiento[] = [];
@@ -57,7 +49,7 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
   isLoading: boolean = false;
   error: string | null = null;
 
-  private onChange: (value: number | null) => void = () => {};
+  private onChange: (value: string | null) => void = () => {};
   private onTouched: () => void = () => {};
   disabled: boolean = false;
 
@@ -71,33 +63,9 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
     this.isLoading = true;
     this.error = null;
 
-    const params = {
-      page: 0,
-      size: 100,
-      ...this.filters
-    };
-
-    this.emprendimientoService.getEmprendimientos(params).subscribe({
+    this.emprendimientoService.getListaEmprendimientos().subscribe({
       next: (response) => {
-        let items: Emprendimiento[] = [];
-        
-        // Manejar diferentes estructuras de respuesta
-        if (Array.isArray(response)) {
-          items = response;
-        } else if (response?.content && Array.isArray(response.content)) {
-          items = response.content;
-        } else if (response?.data && Array.isArray(response.data)) {
-          items = response.data;
-        } else if (response?.result && Array.isArray(response.result)) {
-          items = response.result;
-        }
-
-        // Normalizar los datos
-        this.emprendimientos = items.map(item => ({
-          id: item.id,
-          nombreComercial: item.nombreComercial || 'Sin nombre'
-        }));
-
+        this.emprendimientos = response || [];
         this.filteredEmprendimientos = [...this.emprendimientos];
         this.isLoading = false;
       },
@@ -121,7 +89,7 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
 
     const filterValue = searchText.toLowerCase().trim();
     this.filteredEmprendimientos = this.emprendimientos.filter(emp =>
-      emp.nombreComercial.toLowerCase().includes(filterValue)
+      emp.nombreEmprendimiento.toLowerCase().includes(filterValue)
     );
   }
 
@@ -130,10 +98,10 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
     this.filteredEmprendimientos = [...this.emprendimientos];
   }
 
-  onEmprendimientoSelected(idEmprendimiento: number): void {
-    if (idEmprendimiento) {
-      this.onChange(idEmprendimiento);
-      this.emprendimientoSelected.emit(idEmprendimiento);
+  onEmprendimientoSelected(nombreEmprendimiento: string): void {
+    if (nombreEmprendimiento) {
+      this.onChange(nombreEmprendimiento);
+      this.emprendimientoSelected.emit(nombreEmprendimiento);
       this.onTouched();
       this.clearSearch();
     }
@@ -147,20 +115,12 @@ export class AllEmprendimientoSelectorComponent implements OnInit, ControlValueA
     this.clearSearch();
   }
 
-  getEmprendimientoName(id: number): string {
-    const emprendimiento = this.emprendimientos.find(e => e.id === id);
-    return emprendimiento ? emprendimiento.nombreComercial : '';
-  }
-
-  reload(newFilters?: any): void {
-    if (newFilters) {
-      this.filters = newFilters;
-    }
+  reload(): void {
     this.loadEmprendimientos();
   }
 
   // ControlValueAccessor methods
-  writeValue(value: number | null): void {
+  writeValue(value: string | null): void {
     if (value !== null && value !== undefined) {
       this.emprendimientoControl.setValue(value, { emitEvent: false });
     } else {

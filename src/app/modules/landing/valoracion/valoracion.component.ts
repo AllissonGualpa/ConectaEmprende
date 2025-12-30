@@ -1,170 +1,206 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormularioDto, PreguntaDto, ValoracionService } from '../valoracion.service';
+import { Subject, takeUntil } from 'rxjs';
+import { Formulario, Pregunta } from '../../../core/types/formulario.types';
+import { FormulariosService } from '../../../core/services/formulario.service';
 
 @Component({
-  selector: 'app-valoracion',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './valoracion.component.html',
+	selector: 'app-valoracion',
+	standalone: true,
+	imports: [CommonModule, ReactiveFormsModule],
+	templateUrl: './valoracion.component.html',
 })
-export class ValoracionComponent implements OnInit {
-  formularioData: FormularioDto | null = null;
-  valoracionForm!: FormGroup;
-  cargando = true;
-  error = '';
-  enviando = false;
-  enviado = false;
-  
-  idEmprendimiento?: number;
-  idEvento?: number;
-  tipoFormulario: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO' = 'EVALUACION_SERVICIO';
+export class ValoracionComponent implements OnInit, OnDestroy {
+	formularioData: Formulario | null = null;
+	valoracionForm!: FormGroup;
+	cargando = true;
+	error = '';
+	enviando = false;
+	enviado = false;
 
-  // Para mostrar satisfacción general
-  satisfaccionGeneral: 'insatisfecho' | 'neutral' | 'satisfecho' | null = null;
+	idEmprendimiento!: number;
+	tipoFormulario: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO' = 'EVALUACION_SERVICIO';
 
-  constructor(
-    private fb: FormBuilder,
-    private valoracionService: ValoracionService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
+	// Para mostrar satisfacción general
+	satisfaccionGeneral: 'insatisfecho' | 'neutral' | 'satisfecho' | null = null;
 
-  ngOnInit(): void {
-    // Obtener parámetros de la ruta
-    this.route.params.subscribe(params => {
-      this.idEmprendimiento = params['id'] ? +params['id'] : undefined;
-      this.idEvento = params['idEvento'] ? +params['idEvento'] : undefined;
-    });
+	private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-    // Obtener tipo de formulario desde query params o determinar por defecto
-    this.route.queryParams.subscribe(queryParams => {
-      this.tipoFormulario = queryParams['tipo'] || 'EVALUACION_SERVICIO';
-      this.cargarFormulario();
-    });
-  }
+	constructor(
+		private fb: FormBuilder,
+		private formulariosService: FormulariosService,
+		private route: ActivatedRoute,
+		private router: Router
+	) { }
 
-  cargarFormulario(): void {
-    this.cargando = true;
-    this.valoracionService.getFormularioByTipo(this.tipoFormulario).subscribe({
-      next: (data) => {
-        this.formularioData = data;
-        this.inicializarFormulario();
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.error = 'Error al cargar el formulario de valoración';
-        this.cargando = false;
-      }
-    });
-  }
+	ngOnInit(): void {
+		// Obtener parámetros de la ruta
+		this.route.params
+			.pipe(takeUntil(this._unsubscribeAll))
+			.subscribe(params => {
+				this.idEmprendimiento = +params['id'];
 
-  inicializarFormulario(): void {
-    if (!this.formularioData) return;
+				if (!this.idEmprendimiento) {
+					this.error = 'ID de emprendimiento no válido';
+					this.cargando = false;
+					return;
+				}
+			});
 
-    const group: any = {};
-    
-    this.formularioData.preguntas.forEach(pregunta => {
-      const validators = pregunta.obligatoria ? [Validators.required] : [];
-      group[`pregunta_${pregunta.idPregunta}`] = [null, validators];
-    });
+		// Obtener tipo de formulario desde query params
+		this.route.queryParams
+			.pipe(takeUntil(this._unsubscribeAll))
+			.subscribe(queryParams => {
+				this.tipoFormulario = queryParams['tipo'] || 'EVALUACION_SERVICIO';
+				this.cargarFormulario();
+			});
+	}
 
-    this.valoracionForm = this.fb.group(group);
-  }
+	ngOnDestroy(): void {
+		this._unsubscribeAll.next(null);
+		this._unsubscribeAll.complete();
+		this.formulariosService.resetFormularioActual();
+	}
 
-  seleccionarRespuesta(idPregunta: number, valor: number): void {
-    const controlName = `pregunta_${idPregunta}`;
-    this.valoracionForm.get(controlName)?.setValue(valor);
-    this.actualizarSatisfaccionGeneral();
-  }
+	cargarFormulario(): void {
+		this.cargando = true;
+		this.error = '';
 
-  estaSeleccionado(idPregunta: number, valor: number): boolean {
-    const controlName = `pregunta_${idPregunta}`;
-    return this.valoracionForm.get(controlName)?.value === valor;
-  }
+		this.formulariosService
+			.obtenerFormularioPorTipo(this.tipoFormulario)
+			.pipe(takeUntil(this._unsubscribeAll))
+			.subscribe({
+				next: (data) => {
+					this.formularioData = data;
+					this.inicializarFormulario();
+					this.cargando = false;
+				},
+				error: (err) => {
+					this.error = 'Error al cargar el formulario de valoración';
+					this.cargando = false;
+					console.error('Error:', err);
+				}
+			});
+	}
 
-  actualizarSatisfaccionGeneral(): void {
-    if (!this.formularioData) return;
+	inicializarFormulario(): void {
+		if (!this.formularioData) return;
 
-    const valores = this.formularioData.preguntas
-      .map(p => this.valoracionForm.get(`pregunta_${p.idPregunta}`)?.value)
-      .filter(v => v !== null);
+		const group: any = {};
 
-    if (valores.length === 0) {
-      this.satisfaccionGeneral = null;
-      return;
-    }
+		this.formularioData.preguntas.forEach(pregunta => {
+			const validators = pregunta.obligatoria ? [Validators.required] : [];
+			group[`pregunta_${pregunta.idPregunta}`] = [null, validators];
+		});
 
-    const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
-    
-    if (promedio <= 2.5) {
-      this.satisfaccionGeneral = 'insatisfecho';
-    } else if (promedio <= 3.5) {
-      this.satisfaccionGeneral = 'neutral';
-    } else {
-      this.satisfaccionGeneral = 'satisfecho';
-    }
-  }
+		this.valoracionForm = this.fb.group(group);
+	}
 
-  enviarValoracion(): void {
-    if (this.valoracionForm.invalid) {
-      Object.keys(this.valoracionForm.controls).forEach(key => {
-        this.valoracionForm.get(key)?.markAsTouched();
-      });
-      return;
-    }
+	seleccionarRespuesta(idPregunta: number, valor: number): void {
+		const controlName = `pregunta_${idPregunta}`;
+		this.valoracionForm.get(controlName)?.setValue(valor);
+		this.actualizarSatisfaccionGeneral();
+	}
 
-    this.enviando = true;
+	estaSeleccionado(idPregunta: number, valor: number): boolean {
+		const controlName = `pregunta_${idPregunta}`;
+		return this.valoracionForm.get(controlName)?.value === valor;
+	}
 
-    const respuestas = this.formularioData!.preguntas.map(pregunta => ({
-      idPregunta: pregunta.idPregunta,
-      respuesta: this.valoracionForm.get(`pregunta_${pregunta.idPregunta}`)?.value
-    }));
+	actualizarSatisfaccionGeneral(): void {
+		if (!this.formularioData) return;
 
-    const payload = {
-      idFormulario: this.formularioData!.idFormulario,
-      idEmprendimiento: this.idEmprendimiento,
-      idEvento: this.idEvento,
-      respuestas
-    };
+		const valores = this.formularioData.preguntas
+			.map(p => this.valoracionForm.get(`pregunta_${p.idPregunta}`)?.value)
+			.filter(v => v !== null);
 
-    /**this.valoracionService.enviarValoracion(payload).subscribe({
-      next: () => {
-        this.enviado = true;
-        this.enviando = false;
-      },
-      error: (err) => {
-        this.error = 'Error al enviar la valoración. Por favor, intenta nuevamente.';
-        this.enviando = false;
-        console.error('Error al enviar valoración:', err);
-      }
-    });*/
-  }
+		if (valores.length === 0) {
+			this.satisfaccionGeneral = null;
+			return;
+		}
 
-  obtenerEtiquetaEscala(pregunta: PreguntaDto, valor: number): string {
-    // Para escalas de 5
-    if (pregunta.numeroRespuestas === 5) {
-      const etiquetas = ['Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
-      return etiquetas[valor - 1] || '';
-    }
-    
-    // Para NPS (escala de 10)
-    if (pregunta.numeroRespuestas === 10) {
-      if (valor <= 6) return 'Detractor';
-      if (valor <= 8) return 'Pasivo';
-      return 'Promotor';
-    }
-    
-    return '';
-  }
+		const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
 
-  getArrayFromNumber(n: number): number[] {
-    return Array.from({ length: n }, (_, i) => i + 1);
-  }
+		if (promedio <= 2.5) {
+			this.satisfaccionGeneral = 'insatisfecho';
+		} else if (promedio <= 3.5) {
+			this.satisfaccionGeneral = 'neutral';
+		} else {
+			this.satisfaccionGeneral = 'satisfecho';
+		}
+	}
 
-  tieneEscalaCinco(): boolean {
-    return this.formularioData?.preguntas.some(p => p.numeroRespuestas === 5) || false;
-  }
+	enviarValoracion(): void {
+		if (this.valoracionForm.invalid) {
+			Object.keys(this.valoracionForm.controls).forEach(key => {
+				this.valoracionForm.get(key)?.markAsTouched();
+			});
+			return;
+		}
+
+		this.enviando = true;
+
+		const respuestas = this.formularioData!.preguntas.map(pregunta => ({
+			idPregunta: pregunta.idPregunta,
+			respuesta: this.valoracionForm.get(`pregunta_${pregunta.idPregunta}`)?.value
+		}));
+
+		const payload = {
+			idFormulario: this.formularioData!.idFormulario,
+			idEmprendimiento: this.idEmprendimiento,
+			respuestas
+		};
+
+		// TODO: Implementar método de envío en el service cuando exista el endpoint
+		console.log('Payload a enviar:', payload);
+
+		// Simulación temporal
+		setTimeout(() => {
+			this.enviado = true;
+			this.enviando = false;
+		}, 1000);
+
+		/**
+		 * Cuando tengas el endpoint, descomentar:
+		 * 
+		 * this.formulariosService.enviarValoracion(payload).subscribe({
+		 *   next: () => {
+		 *     this.enviado = true;
+		 *     this.enviando = false;
+		 *   },
+		 *   error: (err) => {
+		 *     this.error = 'Error al enviar la valoración. Por favor, intenta nuevamente.';
+		 *     this.enviando = false;
+		 *     console.error('Error al enviar valoración:', err);
+		 *   }
+		 * });
+		 */
+	}
+
+	obtenerEtiquetaEscala(pregunta: Pregunta, valor: number): string {
+		// Para escalas de 5
+		if (pregunta.numeroRespuestas === 5) {
+			const etiquetas = ['Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'];
+			return etiquetas[valor - 1] || '';
+		}
+
+		// Para NPS (escala de 10)
+		if (pregunta.numeroRespuestas === 10) {
+			if (valor <= 6) return 'Detractor';
+			if (valor <= 8) return 'Pasivo';
+			return 'Promotor';
+		}
+
+		return '';
+	}
+
+	getArrayFromNumber(n: number): number[] {
+		return Array.from({ length: n }, (_, i) => i + 1);
+	}
+
+	tieneEscalaCinco(): boolean {
+		return this.formularioData?.preguntas.some(p => p.numeroRespuestas === 5) || false;
+	}
 }

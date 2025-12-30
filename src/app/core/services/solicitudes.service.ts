@@ -1,15 +1,52 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
-import { SolicitudesPaginadasResponse } from '../types/solicitudes.types';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { 
+    DetalleSolicitudAdmin, 
+    MiVistaSolicitud, 
+    SolicitudesPaginadasResponse 
+} from '../types/solicitudes.types';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SolicitudesService {
 
+    private readonly _detalleSolicitudAdmin = new BehaviorSubject<DetalleSolicitudAdmin | null>(null);
+    private readonly _miVistaSolicitud = new BehaviorSubject<MiVistaSolicitud | null>(null);
+
     constructor(private _httpClient: HttpClient) { }
+
+    /**
+     * Getter for detalle solicitud admin
+     */
+    get detalleSolicitudAdmin$(): Observable<DetalleSolicitudAdmin | null> {
+        return this._detalleSolicitudAdmin.asObservable();
+    }
+
+    /**
+     * Getter for mi vista solicitud (emprendedor)
+     */
+    get miVistaSolicitud$(): Observable<MiVistaSolicitud | null> {
+        return this._miVistaSolicitud.asObservable();
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Reset BehaviorSubject
+    // -----------------------------------------------------------------------------------------------------
+
+    resetDetalleSolicitudAdmin(): void {
+        this._detalleSolicitudAdmin.next(null);
+    }
+
+    resetMiVistaSolicitud(): void {
+        this._miVistaSolicitud.next(null);
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
 
     /**
      * Enviar emprendimiento para aprobación
@@ -55,7 +92,7 @@ export class SolicitudesService {
      */
     aprobarSolicitud(solicitudId: number): Observable<any> {
         return this._httpClient.post(
-            `${environment.api_url}/v1/solicitudes-aprobacion/admin/${solicitudId}/aprobar`,
+            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/aprobar`,
             {}
         );
     }
@@ -68,7 +105,7 @@ export class SolicitudesService {
      */
     rechazarSolicitud(solicitudId: number, motivo: string): Observable<any> {
         return this._httpClient.post(
-            `${environment.api_url}/v1/solicitudes-aprobacion/admin/${solicitudId}/rechazar`,
+            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/rechazar`,
             { motivo }
         );
     }
@@ -81,8 +118,38 @@ export class SolicitudesService {
      */
     enviarObservaciones(solicitudId: number, observaciones: string): Observable<any> {
         return this._httpClient.post(
-            `${environment.api_url}/v1/solicitudes-aprobacion/admin/${solicitudId}/observaciones`,
+            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/observaciones`,
             { observaciones }
+        );
+    }
+
+    /**
+     * Obtener detalle de solicitud con comparación (Admin)
+     * @param solicitudId - ID de la solicitud
+     * @returns Observable con los datos de la solicitud para revisión
+     */
+    obtenerDetalleSolicitudAdmin(solicitudId: number): Observable<DetalleSolicitudAdmin> {
+        return this._httpClient.get<DetalleSolicitudAdmin>(
+            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/detalle`
+        ).pipe(
+            tap((detalle) => {
+                this._detalleSolicitudAdmin.next(detalle);
+            })
+        );
+    }
+
+    /**
+     * Obtener mi vista de solicitud (Emprendedor)
+     * @param emprendimientoId - ID del emprendimiento
+     * @returns Observable con los datos de la solicitud del emprendedor
+     */
+    obtenerMiVistaSolicitud(emprendimientoId: number): Observable<MiVistaSolicitud> {
+        return this._httpClient.get<MiVistaSolicitud>(
+            `${environment.api_url}/v1/solicitudes/emprendimiento/${emprendimientoId}/mi-vista`
+        ).pipe(
+            tap((detalle) => {
+                this._miVistaSolicitud.next(detalle);
+            })
         );
     }
 }

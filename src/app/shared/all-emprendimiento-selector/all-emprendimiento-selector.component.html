@@ -24,9 +24,9 @@
       <!-- Lista -->
       <mat-option
         *ngFor="let emprendimiento of filteredEmprendimientos"
-        [value]="emprendimiento.id"
+        [value]="emprendimiento.nombreEmprendimiento"
       >
-        {{ emprendimiento.nombreComercial }}
+        {{ emprendimiento.nombreEmprendimiento }}
       </mat-option>
 
       <!-- Sin resultados -->

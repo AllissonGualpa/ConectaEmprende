@@ -221,6 +221,47 @@
 				</div>
 			</ng-container>
 
+			<div *ngIf="showDetalleModal"
+				class="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/40">
+				<div
+					class="bg-white rounded-t-2xl sm:rounded-xl shadow-lg w-full sm:max-w-6xl h-[95vh] sm:h-[90vh] sm:mx-4 relative flex flex-col animate-slideUp sm:animate-none">
+					
+					<!-- Barra de arrastre móvil -->
+					<div class="sm:hidden flex justify-center pt-3 pb-1">
+						<div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+					</div>
+
+					<!-- Botón cerrar -->
+					<button type="button" (click)="closeDetalleModal()"
+						class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-10">
+						<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+							stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+
+					<!-- Cabecera -->
+					<div class="px-4 sm:px-6 pt-2 sm:pt-5 pb-3 border-b">
+						<h3 class="text-base sm:text-lg font-semibold text-gray-800 pr-8">
+							Detalle de Solicitud #{{ solicitudSeleccionadaId }}
+						</h3>
+						<p class="text-xs sm:text-sm text-gray-500 mt-1">
+							Revise la información del emprendimiento enviada para aprobación.
+						</p>
+					</div>
+
+					<!-- Contenido scrollable -->
+					<div class="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 pb-6 pt-3">
+						<app-details-emprendimiento
+							*ngIf="showDetalleModal && solicitudSeleccionadaId !== null"
+							modo="revisar-admin"
+							[solicitudId]="solicitudSeleccionadaId">
+						</app-details-emprendimiento>
+					</div>
+
+				</div>
+			</div>
+
 		</div>
 	</main>
 </div>

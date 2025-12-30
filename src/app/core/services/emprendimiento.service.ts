@@ -11,7 +11,7 @@ import {
     EmprendimientoPublico,
     EmprendimientoListado,
     EmprendimientosPaginated,
-    DetalleSolicitudAdmin
+    PageResponseDTO,
 } from '../types/emprendimiento.types';
 import { HttpParamsUtil } from '../../shared/utils/http-params.util';
 
@@ -28,7 +28,8 @@ export class EmprendimientoService {
     private readonly _emprendimientoPublico = new BehaviorSubject<EmprendimientoPublico | null>(null);
     private readonly _emprendimientos = new BehaviorSubject<EmprendimientoListado[]>([]);
     private readonly _emprendimientosPaginated = new BehaviorSubject<EmprendimientosPaginated | null>(null);
-    private readonly _detalleSolicitudAdmin = new BehaviorSubject<DetalleSolicitudAdmin | null>(null);
+    private readonly _misEmprendimientos = new BehaviorSubject<EmprendimientoListado[]>([]);
+    private readonly _listaEmprendimientos = new BehaviorSubject<{ nombreEmprendimiento: string }[]>([]);
 
 
     constructor(private _httpClient: HttpClient) { }
@@ -89,12 +90,20 @@ export class EmprendimientoService {
         return this._emprendimientosPaginated.asObservable();
     }
 
-        /**
-     * Getter for detalle solicitud admin
+    /**
+     * Getter for mis emprendimientos
      */
-    get detalleSolicitudAdmin$(): Observable<DetalleSolicitudAdmin | null> {
-        return this._detalleSolicitudAdmin.asObservable();
+    get misEmprendimientos$(): Observable<EmprendimientoListado[]> {
+        return this._misEmprendimientos.asObservable();
     }
+
+    /**
+     * Getter for lista emprendimientos
+     */
+    get listaEmprendimientos$(): Observable<{ nombreEmprendimiento: string }[]> {
+        return this._listaEmprendimientos.asObservable();
+    }
+
 
 
 
@@ -134,9 +143,15 @@ export class EmprendimientoService {
         this._emprendimientosPaginated.next(null);
     }
 
-    resetDetalleSolicitudAdmin(): void {
-        this._detalleSolicitudAdmin.next(null);
+    resetMisEmprendimientos(): void {
+        this._misEmprendimientos.next([]);
     }
+
+    resetListaEmprendimientos(): void {
+        this._listaEmprendimientos.next([]);
+    }
+
+
 
 
 
@@ -245,8 +260,8 @@ export class EmprendimientoService {
         subtipo?: string,
         categoria?: string,
         ciudad?: string
-    ): Observable<{ pageable: EmprendimientosPaginated; content: EmprendimientoListado[] }> {
-        return this._httpClient.get<{ pageable: EmprendimientosPaginated; content: EmprendimientoListado[] }>(
+    ): Observable<PageResponseDTO<EmprendimientoListado>> {
+        return this._httpClient.get<PageResponseDTO<EmprendimientoListado>>(
             `${environment.api_url}/v1/emprendimientos`,
             {
                 params: HttpParamsUtil.cleanParams({
@@ -267,17 +282,41 @@ export class EmprendimientoService {
         );
     }
 
-        /**
-     * Obtener detalle de solicitud con comparación (Admin)
-     * @param solicitudId - ID de la solicitud
-     * @returns Observable con los datos de la solicitud para revisión
+    /**
+     * Obtener mis emprendimientos (del usuario autenticado)
+     * @param page - Número de página (default: 0)
+     * @param size - Tamaño de página (default: 10)
+     * @returns Observable con la respuesta paginada
      */
-    obtenerDetalleSolicitudAdmin(solicitudId: number): Observable<DetalleSolicitudAdmin> {
-        return this._httpClient.get<DetalleSolicitudAdmin>(
-            `${environment.api_url}/v1/solicitudes/admin/${solicitudId}/detalle`
+    obtenerMisEmprendimientos(
+        page: number = 0,
+        size: number = 10
+    ): Observable<PageResponseDTO<EmprendimientoListado>> {
+        return this._httpClient.get<PageResponseDTO<EmprendimientoListado>>(
+            `${environment.api_url}/v1/mi-emprendimiento/mis-emprendimientos`,
+            {
+                params: HttpParamsUtil.cleanParams({
+                    page,
+                    size
+                })
+            }
         ).pipe(
-            tap((detalle) => {
-                this._detalleSolicitudAdmin.next(detalle);
+            tap((response) => {
+                this._misEmprendimientos.next(response.content);
+            })
+        );
+    }
+
+    /**
+     * Obtener lista simple de nombres de emprendimientos
+     * @returns Observable con array de nombres de emprendimientos
+     */
+    getListaEmprendimientos(): Observable<{ nombreEmprendimiento: string }[]> {
+        return this._httpClient.get<{ nombreEmprendimiento: string }[]>(
+            `${environment.api_url}/v1/emprendimientos/lista`
+        ).pipe(
+            tap((lista) => {
+                this._listaEmprendimientos.next(lista);
             })
         );
     }

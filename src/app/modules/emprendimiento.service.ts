@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { SolicitudEmprendimientoDataDto } from './emprendedor/gestion-emprendedor/create-solicitud-emprendimiento/create-solicitud-emprendimiento.interfaces';
 import { VistaEmprendedorDTO } from './admin/admin-solicitudes/solicitud3.service';
 
 // ============================================
@@ -118,34 +117,7 @@ export class EmprendimientoService {
             : new HttpHeaders();
     }
 
-    // ============================================
-    // 1. CREAR EMPRENDIMIENTO (Completo)
-    // ============================================
-    /**
-     * Crea un emprendimiento completo con todos sus datos
-     * Estado resultante: PENDIENTE_APROBACION
-     * 
-     * @param data - Datos completos del emprendimiento
-     * @param files - Archivos multimedia (logo, portada, galería)
-     * @returns ID del emprendimiento creado
-     */
-    grabarEmprendimiento(
-        data: SolicitudEmprendimientoDataDto,
-        files: File[]
-    ): Observable<EmprendimientoCrearResponse> {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(data));
-        
-        files.forEach(file => {
-            formData.append('imagenes', file);
-        });
 
-        return this.http.post<EmprendimientoCrearResponse>(
-            `${this.baseUrlEmprendimientos}`, 
-            formData, 
-            { headers: this.getHeaders() }
-        );
-    }
 
     // ============================================
     // 2. CREAR BORRADOR
@@ -176,25 +148,7 @@ export class EmprendimientoService {
      * @param data - Datos actualizados
      * @param files - Nuevas imágenes (opcional)
      * @returns Confirmación de actualización
-     */
-    editarEmprendimiento(
-        idEmprendimiento: number,
-        data: SolicitudEmprendimientoDataDto,
-        files: File[]
-    ): Observable<EmprendimientoCrearResponse> { 
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(data));
-        
-        files.forEach(file => {
-            formData.append('imagenes', file);
-        });
 
-        return this.http.put<EmprendimientoCrearResponse>(
-            `${this.baseUrlEmprendimientos}/${idEmprendimiento}`, 
-            formData, 
-            { headers: this.getHeaders() }
-        );
-    }
 
     // ============================================
     // 4. ENVIAR A APROBACIÓN

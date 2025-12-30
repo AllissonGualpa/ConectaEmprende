@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ProvinciasSearchComponent } from '../../../../../shared/general/provincias-search/provincias-searc.component';
 import { CiudadesSearchComponent } from '../../../../../shared/general/ciudades-search/ciudades-search.component';
 import { Provincia, Ciudad, Categoria } from '../../../../../shared/general/shared-general.types';
-import { OpcionPersonaJuridica, TipoEmprendimiento, Descripcion, OpcionParticipacionComunidad, DeclaracionFinal } from '../../../../../core/types/emprendimiento.types';
+import { OpcionPersonaJuridica, TipoEmprendimiento, Descripcion, OpcionParticipacionComunidad, DeclaracionFinal, EmprendimientoDetalle } from '../../../../../core/types/emprendimiento.types';
 import { EmprendimientoService } from '../../../../../core/services/emprendimiento.service';
 import { SharedGeneralService } from '../../../../../shared/general/shared-general.service';
 import { AuthService } from '../../../../auth/auth.service';
@@ -34,7 +34,12 @@ import { SolicitudesService } from '../../../../../core/services/solicitudes.ser
 	]
 })
 export class DetailsEmprendimientoComponent implements OnInit {
+	@Input() modo: 'crear' | 'editar-emprendedor' | 'revisar-admin' = 'crear';
+	@Input() emprendimientoId?: number; // Para emprendedor
+	@Input() solicitudId?: number; // Para admin
+	
 	@Output() emprendimientoCreado = new EventEmitter<void>();
+	@Output() emprendimientoEditado = new EventEmitter<void>();
 	emprendimientoForm!: FormGroup;
 	showCarreraFields = false;
 	showSemestreField = false;
@@ -64,12 +69,20 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	videoPreview: string | null = null;
 	bannerFile: File | null = null;
 	bannerPreview: string | null = null;
+	logoSeleccionado: boolean = false;
+	bannerSeleccionado: boolean = false;
+	videoSeleccionado: boolean = false;
+	fotosProductosSeleccionadas: boolean = false;
 
 	// Datos para sección 7 - Participación en la comunidad
 	opcionesParticipacionComunidad: OpcionParticipacionComunidad[] = [];
 
 	// Datos para sección 8 - Declaraciones finales
 	declaracionesFinales: DeclaracionFinal[] = [];
+
+    // Datos para comparación (solo admin)
+	datosOriginales?: EmprendimientoDetalle;
+	diferencias?: any[];
 
 	constructor(
 		private fb: FormBuilder,
@@ -84,6 +97,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		this.initForm();
 		this.setupConditionalValidations();
 		this.loadData();
+		this.cargarDatosSegunModo();
 	}
 
 	initForm(): void {
@@ -142,6 +156,304 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			nombreProgramaIncubacion: ['']
 		});
 	}
+
+		private cargarDatosSegunModo(): void {
+		switch (this.modo) {
+			case 'editar-emprendedor':
+				this.cargarEmprendimientoEmprendedor();
+				break;
+			case 'revisar-admin':
+				this.cargarSolicitudAdmin();
+				break;
+			case 'crear':
+			default:
+				// No cargar nada, formulario vacío
+				break;
+		}
+	}
+
+	private cargarEmprendimientoEmprendedor(): void {
+		if (!this.emprendimientoId) {
+			console.error('No se proporcionó emprendimientoId');
+			return;
+		}
+
+		// Usar la API de "mi vista" que devuelve datosActuales y datosPropuestos
+		this.solicitudesService.obtenerMiVistaSolicitud(this.emprendimientoId).subscribe({
+			next: (response) => {
+				console.log('Mi vista emprendedor:', response);
+				
+				// Si tiene solicitud activa, mostrar los datos propuestos
+				// Si no, mostrar los datos actuales
+				const datosAMostrar = response.tieneSolicitudActiva 
+					? response.datosPropuestos 
+					: response.datosActuales;
+				
+				this.llenarFormulario(datosAMostrar);
+				
+				// Opcional: guardar info adicional
+				if (response.tieneSolicitudActiva) {
+					console.log('Tiene solicitud activa:', response.estadoSolicitud);
+					console.log('Observaciones:', response.observaciones);
+				}
+			},
+			error: (error) => {
+				console.error('Error al cargar mi vista:', error);
+				alert('Error al cargar los datos del emprendimiento');
+			}
+		});
+	}
+
+	// ============================================
+	// MÉTODO COMÚN PARA LLENAR FORMULARIO
+	// ============================================
+
+	private llenarFormulario(data: EmprendimientoDetalle): void {
+		console.log('Llenando formulario con:', data);
+
+		// Información del representante
+		this.emprendimientoForm.patchValue({
+			nombreCompleto: data.informacionRepresentante?.nombre || '',
+			numeroTelefonico: data.informacionRepresentante?.telefono || '',
+			correoCoorporativo: data.informacionRepresentante?.correoCorporativo || '',
+			correoPersonal: data.informacionRepresentante?.correoPersonal || '',
+			identificacion: data.informacionRepresentante?.identificacion || '',
+			carrera: data.informacionRepresentante?.carrera || '',
+			semestre: data.informacionRepresentante?.semestre || '',
+			anoGraduacion: data.informacionRepresentante?.fechaGraduacion || '',
+			tienePariente: data.informacionRepresentante?.tieneParientesUees ? 'SI' : 'NO',
+			nombrePariente: data.informacionRepresentante?.nombrePariente || '',
+			integrantesEmprendedor: data.informacionRepresentante?.integrantesEquipo || '',
+
+			//Información del emprendimiento
+			nombreComercial: data.nombreComercial || '',
+			anoCreacion: data.anioCreacion ? new Date(data.anioCreacion).getFullYear() : '',
+			tipoEmprendimiento: data.tipoEmprendimientoId || '',
+			emprendimientoActivo: data.activoEmprendimiento ? 'SI' : 'NO',
+			personaJuridica: (data as any).tipoPersonaJuridicaId || '',
+			aceptaMostrarDatos: data.aceptaDatosPublicos ? 'SI' : 'NO'
+		});
+
+		if (data.ciudad?.provincia) {
+			console.log('🌍 [FORM] Cargando ubicación:', {
+				provincia: data.ciudad.provincia.nombre,
+				ciudad: data.ciudad.nombreCiudad
+			});
+			
+			// 1. Asignar provincia al estado del componente
+			this.provinciaSeleccionada = data.ciudad.provincia;
+			
+			// 2. Asignar AMBOS valores al formulario en un solo patchValue
+			// Esto asegura que se procesen juntos
+			this.emprendimientoForm.patchValue({
+				provincia: data.ciudad.provincia,
+				ciudad: data.ciudad
+			}, { emitEvent: true });
+			
+			console.log('✅ [FORM] Provincia y ciudad asignadas al formulario');
+		}
+
+
+		//Cargar categorías
+		if (data.categorias && data.categorias.length > 0) {
+			this.categoriasSeleccionadas = data.categorias.map(c => c.id);
+			this.emprendimientoForm.patchValue({ categorias: this.categoriasSeleccionadas });
+		}
+
+		//Cargar descripciones
+		if (data.descripciones) {
+			data.descripciones.forEach((desc: any) => {
+				switch (desc.idDescripcion) {
+					case 1:
+						this.emprendimientoForm.patchValue({ resumenGeneral: desc.respuesta });
+						break;
+					case 2:
+						this.emprendimientoForm.patchValue({ historiaEmprendimiento: desc.respuesta });
+						break;
+					case 3:
+						this.emprendimientoForm.patchValue({ queLoHaceDiferente: desc.respuesta });
+						break;
+					case 4:
+						this.emprendimientoForm.patchValue({ publicoObjetivo: desc.respuesta });
+						break;
+					case 5:
+						this.emprendimientoForm.patchValue({ proposito: desc.respuesta });
+						break;
+				}
+			});
+		}
+
+		//Cargar presencias digitales
+		if (data.presenciasDigitales) {
+			data.presenciasDigitales.forEach((presencia: any) => {
+				const campo = presencia.plataforma === 'sitio_web' ? 'sitioWeb' : presencia.plataforma;
+				this.emprendimientoForm.patchValue({
+					[campo]: presencia.descripcion
+				});
+			});
+		}
+
+		//Cargar métricas
+		if (data.metricas) {
+			data.metricas.forEach((metrica: any) => {
+				switch (metrica.metricaId) {
+					case 1:
+						this.emprendimientoForm.patchValue({ cantidadClientes: metrica.valor });
+						break;
+					case 2:
+						this.emprendimientoForm.patchValue({ generadoVentas: metrica.valor });
+						break;
+					case 3:
+						this.emprendimientoForm.patchValue({ participadoIncubacion: metrica.valor });
+						break;
+				}
+			});
+		}
+
+		//Cargar multimedia (solo previews, no archivos)
+		if (data.multimedia && data.multimedia.length > 0) {
+			this.cargarMultimediaExistente(data.multimedia);
+		}
+
+		//Cargar participaciones comunidad
+		if (data.participacionesComunidad) {
+			data.participacionesComunidad.forEach((participacion: any) => {
+				const valor = participacion.respuesta ? 'SI' : 'NO';
+				this.emprendimientoForm.patchValue({
+					[`participacion_${participacion.opcionParticipacionId}`]: valor
+				});
+			});
+		}
+
+		//Cargar declaraciones
+		if (data.declaracionesFinales) {
+			data.declaracionesFinales.forEach((declaracion: any) => {
+				this.emprendimientoForm.patchValue({
+					[`declaracion_${declaracion.declaracionId}`]: declaracion.aceptada
+				});
+			});
+		}
+
+		if (this.soloLectura) {
+			this.emprendimientoForm.disable();
+		}
+	}
+
+	//Cargar previews de multimedia existente (URLs de S3)
+	private cargarMultimediaExistente(multimedia: any[]): void {
+		multimedia.forEach(media => {
+			const nombreLower = media.nombreActivo?.toLowerCase() || '';
+			
+			// Detectar tipo por nombre del archivo
+			if (nombreLower.includes('logo') || multimedia.indexOf(media) === 0) {
+				this.logoPreview = media.urlArchivo;
+				this.logoSeleccionado = true
+
+			} else if (nombreLower.includes('banner')) {
+				this.bannerPreview = media.urlArchivo;
+				this.bannerSeleccionado = true;
+			} else if (nombreLower.includes('video') || media.urlArchivo?.includes('.mp4')) {
+				this.videoPreview = media.urlArchivo;
+				this.videoSeleccionado = true; 
+			} else {
+				// Asumimos que es foto de producto
+				this.fotosProductosPreview.push(media.urlArchivo);
+				this.fotosProductosSeleccionadas = true;
+			}
+
+			this.actualizarValidacionMultimedia();
+
+		});
+
+	}
+
+	private actualizarValidacionMultimedia(): void {
+	// Si hay logo existente, quitar validación requerida
+	if (this.logoSeleccionado && this.logoPreview) {
+		const logoControl = this.emprendimientoForm.get('logo');
+		logoControl?.clearValidators();
+		logoControl?.updateValueAndValidity();
+	}
+	
+	// Si hay fotos existentes, quitar validación requerida
+	if (this.fotosProductosSeleccionadas && this.fotosProductosPreview.length >= 2) {
+		const fotosControl = this.emprendimientoForm.get('fotosProductos');
+		fotosControl?.clearValidators();
+		fotosControl?.updateValueAndValidity();
+	}
+	
+	// Opcional: lo mismo para video y banner si son requeridos
+	if (this.videoSeleccionado && this.videoPreview) {
+		const videoControl = this.emprendimientoForm.get('video');
+		videoControl?.clearValidators();
+		videoControl?.updateValueAndValidity();
+	}
+	
+	if (this.bannerSeleccionado && this.bannerPreview) {
+		const bannerControl = this.emprendimientoForm.get('banner');
+		bannerControl?.clearValidators();
+		bannerControl?.updateValueAndValidity();
+	}
+}
+
+	// ============================================
+	// GETTERS PARA CONTROLAR LA UI
+	// ============================================
+	get esCreacion(): boolean {
+		return this.modo === 'crear';
+	}
+
+	get esEdicionEmprendedor(): boolean {
+		return this.modo === 'editar-emprendedor';
+	}
+
+	get esRevisionAdmin(): boolean {
+		return this.modo === 'revisar-admin';
+	}
+
+	get soloLectura(): boolean {
+		return this.modo === 'revisar-admin';
+	}
+
+	get puedeEditar(): boolean {
+		return this.modo === 'crear' || this.modo === 'editar-emprendedor';
+	}
+
+	get muestraComparacion(): boolean {
+		return this.modo === 'revisar-admin' && this.datosOriginales != null;
+	}
+
+	// ============================================
+	// API DEL ADMIN
+	// ============================================
+	private cargarSolicitudAdmin(): void {
+		if (!this.solicitudId) {
+			console.error('No se proporcionó solicitudId');
+			return;
+		}
+
+		// API del admin: devuelve datosPropuestos, solicitud, datosOriginales (si hay)
+		this.solicitudesService.obtenerDetalleSolicitudAdmin(this.solicitudId).subscribe({
+			next: (response) => {
+				console.log('Detalle solicitud admin:', response);
+				
+				// Llenar formulario con DATOS PROPUESTOS (lo que el emprendedor quiere cambiar)
+				this.llenarFormulario(response.datosPropuestos);
+				
+				// Guardar datos originales para comparación (si es actualización)
+				if (response.datosOriginales) {
+					this.datosOriginales = response.datosOriginales;
+					this.diferencias = response.diferencias;
+					console.log('Diferencias encontradas:', this.diferencias);
+				}
+			},
+			error: (error) => {
+				console.error('Error al cargar solicitud admin:', error);
+				alert('Error al cargar los datos de la solicitud');
+			}
+		});
+	}
+
 
 	setupConditionalValidations(): void {
 		this.emprendimientoForm.get('identificacion')?.valueChanges.subscribe(value => {
@@ -459,6 +771,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	siguiente(): void {
+		// ✅ Si es solo lectura, avanzar sin validaciones
+		if (this.soloLectura) {
+			if (this.currentStep < 8) {
+				this.currentStep++;
+			}
+			return;
+		}
+
 		if (this.currentStep === 1) {
 			const seccion1Fields = ['nombreCompleto', 'numeroTelefonico', 'correoCoorporativo',
 				'correoPersonal', 'identificacion', 'tienePariente', 'integrantesEmprendedor'];
@@ -575,14 +895,21 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				this.currentStep = 6;
 			}
 		} else if (this.currentStep === 6) {
-			// Validar multimedia
-			if (!this.logoFile) {
+			// ✅ Considerar archivos existentes O nuevos
+			const tieneLogo = !!this.logoFile || (this.logoSeleccionado && !!this.logoPreview);
+			const totalFotos = this.fotosProductos.length + this.fotosProductosPreview.length;
+
+			console.log('🔍 Validando multimedia (paso 6):');
+			console.log('Tiene logo?', tieneLogo);
+			console.log('Total fotos:', totalFotos);
+
+			if (!tieneLogo) {
 				alert('El logo es requerido');
 				return;
 			}
 
-			if (this.fotosProductos.length < 2) {
-				alert('Debes subir mínimo 2 fotos de productos');
+			if (totalFotos < 2) {
+				alert(`Debes tener mínimo 2 fotos de productos. Actualmente tienes ${totalFotos}.`);
 				return;
 			}
 

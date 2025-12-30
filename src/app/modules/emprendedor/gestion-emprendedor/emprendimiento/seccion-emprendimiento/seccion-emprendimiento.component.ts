@@ -3,17 +3,14 @@ import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CardItem, CardsComponent } from '../../../../../layout/cards/cards.component';
-import { EditSolicitudEmprendimientoComponent } from '../../edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
 import { DetailsEmprendimientoComponent } from '../details-emprendimiento/details-emprendimiento.component';
-import { EmprendimientoService } from '../../../../emprendimiento.service';
-
+import { EmprendimientoService } from '../../../../../core/services/emprendimiento.service';
 @Component({
 	selector: 'app-seccion-emprendimiento',
 	standalone: true,
 	imports: [
 		CommonModule,
 		CardsComponent,
-		EditSolicitudEmprendimientoComponent,
 		DetailsEmprendimientoComponent
 	],
 	templateUrl: './seccion-emprendimiento.component.html',
@@ -39,7 +36,7 @@ export class SeccionEmprendimientoComponent implements OnInit {
 			case 'APROBADO':
 				return 'Aprobado';
 			case 'PENDIENTE_APROBACION':
-				return 'Pendiente de aprobación'; // ← Cambiar texto
+				return 'Pendiente de aprobación';
 			case 'EN_REVISION':
 				return 'En revisión';
 			case 'RECHAZADO':
@@ -53,24 +50,13 @@ export class SeccionEmprendimientoComponent implements OnInit {
 
 	loadEmprendimientos(): void {
 		this.loading = true;
-		this.emprendimientoService.getMisEmprendimientos().subscribe({
+		// Cargar todos los emprendimientos (puedes ajustar el size si quieres limitar)
+		this.emprendimientoService.obtenerMisEmprendimientos(0, 100).subscribe({
 			next: (response) => {
 				console.log('Respuesta completa:', response);
 
-				// Extraer el array de emprendimientos
-				let data: any[];
-				if (response?.content && Array.isArray(response.content)) {
-					data = response.content;
-				} else if (Array.isArray(response)) {
-					data = response;
-				} else {
-					console.warn('Formato inesperado:', response);
-					this.emprendimientos = [];
-					this.cardsArray = [];
-					this.loading = false;
-					return;
-				}
-
+				// Extraer el array de emprendimientos desde content
+				const data = response.content || [];
 				console.log('Emprendimientos encontrados:', data.length);
 				this.emprendimientos = data;
 

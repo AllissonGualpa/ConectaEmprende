@@ -38,8 +38,10 @@
 
             <!-- Emprendimiento -->
             <div class="md:col-span-2">
-              <label class="block text-xs text-gray-600 mb-1">Emprendimiento</label>
-              <app-all-emprendimiento-selector formControlName="idEmprendimiento" placeholder="Todos"
+              <app-all-emprendimiento-selector 
+                formControlName="idEmprendimiento" 
+                label="Emprendimiento"
+                placeholder="Todos"
                 (emprendimientoSelected)="onEmprendimientoSelected($event)">
               </app-all-emprendimiento-selector>
             </div>

@@ -62,7 +62,7 @@ export class EmprendimientoDetailComponent implements OnInit {
 
         // Generar QR solo para emprendimientos (no startups)
         if (!this.esStartup) {
-          const host = 'http://192.168.68.72:4000'; // IP de tu PC en la red WiFi
+          const host = 'http://localhost:8080'; // Cambio aquí
           const evaluacionUrl = `${host}/evaluacion/${id}`;
 
           this.qrCodeUrl =

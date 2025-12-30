@@ -12,7 +12,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../auth/auth.service';
-import { EditSolicitudEmprendimientoComponent } from '../../emprendedor/gestion-emprendedor/edit-solicitud-emprendimiento/edit-solicitud-emprendimiento.component';
 import { EmprendimientoService } from '../../../core/services/emprendimiento.service';
 import { SharedGeneralService } from '../../../shared/general/shared-general.service';
 @Component({
@@ -27,7 +26,6 @@ import { SharedGeneralService } from '../../../shared/general/shared-general.ser
 		MatSelectModule,
 		MatButtonModule,
 		MatIconModule,
-		EditSolicitudEmprendimientoComponent,
 	],
 	templateUrl: './admin-emprendimientos.component.html'
 })

@@ -123,7 +123,9 @@ export class AdminEventoComponent implements OnInit {
     });
   }
 
-  onEmprendimientoSelected(idEmprendimiento: number | null): void {
+  //CAMBIAR POR ID CUANDO VENGA
+
+  onEmprendimientoSelected(idEmprendimiento: string | null): void {
     this.filtrosForm.patchValue({ idEmprendimiento });
   }
 

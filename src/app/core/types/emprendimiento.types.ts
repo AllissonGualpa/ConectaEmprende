@@ -115,6 +115,11 @@ export interface EmprendimientosPaginated {
     lastPage: number;
 }
 
+export interface PageResponseDTO<T> {
+    content: T[];
+    pageable: EmprendimientosPaginated;
+}
+
 export interface EmprendimientoPublico {
     id: number;
     nombreComercial: string;
@@ -155,31 +160,4 @@ export interface EmprendimientoDetalle {
     presenciasDigitales: PresenciaDigital[];
     declaracionesFinales: DeclaracionFinalEmprendimiento[];
     participacionesComunidad: ParticipacionComunidad[];
-}
-
-export interface Solicitud {
-    id: number;
-    emprendimientoId: number;
-    nombreEmprendimiento: string;
-    tipoSolicitud: 'CREACION' | 'ACTUALIZACION';
-    estadoSolicitud: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA';
-    observaciones: string | null;
-    motivoRechazo: string | null;
-    fechaSolicitud: string;
-    fechaRespuesta: string | null;
-    nombreSolicitante: string;
-    nombreRevisor: string | null;
-}
-
-export interface Diferencia {
-    campo: string;
-    valorOriginal: any;
-    valorPropuesto: any;
-}
-
-export interface DetalleSolicitudAdmin {
-    datosPropuestos: EmprendimientoDetalle;
-    solicitud: Solicitud;
-    datosOriginales?: EmprendimientoDetalle; // Solo para ACTUALIZACION
-    diferencias?: Diferencia[]; // Solo para ACTUALIZACION
 }

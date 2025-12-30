@@ -15,9 +15,9 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { SolicitudesService } from '../../../core/services/solicitudes.service'; // 👈 CORRECTO
 import { AuthService } from '../../auth/auth.service';
-import { ModalWrapperEditSolicitudComponent } from '../../../shared/components/modal-wrapper-edit-solicitud/modal-wrapper-edit-solicitud.component';
 import { ModalObservacionesSolicitudComponent } from '../../shared/components/modal-observaciones-solicitud/modal-observaciones-solicitud.component';
-import { SolicitudAprobacionListado, SolicitudesPaginadasResponse } from '../../../core/types/solicitudes.types'; // 👈 AGREGAR
+import { SolicitudAprobacionListado, SolicitudesPaginadasResponse } from '../../../core/types/solicitudes.types';
+import { DetailsEmprendimientoComponent } from "../../emprendedor/gestion-emprendedor/emprendimiento/details-emprendimiento/details-emprendimiento.component"; // 👈 AGREGAR
 
 @Component({
   selector: 'app-admin-solicitudes',
@@ -30,12 +30,12 @@ import { SolicitudAprobacionListado, SolicitudesPaginadasResponse } from '../../
     MatDatepickerModule,
     MatNativeDateModule,
     MatFormFieldModule,
-    ModalWrapperEditSolicitudComponent,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
-  ],
+    DetailsEmprendimientoComponent
+],
   templateUrl: './admin-solicitudes.component.html',
   styleUrls: ['./admin-solicitudes.component.css'],
 })
@@ -55,6 +55,9 @@ export class AdminSolicitudesComponent implements OnInit {
   pageIndex = 0;
   pageSizeOptions = [5, 10, 25, 50];
 
+  showDetalleModal = false;
+  solicitudSeleccionadaId: number | null = null;
+  
   // Tabs
   selectedTab = 0;
 
@@ -169,7 +172,7 @@ export class AdminSolicitudesComponent implements OnInit {
   }
 
   verDetalle(solicitud: SolicitudAprobacionListado) {
-    if (!solicitud || (!solicitud.id && !solicitud.emprendimientoId)) {
+    if (!solicitud || !solicitud.id) {
       this.dialog.open(MensajeConfirmacionComponent, {
         width: '420px',
         data: {
@@ -182,23 +185,15 @@ export class AdminSolicitudesComponent implements OnInit {
       return;
     }
 
-    const idParaVer = solicitud.emprendimientoId ?? solicitud.id ?? null;
-    if (!idParaVer) {
-      return;
-    }
+    // ✅ Abrir modal con variables booleanas
+    this.solicitudSeleccionadaId = solicitud.id;
+    this.showDetalleModal = true;
+  }
 
-    const dialogRef = this.dialog.open(ModalWrapperEditSolicitudComponent, {
-      width: '900px',
-      maxHeight: '90vh',
-      panelClass: 'custom-dialog-container',
-      data: { emprendimientoId: idParaVer, soloLectura: true }
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'updated' || result === 'saved') {
-        this.loadSolicitudes();
-      }
-    });
+  // ✅ AGREGAR método para cerrar
+  closeDetalleModal(): void {
+    this.solicitudSeleccionadaId = null;
+    this.showDetalleModal = false;
   }
 
   aprobarSolicitud(solicitud: SolicitudAprobacionListado) {

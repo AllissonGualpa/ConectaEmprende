@@ -1,5 +1,12 @@
 <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
 
+	<div *ngIf="soloLectura" class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+		<p class="text-blue-700 font-medium">
+			<mat-icon class="align-middle mr-2">visibility</mat-icon>
+			Vista de solo lectura - Use los botones de aprobación fuera de este formulario
+		</p>
+	</div>
+
 	<!-- SECCIÓN 1: Información del representante -->
 	<div *ngIf="currentStep === 1">
 		<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
@@ -164,12 +171,22 @@
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<app-provincias-search [placeholder]="'Provincia'" [required]="false"
-					(provinciaSelected)="onProvinciaSelected($event)">
+				<app-provincias-search
+					[placeholder]="'Seleccionar provincia'"
+					[required]="false"
+					(provinciaSelected)="onProvinciaSelected($event)"
+					[disabled]="soloLectura"
+					formControlName="provincia">
 				</app-provincias-search>
 
-				<app-ciudades-search [placeholder]="'Ciudad'" [required]="false"
-					[provinciaId]="provinciaSeleccionada?.id ?? null" (ciudadSelected)="onCiudadSelected($event)">
+				<!-- Ciudad -->
+				<app-ciudades-search
+					[placeholder]="'Seleccionar ciudad'"
+					[required]="false"
+					[provincia]="provinciaSeleccionada"
+					(ciudadSelected)="onCiudadSelected($event)"
+					[disabled]="soloLectura"
+					formControlName="ciudad">
 				</app-ciudades-search>
 			</div>
 
@@ -818,7 +835,7 @@
 					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
 					Atrás
 				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
+				<button mat-raised-button type="button" (click)="siguiente()" *ngIf="esCreacion"
 					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
 					Enviar
 				</button>

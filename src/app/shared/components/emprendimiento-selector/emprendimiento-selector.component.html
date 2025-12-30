@@ -1,7 +1,7 @@
-<!-- Emprendimiento -->
-<div class="md:col-span-1 w-full">
-  <label class="block text-xs text-gray-600 mb-1">
+<div class="w-full">
+  <label class="block text-sm font-medium text-gray-700 mb-1">
     {{ label }}
+    <span *ngIf="required" class="text-red-500 ml-1">*</span>
   </label>
 
   <mat-form-field appearance="outline" class="w-full">
@@ -9,49 +9,34 @@
       [formControl]="emprendimientoControl"
       [placeholder]="placeholder"
       [required]="required"
-      [disabled]="disabled"
+      [disabled]="disabled || isLoading"
       (selectionChange)="onEmprendimientoSelected($event.value)"
     >
+      <!-- Opciones de emprendimientos -->
+      <mat-option 
+        *ngFor="let emprendimiento of filteredEmprendimientos; trackBy: trackByFn" 
+        [value]="emprendimiento.id"
+      >
+        {{ emprendimiento.nombreComercialEmprendimiento }}
+      </mat-option>
 
-      <!-- Cargando -->
+      <!-- Mensaje cuando está cargando -->
       <mat-option *ngIf="isLoading" disabled>
         <div class="flex items-center gap-2 py-2">
-          <mat-spinner diameter="18"></mat-spinner>
-          <span class="text-xs text-gray-600">
-            Cargando emprendimientos...
-          </span>
+          <mat-spinner diameter="16"></mat-spinner>
+          <span class="text-sm text-gray-500">Cargando...</span>
         </div>
       </mat-option>
 
-      <!-- Lista de emprendimientos -->
-      <mat-option
-        *ngFor="let emprendimiento of filteredEmprendimientos"
-        [value]="emprendimiento.id"
-      >
-        {{ emprendimiento.nombreComercial }}
+      <!-- Mensaje cuando no hay emprendimientos -->
+      <mat-option *ngIf="!isLoading && filteredEmprendimientos.length === 0" disabled>
+        <span class="text-sm text-gray-500">No hay emprendimientos disponibles</span>
       </mat-option>
-
-      <!-- Sin resultados -->
-      <mat-option
-        *ngIf="!isLoading && filteredEmprendimientos.length === 0 && searchText"
-        disabled
-      >
-        No se encontraron resultados
-      </mat-option>
-
-      <!-- Sin emprendimientos -->
-      <mat-option
-        *ngIf="!isLoading && emprendimientos.length === 0 && !searchText"
-        disabled
-      >
-        No hay emprendimientos disponibles
-      </mat-option>
-
     </mat-select>
 
-    <!-- Botón limpiar -->
+    <!-- Botón para limpiar selección -->
     <button
-      *ngIf="emprendimientoControl.value && !disabled"
+      *ngIf="emprendimientoControl.value && !disabled && !isLoading"
       matSuffix
       mat-icon-button
       type="button"
@@ -60,11 +45,9 @@
       <mat-icon>close</mat-icon>
     </button>
 
-    <mat-error *ngIf="error">
-      {{ error }}
-    </mat-error>
-
-    <mat-error *ngIf="emprendimientoControl.hasError('required')">
+    <!-- Mensajes de error -->
+    <mat-error *ngIf="error">{{ error }}</mat-error>
+    <mat-error *ngIf="emprendimientoControl.hasError('required') && !error">
       Debe seleccionar un emprendimiento
     </mat-error>
   </mat-form-field>

@@ -1,195 +1,163 @@
-<div class="min-h-screen bg-gray-50 py-8 px-4">
-  <div class="max-w-2xl mx-auto">
-    
-    <!-- Loading State -->
-    <div *ngIf="cargando" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
+<div class="min-h-screen bg-gray-50 py-4 sm:py-8 px-3 sm:px-4">
+	<div class="max-w-2xl mx-auto">
 
-    <!-- Error State -->
-    <div *ngIf="error && !cargando" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-      <p class="text-red-800">{{ error }}</p>
-    </div>
+		<!-- Loading State -->
+		<div *ngIf="cargando" class="flex justify-center items-center py-12">
+			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+		</div>
 
-    <!-- Success State -->
-    <div *ngIf="enviado" class="bg-white rounded-lg shadow-sm p-8 text-center">
-      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-      </div>
-      <h2 class="text-2xl font-semibold text-gray-900 mb-2">¡Gracias por tu valoración!</h2>
-      <p class="text-gray-600">Tu opinión es muy importante para nosotros.</p>
-    </div>
+		<!-- Error State -->
+		<div *ngIf="error && !cargando" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+			<p class="text-red-800 text-sm">{{ error }}</p>
+		</div>
 
-    <!-- Form State -->
-    <div *ngIf="formularioData && !cargando && !enviado" class="bg-white rounded-lg shadow-sm">
-      
-      <!-- Header -->
-      <div class="border-b border-gray-200 px-6 py-4">
-        <h1 class="text-xl font-semibold text-gray-900">{{ formularioData.nombre }}</h1>
-      </div>
+		<!-- Success State -->
+		<div *ngIf="enviado" class="bg-white rounded-lg shadow-sm p-6 sm:p-8 text-center">
+			<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+				<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+				</svg>
+			</div>
+			<h2 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">¡Gracias por tu valoración!</h2>
+			<p class="text-sm sm:text-base text-gray-600">Tu opinión es muy importante para nosotros.</p>
+		</div>
 
-      <form [formGroup]="valoracionForm" (ngSubmit)="enviarValoracion()" class="p-6">
-        
-        <!-- Satisfacción General (Solo mostrar para preguntas tipo escala de 5) -->
-        <div *ngIf="satisfaccionGeneral !== null && tieneEscalaCinco()" 
-             class="mb-8 pb-6 border-b border-gray-200">
-          <h3 class="text-sm font-medium text-gray-700 mb-4">Califica el tiempo de atención en nuestra farmacia:</h3>
-          
-          <div class="flex justify-between items-center gap-4">
-            <!-- Muy insatisfecho -->
-            <div class="flex flex-col items-center">
-              <button 
-                type="button"
-                [class.opacity-100]="satisfaccionGeneral === 'insatisfecho'"
-                [class.opacity-40]="satisfaccionGeneral !== 'insatisfecho'"
-                class="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center text-2xl transition-opacity">
-                😠
-              </button>
-              <span class="text-xs text-red-600 mt-2 font-medium">Muy insatisfecho</span>
-            </div>
+		<!-- Form State -->
+		<div *ngIf="formularioData && !cargando && !enviado" class="bg-white rounded-lg shadow-sm">
 
-            <!-- Neutral -->
-            <div class="flex flex-col items-center">
-              <button 
-                type="button"
-                [class.opacity-100]="satisfaccionGeneral === 'neutral'"
-                [class.opacity-40]="satisfaccionGeneral !== 'neutral'"
-                class="w-14 h-14 rounded-full bg-yellow-400 flex items-center justify-center text-2xl transition-opacity">
-                😐
-              </button>
-              <span class="text-xs text-yellow-700 mt-2 font-medium">Neutral</span>
-            </div>
+			<!-- Header -->
+			<div class="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+				<h1 class="text-lg sm:text-xl font-semibold text-gray-900">{{ formularioData.nombre }}</h1>
+			</div>
 
-            <!-- Muy satisfecho -->
-            <div class="flex flex-col items-center">
-              <button 
-                type="button"
-                [class.opacity-100]="satisfaccionGeneral === 'satisfecho'"
-                [class.opacity-40]="satisfaccionGeneral !== 'satisfecho'"
-                class="w-14 h-14 rounded-full bg-red-500 flex items-center justify-center text-2xl transition-opacity">
-                😍
-              </button>
-              <span class="text-xs text-green-600 mt-2 font-medium">Muy satisfecho</span>
-            </div>
-          </div>
-        </div>
+			<form [formGroup]="valoracionForm" (ngSubmit)="enviarValoracion()" class="p-4 sm:p-6">
 
-        <!-- Preguntas -->
-        <div *ngFor="let pregunta of formularioData.preguntas; let i = index" 
-             class="mb-8"
-             [class.pb-8]="i < formularioData.preguntas.length - 1"
-             [class.border-b]="i < formularioData.preguntas.length - 1"
-             [class.border-gray-200]="i < formularioData.preguntas.length - 1">
-          
-          <label class="block text-sm font-medium text-gray-900 mb-4">
-            {{ i + 1 }}. {{ pregunta.pregunta }}
-            <span *ngIf="pregunta.obligatoria" class="text-red-500 ml-1">*</span>
-          </label>
+				<!-- Satisfacción General (emojis) - Siempre visible si hay escalas de 5 -->
+				<div *ngIf="tieneEscalaCinco()"
+					class="mb-6 sm:mb-8 pb-6 border-b border-gray-200 flex justify-center gap-6 sm:gap-10">
+					<!-- Insatisfecho -->
+					<div class="flex flex-col items-center">
+						<div [class.opacity-100]="satisfaccionGeneral === 'insatisfecho'"
+							[class.opacity-30]="satisfaccionGeneral !== 'insatisfecho' && satisfaccionGeneral !== null"
+							[class.opacity-100]="satisfaccionGeneral === null"
+							class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-500 flex items-center justify-center text-2xl sm:text-3xl transition-opacity">
+							😠
+						</div>
+						<span class="text-[10px] sm:text-xs text-red-600 mt-1 sm:mt-2 font-medium text-center">Muy
+							insatisfecho</span>
+					</div>
 
-          <!-- Escala de respuestas -->
-          <div *ngIf="pregunta.tipo === 'ESCALA'" class="space-y-4">
-            
-            <!-- Para escalas de 5 (servicio típico) -->
-            <div *ngIf="pregunta.numeroRespuestas === 5" class="flex justify-between gap-2">
-              <button
-                *ngFor="let valor of getArrayFromNumber(pregunta.numeroRespuestas)"
-                type="button"
-                (click)="seleccionarRespuesta(pregunta.idPregunta, valor)"
-                [class.bg-green-600]="estaSeleccionado(pregunta.idPregunta, valor)"
-                [class.text-white]="estaSeleccionado(pregunta.idPregunta, valor)"
-                [class.bg-gray-200]="!estaSeleccionado(pregunta.idPregunta, valor)"
-                [class.text-gray-400]="!estaSeleccionado(pregunta.idPregunta, valor)"
-                class="flex-1 h-16 rounded-full font-semibold text-2xl transition-all hover:scale-105">
-                {{ valor }}
-              </button>
-            </div>
+					<!-- Neutral -->
+					<div class="flex flex-col items-center">
+						<div [class.opacity-100]="satisfaccionGeneral === 'neutral'"
+							[class.opacity-30]="satisfaccionGeneral !== 'neutral' && satisfaccionGeneral !== null"
+							[class.opacity-100]="satisfaccionGeneral === null"
+							class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-yellow-400 flex items-center justify-center text-2xl sm:text-3xl transition-opacity">
+							😐
+						</div>
+						<span
+							class="text-[10px] sm:text-xs text-yellow-700 mt-1 sm:mt-2 font-medium text-center">Neutral</span>
+					</div>
 
-            <!-- Para escalas de 10 (NPS) -->
-            <div *ngIf="pregunta.numeroRespuestas === 10" class="space-y-2">
-              <div class="flex justify-between gap-2">
-                <button
-                  *ngFor="let valor of getArrayFromNumber(pregunta.numeroRespuestas)"
-                  type="button"
-                  (click)="seleccionarRespuesta(pregunta.idPregunta, valor)"
-                  [class.bg-green-600]="estaSeleccionado(pregunta.idPregunta, valor)"
-                  [class.text-white]="estaSeleccionado(pregunta.idPregunta, valor)"
-                  [class.bg-gray-200]="!estaSeleccionado(pregunta.idPregunta, valor)"
-                  [class.text-gray-400]="!estaSeleccionado(pregunta.idPregunta, valor)"
-                  class="flex-1 h-14 rounded-lg font-semibold transition-all hover:scale-105 text-sm">
-                  {{ valor }}
-                </button>
-              </div>
-              <div class="flex justify-between text-xs text-gray-500 px-1">
-                <span>Poco probable</span>
-                <span>Muy probable</span>
-              </div>
-            </div>
+					<!-- Satisfecho -->
+					<div class="flex flex-col items-center">
+						<div [class.opacity-100]="satisfaccionGeneral === 'satisfecho'"
+							[class.opacity-30]="satisfaccionGeneral !== 'satisfecho' && satisfaccionGeneral !== null"
+							[class.opacity-100]="satisfaccionGeneral === null"
+							class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-500 flex items-center justify-center text-2xl sm:text-3xl transition-opacity">
+							😍
+						</div>
+						<span class="text-[10px] sm:text-xs text-green-600 mt-1 sm:mt-2 font-medium text-center">Muy
+							satisfecho</span>
+					</div>
+				</div>
 
-            <!-- Etiquetas descriptivas -->
-            <div *ngIf="pregunta.numeroRespuestas === 5" class="flex justify-between text-xs text-gray-500">
-              <span>Muy malo</span>
-              <span>Malo</span>
-              <span>Regular</span>
-              <span>Bueno</span>
-              <span>Excelente</span>
-            </div>
-          </div>
+				<!-- Preguntas -->
+				<div *ngFor="let pregunta of formularioData.preguntas; let i = index" class="mb-6 sm:mb-8"
+					[class.pb-6]="i < formularioData.preguntas.length - 1"
+					[class.sm:pb-8]="i < formularioData.preguntas.length - 1"
+					[class.border-b]="i < formularioData.preguntas.length - 1"
+					[class.border-gray-200]="i < formularioData.preguntas.length - 1">
 
-          <!-- Opción múltiple (si aplica) -->
-          <div *ngIf="pregunta.tipo === 'SELECCION_MULTIPLE' && pregunta.opciones" class="space-y-2">
-            <div *ngFor="let opcion of pregunta.opciones" 
-                 class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
-              <input
-                type="radio"
-                [id]="'opcion_' + opcion.idOpcion"
-                [name]="'pregunta_' + pregunta.idPregunta"
-                [value]="opcion.valor"
-                (change)="seleccionarRespuesta(pregunta.idPregunta, opcion.valor)"
-                class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-              <label 
-                [for]="'opcion_' + opcion.idOpcion"
-                class="ml-3 text-sm text-gray-700 cursor-pointer flex-1">
-                {{ opcion.textoOpcion }}
-              </label>
-            </div>
-          </div>
+					<label class="block text-sm sm:text-base font-medium text-gray-900 mb-4">
+						{{ i + 1 }}. {{ pregunta.pregunta }}
+						<span *ngIf="pregunta.obligatoria" class="text-red-500 ml-1">*</span>
+					</label>
 
-          <!-- Texto libre (si aplica) -->
-          <div *ngIf="pregunta.tipo === 'TEXTO_LIBRE'">
-            <textarea
-              [formControlName]="'pregunta_' + pregunta.idPregunta"
-              rows="4"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder="Escribe tu respuesta aquí..."></textarea>
-          </div>
+					<!-- Escala de respuestas -->
+					<div *ngIf="pregunta.tipo === 'ESCALA'" class="space-y-3 sm:space-y-4">
 
-          <!-- Error de validación -->
-          <div *ngIf="valoracionForm.get('pregunta_' + pregunta.idPregunta)?.invalid && 
+						<!-- Para escalas de 5 (servicio típico) -->
+						<div *ngIf="pregunta.numeroRespuestas === 5" class="flex justify-between gap-2">
+							<button *ngFor="let valor of getArrayFromNumber(pregunta.numeroRespuestas)" type="button"
+								(click)="seleccionarRespuesta(pregunta.idPregunta, valor)"
+								[class.bg-green-600]="estaSeleccionado(pregunta.idPregunta, valor)"
+								[class.text-white]="estaSeleccionado(pregunta.idPregunta, valor)"
+								[class.shadow-lg]="estaSeleccionado(pregunta.idPregunta, valor)"
+								[class.bg-gray-200]="!estaSeleccionado(pregunta.idPregunta, valor)"
+								[class.text-gray-700]="!estaSeleccionado(pregunta.idPregunta, valor)"
+								class="flex-1 h-14 sm:h-16 rounded-full font-bold text-xl sm:text-2xl transition-all hover:scale-105 active:scale-95">
+								{{ valor }}
+							</button>
+						</div>
+
+						<!-- Para escalas de 10 (NPS) -->
+						<div *ngIf="pregunta.numeroRespuestas === 10" class="space-y-2">
+							<div class="grid grid-cols-5 gap-2">
+								<button *ngFor="let valor of getArrayFromNumber(pregunta.numeroRespuestas)"
+									type="button" (click)="seleccionarRespuesta(pregunta.idPregunta, valor)"
+									[class.bg-green-600]="estaSeleccionado(pregunta.idPregunta, valor)"
+									[class.text-white]="estaSeleccionado(pregunta.idPregunta, valor)"
+									[class.shadow-lg]="estaSeleccionado(pregunta.idPregunta, valor)"
+									[class.bg-gray-200]="!estaSeleccionado(pregunta.idPregunta, valor)"
+									[class.text-gray-700]="!estaSeleccionado(pregunta.idPregunta, valor)"
+									class="h-12 sm:h-14 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 text-sm sm:text-base">
+									{{ valor }}
+								</button>
+							</div>
+							<div class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
+								<span>Poco probable</span>
+								<span>Muy probable</span>
+							</div>
+						</div>
+
+						<!-- Etiquetas descriptivas para escala de 5 -->
+						<div *ngIf="pregunta.numeroRespuestas === 5"
+							class="flex justify-between text-[10px] sm:text-xs text-gray-500 px-1">
+							<span class="text-center flex-1">Muy malo</span>
+							<span class="text-center flex-1">Malo</span>
+							<span class="text-center flex-1">Regular</span>
+							<span class="text-center flex-1">Bueno</span>
+							<span class="text-center flex-1">Excelente</span>
+						</div>
+					</div>
+
+					<!-- Error de validación -->
+					<div *ngIf="valoracionForm.get('pregunta_' + pregunta.idPregunta)?.invalid && 
                       valoracionForm.get('pregunta_' + pregunta.idPregunta)?.touched"
-               class="mt-2 text-sm text-red-600">
-            Esta pregunta es obligatoria
-          </div>
-        </div>
+						class="mt-2 text-xs sm:text-sm text-red-600">
+						Esta pregunta es obligatoria
+					</div>
+				</div>
 
-        <!-- Botón de envío -->
-        <div class="flex justify-center pt-6">
-          <button
-            type="submit"
-            [disabled]="enviando"
-            class="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors min-w-[200px]">
-            <span *ngIf="!enviando">Enviar valoración</span>
-            <span *ngIf="enviando" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Enviando...
-            </span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+				<!-- Botón de envío -->
+				<div class="flex justify-center pt-4 sm:pt-6">
+					<button type="submit" [disabled]="enviando"
+						class="w-full sm:w-auto px-6 sm:px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors sm:min-w-[200px] text-sm sm:text-base">
+						<span *ngIf="!enviando">Enviar valoración</span>
+						<span *ngIf="enviando" class="flex items-center justify-center">
+							<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+									stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor"
+									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+								</path>
+							</svg>
+							Enviando...
+						</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>

@@ -84,11 +84,11 @@
 
 			<!-- Contenido scrollable -->
 			<div class="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 pb-6 pt-3">
-			<app-details-emprendimiento
-				*ngIf="showCreateSolicitudModal"
-				(emprendimientoCreado)="onEmprendimientoCreated()">  
-				<!-- 👆 Conectar el evento -->
-			</app-details-emprendimiento>
+				<app-details-emprendimiento
+					*ngIf="showCreateSolicitudModal"
+					modo="crear"
+					(emprendimientoCreado)="onEmprendimientoCreated()">
+				</app-details-emprendimiento>
 			</div>
 
 		</div>
@@ -124,12 +124,11 @@
 
 			<!-- Contenido scrollable -->
 			<div class="flex-1 overflow-auto px-4 sm:px-6 pb-6 pt-3">
-				<!-- Pasar el id seleccionado al componente de edición.
-             Se asume que el componente acepta un @Input() id (ajustar nombre si es distinto)
-             y emite (close) y (updated) / (saved) — adaptar según implementación real -->
-				<app-edit-solicitud-emprendimiento *ngIf="showEditSolicitudModal && selectedEditId !== null"
-					[emprendimientoId]="selectedEditId" (updated)="onEmprendimientoUpdated()"
-					(close)="closeEditSolicitudModal()"></app-edit-solicitud-emprendimiento>
+				<app-details-emprendimiento
+					modo="editar-emprendedor"
+					[emprendimientoId]="selectedEditId!"
+					(emprendimientoEditado)="onEmprendimientoUpdated()">
+				</app-details-emprendimiento>
 			</div>
 		</div>
 	</div>
