@@ -225,7 +225,7 @@ export class EmprendimientoService {
      * @returns Observable con los datos del emprendimiento público
      */
     obtenerEmprendimientoPublico(id: number): Observable<EmprendimientoPublico> {
-        return this._httpClient.get<EmprendimientoPublico>(`${environment.api_url}/v1/emprendimientos/publico/${id}`).pipe(
+        return this._httpClient.get<EmprendimientoPublico>(`${environment.api_url}/v1/emprendimientos/${id}/publico`).pipe(
             tap((emprendimiento) => {
                 this._emprendimientoPublico.next(emprendimiento);
             }),
