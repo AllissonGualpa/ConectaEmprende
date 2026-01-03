@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EventoService } from '../../admin/evento.service';
+import { EventoService } from '../../../core/services/evento.service';
 
 interface EventoDetail {
   id?: number | string;

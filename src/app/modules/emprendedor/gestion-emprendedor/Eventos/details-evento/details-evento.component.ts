@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { EmprendimientoSelectorComponent } from '../../../../../shared/components/emprendimiento-selector/emprendimiento-selector.component';
-import { EventoService } from '../../../../admin/evento.service';
+import { EventoService } from '../../../../../core/services/evento.service';
 
 export interface EventoDialogData {
   mode: 'create' | 'edit';

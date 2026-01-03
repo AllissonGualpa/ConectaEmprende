@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DetailsEventoComponent } from '../details-evento/details-evento.component';
 import { CardEventComponent, EventoCard } from '../../../../../shared/components/card-event/card-event.component';
-import { EventoService } from '../../../../admin/evento.service';
+import { EventoService } from '../../../../../core/services/evento.service';
 import { MensajeConfirmacionComponent } from '../../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 

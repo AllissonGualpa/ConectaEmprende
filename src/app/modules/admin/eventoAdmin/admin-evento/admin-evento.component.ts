@@ -13,8 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DetailEventAdminComponent } from '../detail-event-admin/detail-event-admin.component';
 import { NavbarAdminComponent } from '../../../../layout/navbar-admin/navbar-admin.component';
-import { AdminEventoItemDto, AdminEventosResponseDto, EventoService } from '../../evento.service';
-import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { EventoService } from '../../../../core/services/evento.service';
+import { AdminEventoItemDto, AdminEventosResponseDto } from '../../../../core/types/eventos.types';import { MensajeConfirmacionComponent } from '../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 import { AllEmprendimientoSelectorComponent } from '../../../../shared/all-emprendimiento-selector/all-emprendimiento-selector.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
