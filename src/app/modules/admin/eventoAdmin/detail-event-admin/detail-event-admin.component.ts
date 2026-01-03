@@ -102,7 +102,7 @@ export class DetailEventAdminComponent implements OnInit {
                   localStorage.getItem('authToken') || 
                   undefined;
 
-    this.eventoService.getEventByIdAdmin(idEvento, { token }).subscribe({
+    this.eventoService.getEventByIdAdmin(idEvento).subscribe({
       next: (evento) => {
         // Parsear fecha y hora
         let fechaEvento = null;

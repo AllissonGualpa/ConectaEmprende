@@ -422,7 +422,7 @@ export class AdminEventoComponent implements OnInit {
 
     this.loading = true;
 
-    this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+    this.eventoService.inactivateEvent(idToSend).subscribe({
       next: () => {
         evento.activo = false;
         evento.estado = 'Cancelado';
@@ -488,7 +488,7 @@ export class AdminEventoComponent implements OnInit {
 
     if (evento.activo == true) {
       // Si está activo, inactivar
-      this.eventoService.inactivateEvent(idToSend, { token }).subscribe({
+      this.eventoService.inactivateEvent(idToSend).subscribe({
         next: () => {
           evento.activo = false;
           this.aplicarFiltros();
@@ -519,7 +519,7 @@ export class AdminEventoComponent implements OnInit {
       });
     } else {
       // Si está inactivo, activar
-      this.eventoService.activateEvent(idToSend, { token }).subscribe({
+      this.eventoService.activateEvent(idToSend).subscribe({
         next: () => {
           evento.activo = true;
           this.aplicarFiltros();

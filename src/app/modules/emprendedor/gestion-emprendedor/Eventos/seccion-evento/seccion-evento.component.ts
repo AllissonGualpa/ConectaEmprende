@@ -156,7 +156,7 @@ export class SeccionEventoComponent implements OnInit {
                       localStorage.getItem('authToken') || 
                       undefined;
         
-        this.eventoService.cancelEvent(evento.id!, { token }).subscribe({
+        this.eventoService.cancelEvent(evento.id!).subscribe({
           next: () => {
             this.loadEventos();
           },
@@ -245,7 +245,7 @@ export class SeccionEventoComponent implements OnInit {
                   localStorage.getItem('authToken') || 
                   undefined;
     
-    this.eventoService.getEmprendedorEvents({ page: 0, size: 100, token }).subscribe({
+    this.eventoService.getEmprendedorEvents({ page: 0, size: 100 }).subscribe({
       next: (res: any) => {
         let items: any[] = [];
         if (Array.isArray(res)) items = res;
