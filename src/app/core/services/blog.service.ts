@@ -16,7 +16,6 @@ import { environment } from '../../../environments/environment';
 export class BlogService {
 
   private baseApiUrl = environment.api_url + environment.api_blog;
-  toggleArchiveBlog: any;
 
   constructor(private http: HttpClient) {}
 
@@ -73,36 +72,63 @@ export class BlogService {
     );
   }
 
-  createBlog(blog: any, estado: string): Observable<any> {
-    const formData = new FormData();
-    formData.append('titulo', blog.titulo);
-    formData.append('descripcionCorta', blog.resumen);
-    formData.append('contenido', blog.contenido);
-    formData.append('estado', estado);
+  // Métodos para crear, actualizar, archivar artículos
 
-    blog.tags.forEach((t: Tag) =>
-      formData.append('idsTags', t.idTag.toString())
-    );
-
-    if (blog.imagenDestacada) {
-      formData.append('imagen', blog.imagenDestacada);
-    }
+  /**
+   * Crear un nuevo artículo de blog
+   * @param formData FormData con titulo, descripcionCorta, contenido, estado, imagen, idsTags
+   * @param idUsuario ID del usuario que crea el artículo
+   */
+  createBlog(formData: FormData, idUsuario: number): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    });
 
     return this.http.post(
-      `${this.baseApiUrl}/admin/articulos`,
+      `${this.baseApiUrl}/articulos/crear?idUsuario=${idUsuario}`,
       formData,
-      { headers: this.getHeaders() }
+      { headers }
     );
   }
 
+  /**
+   * Actualizar un artículo existente
+   * @param id ID del artículo a actualizar
+   * @param formData FormData con los campos a actualizar
+   * @param idUsuario ID del usuario que actualiza
+   */
   updateArticle(
     id: number,
     formData: FormData,
     idUsuario: number
   ): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    });
+
     return this.http.put(
-      `${this.baseApiUrl}/admin/articulos/${id}?idUsuario=${idUsuario}`,
+      `${this.baseApiUrl}/articulos/${id}?idUsuario=${idUsuario}`,
       formData,
+      { headers }
+    );
+  }
+
+  /**
+   * Archivar o desarchivar un artículo
+   * @param id ID del artículo
+   * @param accion 'archivar' o 'desarchivar'
+   * @param idUsuario ID del usuario que realiza la acción
+   */
+  toggleArchiveBlog(
+    id: number,
+    accion: 'archivar' | 'desarchivar',
+    idUsuario: number
+  ): Observable<any> {
+    const url = `${this.baseApiUrl}/articulos/${id}/${accion}?idUsuario=${idUsuario}`;
+    
+    return this.http.patch(
+      url,
+      {},
       { headers: this.getHeaders() }
     );
   }
@@ -123,12 +149,13 @@ export class BlogService {
     return this.http.get<PaginatedResponse<BlogArticle>>(url);
   }
 
+   //Obtener un artículo público por ID
   getPublicArticleById(id: number): Observable<BlogArticle> {
     return this.http.get<BlogArticle>(
       `${this.baseApiUrl}/publico/articulos/${id}`
     );
   }
-
+  
   formatDisplayDate(date: string): string {
     return new Date(date).toLocaleDateString('es-EC');
   }
