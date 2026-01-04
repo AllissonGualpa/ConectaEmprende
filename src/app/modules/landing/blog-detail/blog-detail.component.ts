@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BlogService, BlogArticle } from '../../admin/blog.service';
+import { BlogArticle, BlogService } from '../../../core/services/blog.service';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';

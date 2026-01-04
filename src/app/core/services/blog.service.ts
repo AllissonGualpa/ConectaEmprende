@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Tag, BlogCreate, BlogArticle, AdminBlog, PaginatedResponse } from './blog.types';
+import { Tag, BlogCreate, BlogArticle, AdminBlog, PaginatedResponse } from '../../core/types/blog.types';
 import { environment } from '../../../environments/environment';
 
 @Injectable({

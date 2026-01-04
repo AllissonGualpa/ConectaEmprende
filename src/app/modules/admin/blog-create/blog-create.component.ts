@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { BlogService } from '../blog.service';
-import { Tag } from '../blog.types';
+import { BlogService } from '../../../core/services/blog.service';
+import { Tag } from '../../../core/types/blog.types';
 // NUEVO: imports para dialog
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
