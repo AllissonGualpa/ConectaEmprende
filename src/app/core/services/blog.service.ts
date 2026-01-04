@@ -1,28 +1,48 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Tag, BlogCreate, BlogArticle, AdminBlog, PaginatedResponse } from '../../core/types/blog.types';
+import {
+  Tag,
+  BlogCreate,
+  BlogArticle,
+  AdminBlog,
+  PaginatedResponse
+} from '../types/blog.types';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BlogService {
+
   private baseApiUrl = environment.api_url + environment.api_blog;
+  toggleArchiveBlog: any;
 
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`
+    });
   }
 
   // Obtener todos los tags
+
   getAllTags(): Observable<Tag[]> {
-    return this.http.get<Tag[]>(`${this.baseApiUrl}/tags`, { headers: this.getHeaders() });
+    return this.http.get<Tag[]>(`${this.baseApiUrl}/tags`);
+  }
+
+  createTag(nombre: string): Observable<Tag> {
+    return this.http.post<Tag>(
+      `${this.baseApiUrl}/tags`,
+      { nombre },
+      { headers: this.getHeaders() }
+    );
   }
 
   // Obtener artículos con filtros/paginación
+
   getBlogs(params: {
     page: number;
     size: number;
@@ -31,130 +51,85 @@ export class BlogService {
     estado?: string;
     fechaInicio?: string;
     fechaFin?: string;
-  }): Observable<PaginatedResponse<AdminBlog> | AdminBlog[]> {
-    const { page, size, tag, estado, titulo, fechaInicio, fechaFin } = params;
-    const inicio = fechaInicio || '2024-01-01';
-    const fin = fechaFin || '2025-12-31';
+  }): Observable<PaginatedResponse<AdminBlog>> {
 
-    let url = `${this.baseApiUrl}/admin/articulos?page=${page}&size=${size}`;
-    url += `&fechaInicio=${this.formatDate(inicio, false)}`;
-    url += `&fechaFin=${this.formatDate(fin, true)}`;
+    let url = `${this.baseApiUrl}/admin/articulos?page=${params.page}&size=${params.size}`;
 
-    if (tag) url += `&idTag=${tag}`;
-    if (titulo) url += `&titulo=${titulo}`;
-    if (estado) url += `&estado=${estado}`;
+    if (params.fechaInicio) url += `&fechaInicio=${params.fechaInicio}`;
+    if (params.fechaFin) url += `&fechaFin=${params.fechaFin}`;
+    if (params.tag) url += `&idTag=${params.tag}`;
+    if (params.titulo) url += `&titulo=${params.titulo}`;
+    if (params.estado) url += `&estado=${params.estado}`;
 
-    return this.http.get<any>(url, { headers: this.getHeaders() });
-  }
-
-  // Obtener un artículo por id (admin)
-  getArticleById(blogId: number): Observable<any> {
-    return this.http.get<any>(`${this.baseApiUrl}/admin/articulos/${blogId}`, { headers: this.getHeaders() });
-  }
-
-  // Obtener un artículo público por id
-  getPublicArticleById(id: number): Observable<BlogArticle> {
-    const url = `${this.baseApiUrl}/publico/articulos/${id}`;
-    return this.http.get<BlogArticle>(url, { headers: this.getOptionalHeaders() });
-  }
-
-  // Actualizar artículo
-  updateArticle(blogId: number, payload: any, userId?: number): Observable<any> {
-    const uid = userId ?? Number(localStorage.getItem('idUsuario') || '1');
-    return this.http.put(`${this.baseApiUrl}/articulos/${blogId}?idUsuario=${uid}`, payload, {
+    return this.http.get<PaginatedResponse<AdminBlog>>(url, {
       headers: this.getHeaders()
     });
   }
 
-  // Acción genérica (archivar/desarchivar/otras)
-  toggleArchiveBlog(blogId: number, action: 'archivar' | 'desarchivar', userId?: number): Observable<any> {
-    const uid = userId ?? Number(localStorage.getItem('idUsuario') || '1');
-    return this.http.put(
-      `${this.baseApiUrl}/articulos/${blogId}/${action}?idUsuario=${uid}`,
-      {},
-      { headers: this.getHeaders(), responseType: 'text' }
+  getArticleById(id: number): Observable<BlogArticle> {
+    return this.http.get<BlogArticle>(
+      `${this.baseApiUrl}/admin/articulos/${id}`,
+      { headers: this.getHeaders() }
     );
   }
 
-  // Eliminar artículo
-  deleteArticle(blogId: number, userId?: number): Observable<any> {
-    const uid = userId ?? Number(localStorage.getItem('idUsuario') || '1');
-    return this.http.delete(`${this.baseApiUrl}/articulos/${blogId}?idUsuario=${uid}`, {
-      headers: this.getHeaders(),
-      responseType: 'text' as 'json'
-    });
-  }
-
-  // Crear tag (admin)
-  createTag(nombre: string): Observable<any> {
-    const idUsuario = localStorage.getItem('idUsuario') || '1';
-    return this.http.post(`${this.baseApiUrl}/tags/crear?idUsuario=${idUsuario}`, { nombre }, { headers: this.getHeaders() });
-  }
-
-  // Subir imagen
-  uploadImage(file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    // no manipular Content-Type; HttpClient lo asigna con boundary
-    return this.http.post(`${this.baseApiUrl}/imagenes/subir`, formData, {
-      headers: this.getHeaders()
-    });
-  }
-
-  // Crear artículo
-  createBlog(blog: BlogCreate, estado: string = 'PUBLICADO'): Observable<any> {
-    const idUsuario = localStorage.getItem('idUsuario') || '1';
+  createBlog(blog: any, estado: string): Observable<any> {
     const formData = new FormData();
     formData.append('titulo', blog.titulo);
     formData.append('descripcionCorta', blog.resumen);
     formData.append('contenido', blog.contenido);
     formData.append('estado', estado);
 
-    const nombresTags = blog.tags.map(t => t.nombre).join(',');
-    const idsTags = blog.tags.map(t => t.idTag).join(',');
-    formData.append('nombresTags', nombresTags || 'sin-tag');
-    formData.append('idsTags', idsTags || '');
-    if (blog.imagenDestacada) formData.append('imagen', blog.imagenDestacada);
+    blog.tags.forEach((t: Tag) =>
+      formData.append('idsTags', t.idTag.toString())
+    );
 
-    return this.http.post(`${this.baseApiUrl}/articulos/crear?idUsuario=${idUsuario}`, formData, { headers: this.getHeaders() });
+    if (blog.imagenDestacada) {
+      formData.append('imagen', blog.imagenDestacada);
+    }
+
+    return this.http.post(
+      `${this.baseApiUrl}/admin/articulos`,
+      formData,
+      { headers: this.getHeaders() }
+    );
   }
 
-  // Helper que devuelve headers solo si hay token (para endpoints públicos que aceptan o no auth)
-  private getOptionalHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    let headers = new HttpHeaders();
-    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
-    return headers;
+  updateArticle(
+    id: number,
+    formData: FormData,
+    idUsuario: number
+  ): Observable<any> {
+    return this.http.put(
+      `${this.baseApiUrl}/admin/articulos/${id}?idUsuario=${idUsuario}`,
+      formData,
+      { headers: this.getHeaders() }
+    );
   }
 
   // Obtener artículos públicos (paginados) — usado por la landing
-  getPublicArticles(params?: { fechaInicio?: string; page?: number; size?: number; idTag?: number }): Observable<any> {
-    const fechaInicio = params?.fechaInicio || '2024-06-01T00:00:00';
-    const page = params?.page ?? 0;
-    const size = params?.size ?? 10;
-    const idTagParam = params?.idTag ? `&idTag=${params.idTag}` : '';
-    const url = `${this.baseApiUrl}/publico/articulos?fechaInicio=${encodeURIComponent(fechaInicio)}&page=${page}&size=${size}${idTagParam}`;
-    return this.http.get<any>(url, { headers: this.getOptionalHeaders() });
+
+  getPublicArticles(params: {
+    page: number;
+    size: number;
+    idTag?: string;
+    query?: string;
+  }): Observable<PaginatedResponse<BlogArticle>> {
+
+    let url = `${this.baseApiUrl}/publico/articulos?page=${params.page}&size=${params.size}`;
+    if (params.idTag) url += `&idTag=${params.idTag}`;
+    if (params.query) url += `&titulo=${params.query}`;
+
+    return this.http.get<PaginatedResponse<BlogArticle>>(url);
   }
 
-  // Formatear fecha para display
-  formatDisplayDate(fechaISO: string): string {
-    const fecha = new Date(fechaISO);
-    const opciones: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-    return fecha.toLocaleDateString('es-ES', opciones);
+  getPublicArticleById(id: number): Observable<BlogArticle> {
+    return this.http.get<BlogArticle>(
+      `${this.baseApiUrl}/publico/articulos/${id}`
+    );
   }
 
-  private formatDate(dateStr: string, endOfDay = false): string {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr + (endOfDay ? 'T23:59:59' : 'T00:00:00');
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = endOfDay ? '23' : '00';
-    const mi = endOfDay ? '59' : '00';
-    const ss = endOfDay ? '59' : '00';
-    return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+  formatDisplayDate(date: string): string {
+    return new Date(date).toLocaleDateString('es-EC');
   }
 }
-
-export { BlogArticle };
