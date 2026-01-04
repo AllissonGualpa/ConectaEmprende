@@ -3,31 +3,9 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { AdminEventosResponseDto } from '../types/eventos.types';
 
-// DTOs para /admin
-export interface AdminEventoItemDto {
-    idEvento: number;
-    titulo: string;
-    idEmprendimiento: number;
-    nombreEmprendimiento: string;
-    fechaEvento: string;      // ISO
-    fechaCreacion: string;    // ISO
-    estadoEvento: string;     // 'programado', etc.
-    tipoEvento: string;       // 'presencial', etc.
-    activo: boolean;
-}
 
-export interface AdminEventosPageableDto {
-    length: number;
-    size: number;
-    page: number;
-    lastPage: number;
-}
-
-export interface AdminEventosResponseDto {
-    content: AdminEventoItemDto[];
-    pageable: AdminEventosPageableDto;
-}
 
 @Injectable({ providedIn: 'root' })
 export class EventoService {
@@ -42,22 +20,12 @@ export class EventoService {
      */
     createEvent(
         data: any,
-        options?: { idEmprendimiento?: number; idMultimedia?: number; token?: string; isFormData?: boolean }
+        options?: { idEmprendimiento?: number; idMultimedia?: number; isFormData?: boolean }
     ): Observable<any> {
         const idEmp = options?.idEmprendimiento;
         const url = `${this.baseUrl}/crear` + (idEmp ? `?idEmprendimiento=${idEmp}` : '');
 
         let headers = new HttpHeaders();
-
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         if (!options?.isFormData) {
             headers = headers.set('Content-Type', 'application/json');
@@ -73,45 +41,19 @@ export class EventoService {
      * Inactiva (desactiva) un evento en la API (ADMIN).
      * Endpoint: /v1/eventos/admin/:idEvento/desactivar
      */
-    inactivateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    inactivateEvent(idEvento: string | number): Observable<any> {
         const url = `${this.baseUrl}/admin/${idEvento}/desactivar`;
-        let headers = new HttpHeaders();
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
         return this.http
-            .put(url, {}, { headers, responseType: 'text' })
+            .put(url, {}, { responseType: 'text' })
             .pipe(catchError((err) => throwError(() => err)));
     }
 
     /**
      * endpoint: /v1/eventos//:idEvento/cancelar
      */
-    cancelEvent(
-        idEvento: string | number,
-        options?: { token?: string }
-    ): Observable<any> {
+    cancelEvent(idEvento: string | number): Observable<any> {
         const url = `${this.baseUrl}/${idEvento}/cancelar`;
-
-        let headers = new HttpHeaders();
-
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
-
-        // Normalmente no se envía body para cancelar; si tu API lo requiere, pásalo aquí.
-        return this.http.put(url, {}, { headers }).pipe(
+        return this.http.put(url, {}).pipe(
             catchError((err) => throwError(() => err))
         );
     }
@@ -121,19 +63,10 @@ export class EventoService {
      * Activa (reactiva) un evento en la API (ADMIN).
      * Endpoint: /v1/eventos/admin/:idEvento/activar
      */
-    activateEvent(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    activateEvent(idEvento: string | number): Observable<any> {
         const url = `${this.baseUrl}/admin/${idEvento}/activar`;
-        let headers = new HttpHeaders();
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
         return this.http
-            .put(url, {}, { headers, responseType: 'text' })
+            .put(url, {}, { responseType: 'text' })
             .pipe(catchError((err) => throwError(() => err)));
     }
 
@@ -145,20 +78,11 @@ export class EventoService {
     editEvent(
         idEvento: string | number,
         data: any,
-        options?: { token?: string; isFormData?: boolean }
+        options?: { isFormData?: boolean }
     ): Observable<any> {
         const url = `${this.baseUrl}/editar/${idEvento}`;
 
         let headers = new HttpHeaders();
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         // Solo seteamos Content-Type si NO es FormData
         if (!options?.isFormData) {
@@ -174,17 +98,8 @@ export class EventoService {
      * Obtener lista de eventos desde la API (ADMIN) con paginación.
      * Endpoint: /v1/eventos/filtrar?page=0&size=10
      */
-    getEvents(options?: { page?: number; size?: number; token?: string }): Observable<any> {
+    getEvents(options?: { page?: number; size?: number }): Observable<any> {
         const url = `${this.baseUrl}/filtrar`;
-        let headers = new HttpHeaders();
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         let params = new HttpParams();
         if (options?.page != null) {
@@ -195,7 +110,7 @@ export class EventoService {
         }
 
         return this.http
-            .get(url, { headers, params })
+            .get(url, { params })
             .pipe(catchError((err) => throwError(() => err)));
     }
 
@@ -203,20 +118,15 @@ export class EventoService {
      * Obtener eventos públicos paginados.
      * Endpoint: /v1/eventos/publico?mes=11&page=0&size=10
      */
-    getPublicEvents(options?: { mes?: number; page?: number; size?: number; token?: string }): Observable<any> {
+    getPublicEvents(options?: { mes?: number; page?: number; size?: number }): Observable<any> {
         const url = `${this.baseUrl}/publico`;
-        let headers = new HttpHeaders();
-        const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         let params = new HttpParams();
         if (options?.mes != null) params = params.set('mes', String(options.mes));
         if (options?.page != null) params = params.set('page', String(options.page));
         if (options?.size != null) params = params.set('size', String(options.size));
 
-        return this.http.get(url, { headers, params }).pipe(catchError((err) => throwError(() => err)));
+        return this.http.get(url, { params }).pipe(catchError((err) => throwError(() => err)));
     }
 
     /**
@@ -227,24 +137,13 @@ export class EventoService {
         page?: number;
         size?: number;
         titulo?: string;
-        fechaInicio?: string;   // ISO: 2025-12-19T14:44:00
-        fechaFin?: string;      // ISO
-        estado?: string;        // debe coincidir con enum EstadoEvento
-        tipoEvento?: string;    // debe coincidir con enum TipoEvento
+        fechaInicio?: string;
+        fechaFin?: string;
+        estado?: string;
+        tipoEvento?: string;
         idEmprendimiento?: number;
-        token?: string;
     }): Observable<any> {
         const url = `${this.baseUrl}/emprendedor`;
-
-        let headers = new HttpHeaders();
-        const token =
-            options?.token ||
-            localStorage.getItem('token') ||
-            localStorage.getItem('accessToken') ||
-            localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         let params = new HttpParams();
 
@@ -258,7 +157,7 @@ export class EventoService {
         if (options?.idEmprendimiento != null)
             params = params.set('idEmprendimiento', String(options.idEmprendimiento));
 
-        return this.http.get(url, { headers, params }).pipe(
+        return this.http.get(url, { params }).pipe(
             catchError((err) => throwError(() => err))
         );
     }
@@ -276,15 +175,9 @@ export class EventoService {
         tipoEvento?: string;
         idEmprendimiento?: number;
         page?: number; 
-        size?: number; 
-        token?: string 
+        size?: number;
     }): Observable<AdminEventosResponseDto> {
         const url = `${this.baseUrl}/admin`;
-        let headers = new HttpHeaders();
-        const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
 
         let params = new HttpParams();
         if (options?.titulo) params = params.set('titulo', options.titulo);
@@ -296,7 +189,7 @@ export class EventoService {
         if (options?.page != null) params = params.set('page', String(options.page));
         if (options?.size != null) params = params.set('size', String(options.size));
 
-        return this.http.get<AdminEventosResponseDto>(url, { headers, params }).pipe(
+        return this.http.get<AdminEventosResponseDto>(url, { params }).pipe(
             catchError((err) => throwError(() => err))
         );
     }
@@ -305,22 +198,17 @@ export class EventoService {
      * Obtener un evento público por id.
      * Endpoint: /v1/eventos/publico/:id
      */
-    getEventById(id: string | number, options?: { token?: string }): Observable<any> {
+    getEventById(id: string | number): Observable<any> {
         const url = `${this.baseUrl}/publico/${id}`;
         return this.http
             .get(url)
             .pipe(catchError((err) => throwError(() => err)));
     }
 
-    getEventByIdAdmin(id: string | number, options?: { token?: string }): Observable<any> {
+    getEventByIdAdmin(id: string | number): Observable<any> {
         const url = `${this.baseUrl}/admin/${id}`;
-        let headers = new HttpHeaders();
-        const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
         return this.http
-            .get(url, { headers })
+            .get(url)
             .pipe(catchError((err) => throwError(() => err)));
     }
 
@@ -328,15 +216,10 @@ export class EventoService {
      * Obtener un evento específico del emprendedor por ID.
      * Endpoint: /v1/eventos/emprendedor/:idEvento
      */
-    getEmprendedorEventById(idEvento: string | number, options?: { token?: string }): Observable<any> {
+    getEmprendedorEventById(idEvento: string | number): Observable<any> {
         const url = `${this.baseUrl}/emprendedor/${idEvento}`;
-        let headers = new HttpHeaders();
-        const token = options?.token || localStorage.getItem('token') || localStorage.getItem('accessToken') || localStorage.getItem('authToken');
-        if (token) {
-            headers = headers.set('Authorization', `Bearer ${token}`);
-        }
         return this.http
-            .get(url, { headers })
+            .get(url)
             .pipe(catchError((err) => throwError(() => err)));
     }
 }

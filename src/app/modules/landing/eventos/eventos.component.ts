@@ -4,7 +4,7 @@ import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent, CardItem } from '../../../layout/cards/cards.component'; 
-import { EventoService } from '../../admin/evento.service';
+import { EventoService } from '../../../core/services/evento.service';
 import { EventoDetailModalComponent } from '.././evento-detail-modal/evento-detail-modal.component';
 
 @Component({

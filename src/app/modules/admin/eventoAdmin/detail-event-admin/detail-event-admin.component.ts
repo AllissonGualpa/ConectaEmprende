@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AllEmprendimientoSelectorComponent } from '../../../../shared/all-emprendimiento-selector/all-emprendimiento-selector.component';
-import { EventoService } from '../../evento.service';
+import { EventoService } from '../../../../core/services/evento.service';
 
 export interface EventoDialogData {
   mode: 'create' | 'edit';
@@ -102,7 +102,7 @@ export class DetailEventAdminComponent implements OnInit {
                   localStorage.getItem('authToken') || 
                   undefined;
 
-    this.eventoService.getEventByIdAdmin(idEvento, { token }).subscribe({
+    this.eventoService.getEventByIdAdmin(idEvento).subscribe({
       next: (evento) => {
         // Parsear fecha y hora
         let fechaEvento = null;

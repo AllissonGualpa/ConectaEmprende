@@ -2,13 +2,13 @@ import { Component } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTabGroup, MatTab } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
-import { SeccionPersonalComponent } from './seccion-personal/seccion-personal.component';
-import { NavbarComponent } from '../../../layout/navbar/navbar.component';
+import { SeccionPersonalComponent } from '../seccion-personal/seccion-personal.component';
+import { NavbarComponent } from '../../../../layout/navbar/navbar.component';
 import { FormsModule } from '@angular/forms';
-import { FooterComponent } from '../../../layout/footer/footer.component';
-import { SeccionEventoComponent } from './Eventos/seccion-evento/seccion-evento.component';
-import { SeccionMensajeriaComponent } from '../mensajeria/seccion-mensajeria/seccion-mensajeria.component';
-import { SeccionEmprendimientoComponent } from './emprendimiento/seccion-emprendimiento/seccion-emprendimiento.component';
+import { FooterComponent } from '../../../../layout/footer/footer.component';
+import { SeccionEventoComponent } from '../Eventos/seccion-evento/seccion-evento.component';
+import { SeccionMensajeriaComponent } from '../../mensajeria/seccion-mensajeria/seccion-mensajeria.component';
+import { SeccionEmprendimientoComponent } from '../emprendimiento/seccion-emprendimiento/seccion-emprendimiento.component';
 
 @Component({
   selector: 'app-gestion-emprendedor',

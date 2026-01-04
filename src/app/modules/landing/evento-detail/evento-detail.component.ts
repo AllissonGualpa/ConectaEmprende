@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EventoService } from '../../admin/evento.service';
+import { EventoService } from '../../../core/services/evento.service';
 
 interface EventoDetail {
   id?: number | string;
