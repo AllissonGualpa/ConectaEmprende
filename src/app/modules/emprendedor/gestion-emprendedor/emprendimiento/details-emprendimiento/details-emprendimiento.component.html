@@ -1,846 +1,855 @@
 <div class="w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
 
-	<div *ngIf="soloLectura" class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-		<p class="text-blue-700 font-medium">
-			<mat-icon class="align-middle mr-2">visibility</mat-icon>
-			Vista de solo lectura - Use los botones de aprobación fuera de este formulario
-		</p>
+	<div *ngIf="cargandoDatos" class="loading-container">
+		<mat-spinner></mat-spinner>
+		<p>Cargando datos del emprendimiento...</p>
 	</div>
 
-	<!-- SECCIÓN 1: Información del representante -->
-	<div *ngIf="currentStep === 1">
-		<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
-			Información del representante
-		</h2>
+	<div *ngIf="datosCompletamenteCargados">
 
-		<form [formGroup]="emprendimientoForm">
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Nombre Completo</mat-label>
-					<input matInput formControlName="nombreCompleto" placeholder="Jose Roberto Lopez Santamaria">
-					<mat-error *ngIf="emprendimientoForm.get('nombreCompleto')?.hasError('required')">
-						El nombre completo es requerido
-					</mat-error>
-				</mat-form-field>
 
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Número Telefónico</mat-label>
-					<input matInput formControlName="numeroTelefonico" placeholder="0987744988">
-					<mat-error *ngIf="emprendimientoForm.get('numeroTelefonico')?.hasError('required')">
-						El número telefónico es requerido
-					</mat-error>
-				</mat-form-field>
-			</div>
+		<div *ngIf="soloLectura" class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+			<p class="text-blue-700 font-medium">
+				<mat-icon class="align-middle mr-2">visibility</mat-icon>
+				Vista de solo lectura - Use los botones de aprobación fuera de este formulario
+			</p>
+		</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Correo electrónico coorporativo</mat-label>
-					<input matInput formControlName="correoCoorporativo" type="email"
-						placeholder="Jlopez$antamaria@eyclorp">
-					<mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('required')">
-						El correo corporativo es requerido
-					</mat-error>
-					<mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('email')">
-						Ingrese un correo válido
-					</mat-error>
-				</mat-form-field>
+		<!-- SECCIÓN 1: Información del representante -->
+		<div *ngIf="currentStep === 1">
+			<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
+				Información del representante
+			</h2>
 
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Correo electrónico UEES/personal</mat-label>
-					<input matInput formControlName="correoPersonal" type="email" placeholder="jlopez@uees.edu.ec">
-					<mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('required')">
-						El correo personal es requerido
-					</mat-error>
-					<mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('email')">
-						Ingrese un correo válido
-					</mat-error>
-				</mat-form-field>
-			</div>
-
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						*¿Cómo se identifica?
-					</label>
-					<mat-radio-group formControlName="identificacion" class="flex flex-col gap-2">
-						<mat-radio-button value="Estudiante" class="mb-2">Estudiante</mat-radio-button>
-						<mat-radio-button value="Alumni" class="mb-2">Alumni</mat-radio-button>
-						<mat-radio-button value="Externo">Externo</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('identificacion')?.invalid && emprendimientoForm.get('identificacion')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar una opción
-					</mat-error>
-				</div>
-
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						*¿Tiene algún pariente que trabaje en la UEES?
-					</label>
-					<mat-radio-group formControlName="tienePariente" class="flex flex-col gap-2">
-						<mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
-						<mat-radio-button value="NO">NO</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('tienePariente')?.invalid && emprendimientoForm.get('tienePariente')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar una opción
-					</mat-error>
-				</div>
-			</div>
-
-			<div *ngIf="showCarreraFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Carrera</mat-label>
-					<input matInput formControlName="carrera" placeholder="Ingeniería Industrial">
-					<mat-error *ngIf="emprendimientoForm.get('carrera')?.hasError('required')">
-						La carrera es requerida
-					</mat-error>
-				</mat-form-field>
-
-				<mat-form-field appearance="outline" class="w-full" *ngIf="showSemestreField">
-					<mat-label>*Semestre</mat-label>
-					<input matInput formControlName="semestre" type="number" placeholder="5" min="1" max="10">
-					<mat-error *ngIf="emprendimientoForm.get('semestre')?.hasError('required')">
-						El semestre es requerido
-					</mat-error>
-				</mat-form-field>
-
-				<mat-form-field appearance="outline" class="w-full" *ngIf="showAnoGraduacionField">
-					<mat-label>*Año de graduación</mat-label>
-					<input matInput formControlName="anoGraduacion" type="number" placeholder="2020">
-					<mat-error *ngIf="emprendimientoForm.get('anoGraduacion')?.hasError('required')">
-						El año de graduación es requerido
-					</mat-error>
-				</mat-form-field>
-			</div>
-
-			<div *ngIf="showParienteField" class="mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Nombre del pariente</mat-label>
-					<input matInput formControlName="nombrePariente" placeholder="Ingrese el nombre del pariente">
-					<mat-error *ngIf="emprendimientoForm.get('nombrePariente')?.hasError('required')">
-						El nombre del pariente es requerido
-					</mat-error>
-				</mat-form-field>
-			</div>
-
-			<div class="mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>*Integrantes del Emprendedor</mat-label>
-					<input matInput formControlName="integrantesEmprendedor" placeholder="Edgar Trejos">
-					<mat-error *ngIf="emprendimientoForm.get('integrantesEmprendedor')?.hasError('required')">
-						Los integrantes del emprendedor son requeridos
-					</mat-error>
-				</mat-form-field>
-			</div>
-
-			<div class="flex justify-center mt-8">
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
-
-	<!-- SECCIÓN 2: Información del emprendimiento -->
-	<div *ngIf="currentStep === 2">
-		<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
-			Información del emprendimiento
-		</h2>
-
-		<form [formGroup]="emprendimientoForm">
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>Nombre comercial</mat-label>
-					<input matInput formControlName="nombreComercial" placeholder="Gatoulu">
-					<mat-error *ngIf="emprendimientoForm.get('nombreComercial')?.hasError('required')">
-						El nombre comercial es requerido
-					</mat-error>
-				</mat-form-field>
-
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>Año de creación</mat-label>
-					<input matInput formControlName="anoCreacion" type="number" placeholder="2010">
-					<mat-error *ngIf="emprendimientoForm.get('anoCreacion')?.hasError('required')">
-						El año de creación es requerido
-					</mat-error>
-				</mat-form-field>
-			</div>
-
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<app-provincias-search
-					[placeholder]="'Seleccionar provincia'"
-					[required]="false"
-					(provinciaSelected)="onProvinciaSelected($event)"
-					[disabled]="soloLectura"
-					formControlName="provincia">
-				</app-provincias-search>
-
-				<!-- Ciudad -->
-				<app-ciudades-search
-					[placeholder]="'Seleccionar ciudad'"
-					[required]="false"
-					[provincia]="provinciaSeleccionada"
-					(ciudadSelected)="onCiudadSelected($event)"
-					[disabled]="soloLectura"
-					formControlName="ciudad">
-				</app-ciudades-search>
-			</div>
-
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						Tipo de emprendimiento
-					</label>
-					<mat-radio-group formControlName="tipoEmprendimiento" class="flex flex-col gap-2">
-						<mat-radio-button *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id" class="mb-2">
-							{{ tipo.subTipo }}
-						</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('tipoEmprendimiento')?.invalid && emprendimientoForm.get('tipoEmprendimiento')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar un tipo de emprendimiento
-					</mat-error>
-				</div>
-
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						¿El emprendimiento esta actualmente activo?
-					</label>
-					<mat-radio-group formControlName="emprendimientoActivo" class="flex flex-col gap-2">
-						<mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
-						<mat-radio-button value="NO">NO</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('emprendimientoActivo')?.invalid && emprendimientoForm.get('emprendimientoActivo')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar una opción
-					</mat-error>
-				</div>
-			</div>
-
-			<div class="mb-6">
-				<label class="block text-sm font-medium text-gray-700 mb-2">
-					¿Con qué tipo de personería jurídica o registro tributario cuenta actualmente su emprendimiento?
-				</label>
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<mat-radio-group formControlName="personaJuridica" class="flex flex-col gap-2">
-						<mat-radio-button *ngFor="let opcion of opcionesPersonaJuridica" [value]="opcion.id"
-							class="mb-2">
-							{{ opcion.opcion }}
-						</mat-radio-button>
-					</mat-radio-group>
-				</div>
-				<mat-error
-					*ngIf="emprendimientoForm.get('personaJuridica')?.invalid && emprendimientoForm.get('personaJuridica')?.touched"
-					class="text-red-500 text-xs mt-1">
-					Debe seleccionar una opción
-				</mat-error>
-			</div>
-
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
-
-	<!-- SECCIÓN 3: Categorías del emprendimiento -->
-	<div *ngIf="currentStep === 3">
-		<h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
-			Categorías del emprendimiento
-		</h2>
-
-		<p class="text-center text-gray-600 mb-8">
-			Selecciona el rubro que mejor represente tu emprendimiento<br>
-			(puedes escoger hasta 2)
-		</p>
-
-		<form [formGroup]="emprendimientoForm">
-			<div class="mb-6">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<div *ngFor="let categoria of categorias"
-						class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-						[class.border-orange-500]="isCategoriaSelected(categoria.id)"
-						[class.bg-orange-50]="isCategoriaSelected(categoria.id)"
-						(click)="toggleCategoria(categoria.id)">
-						<mat-checkbox [checked]="isCategoriaSelected(categoria.id)"
-							[disabled]="!isCategoriaSelected(categoria.id) && categoriasSeleccionadas.length >= 2"
-							(change)="onCategoriaChange(categoria.id, $event)" (click)="$event.stopPropagation()"
-							class="mr-3">
-						</mat-checkbox>
-						<span class="text-gray-800">{{ categoria.nombre }}</span>
-					</div>
-
-					<!-- Opción "Otro" -->
-					<div class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-						[class.border-orange-500]="showOtraCategoria" [class.bg-orange-50]="showOtraCategoria"
-						(click)="toggleOtraCategoria()">
-						<mat-checkbox [checked]="showOtraCategoria"
-							[disabled]="!showOtraCategoria && categoriasSeleccionadas.length >= 2"
-							(change)="onOtraCategoriaChange($event)" (click)="$event.stopPropagation()" class="mr-3">
-						</mat-checkbox>
-						<span class="text-gray-800">Otro</span>
-					</div>
-				</div>
-
-				<!-- Campo de texto para "Otro" -->
-				<div *ngIf="showOtraCategoria" class="mt-4">
+			<form [formGroup]="emprendimientoForm">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 					<mat-form-field appearance="outline" class="w-full">
-						<mat-label>Especifica la categoría</mat-label>
-						<input matInput formControlName="otraCategoria" placeholder="Ingrese la categoría">
-						<mat-error *ngIf="emprendimientoForm.get('otraCategoria')?.hasError('required')">
-							Debe especificar la categoría
+						<mat-label>*Nombre Completo</mat-label>
+						<input matInput formControlName="nombreCompleto" placeholder="Jose Roberto Lopez Santamaria">
+						<mat-error *ngIf="emprendimientoForm.get('nombreCompleto')?.hasError('required')">
+							El nombre completo es requerido
+						</mat-error>
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Número Telefónico</mat-label>
+						<input matInput formControlName="numeroTelefonico" placeholder="0987744988">
+						<mat-error *ngIf="emprendimientoForm.get('numeroTelefonico')?.hasError('required')">
+							El número telefónico es requerido
 						</mat-error>
 					</mat-form-field>
 				</div>
 
-				<mat-error
-					*ngIf="emprendimientoForm.get('categorias')?.invalid && emprendimientoForm.get('categorias')?.touched"
-					class="text-red-500 text-sm mt-2 block">
-					Debe seleccionar al menos una categoría
-				</mat-error>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Correo electrónico coorporativo</mat-label>
+						<input matInput formControlName="correoCoorporativo" type="email"
+							placeholder="Jlopez$antamaria@eyclorp">
+						<mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('required')">
+							El correo corporativo es requerido
+						</mat-error>
+						<mat-error *ngIf="emprendimientoForm.get('correoCoorporativo')?.hasError('email')">
+							Ingrese un correo válido
+						</mat-error>
+					</mat-form-field>
 
-				<p class="text-sm text-gray-500 mt-3">
-					Categorías seleccionadas: {{ categoriasSeleccionadas.length }} / 2
-				</p>
-			</div>
-
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
-
-	<!-- SECCIÓN 4: Descripción del emprendimiento -->
-	<div *ngIf="currentStep === 4">
-		<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
-			Descripción del emprendimiento
-		</h2>
-
-		<form [formGroup]="emprendimientoForm">
-			<!-- Resumen general del emprendimiento -->
-			<div class="mb-6">
-				<label class="block text-sm font-medium text-gray-700 mb-2">
-					*Resumen general del emprendimiento
-				</label>
-				<textarea
-					class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					formControlName="resumenGeneral" rows="5" [maxlength]="getMaxLength('resumenGeneral')"
-					placeholder="Describe tu emprendimiento..."></textarea>
-				<div class="flex justify-between items-center mt-1">
-					<mat-error
-						*ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('required') && emprendimientoForm.get('resumenGeneral')?.touched"
-						class="text-xs text-red-500">
-						Este campo es requerido
-					</mat-error>
-					<mat-error *ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('maxlength')"
-						class="text-xs text-red-500">
-						Excede el límite de caracteres permitido
-					</mat-error>
-					<span class="text-xs text-gray-500 ml-auto">
-						{{ getRemainingChars('resumenGeneral') }} caracteres restantes
-					</span>
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Correo electrónico UEES/personal</mat-label>
+						<input matInput formControlName="correoPersonal" type="email" placeholder="jlopez@uees.edu.ec">
+						<mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('required')">
+							El correo personal es requerido
+						</mat-error>
+						<mat-error *ngIf="emprendimientoForm.get('correoPersonal')?.hasError('email')">
+							Ingrese un correo válido
+						</mat-error>
+					</mat-form-field>
 				</div>
-			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<!-- ¿Qué lo hace diferente o innovador? -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						*¿Qué lo hace diferente o innovador?
-					</label>
-					<textarea
-						class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-						formControlName="queLoHaceDiferente" rows="5" [maxlength]="getMaxLength('queLoHaceDiferente')"
-						placeholder="Nuestro emprendimiento se diferencia por..."></textarea>
-					<div class="flex justify-between items-center mt-1">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							*¿Cómo se identifica?
+						</label>
+						<mat-radio-group formControlName="identificacion" class="flex flex-col gap-2">
+							<mat-radio-button value="Estudiante" class="mb-2">Estudiante</mat-radio-button>
+							<mat-radio-button value="Alumni" class="mb-2">Alumni</mat-radio-button>
+							<mat-radio-button value="Externo">Externo</mat-radio-button>
+						</mat-radio-group>
 						<mat-error
-							*ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('required') && emprendimientoForm.get('queLoHaceDiferente')?.touched"
-							class="text-xs text-red-500">
-							Este campo es requerido
+							*ngIf="emprendimientoForm.get('identificacion')?.invalid && emprendimientoForm.get('identificacion')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
 						</mat-error>
-						<mat-error *ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('maxlength')"
-							class="text-xs text-red-500">
-							Excede el límite de caracteres
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							*¿Tiene algún pariente que trabaje en la UEES?
+						</label>
+						<mat-radio-group formControlName="tienePariente" class="flex flex-col gap-2">
+							<mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
+							<mat-radio-button value="NO">NO</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('tienePariente')?.invalid && emprendimientoForm.get('tienePariente')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
 						</mat-error>
-						<span class="text-xs text-gray-500 ml-auto">
-							{{ getRemainingChars('queLoHaceDiferente') }} caracteres restantes
-						</span>
 					</div>
 				</div>
 
-				<!-- ¿A qué público objetivo te diriges? -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						*¿A qué público objetivo te diriges?
-					</label>
-					<textarea
-						class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-						formControlName="publicoObjetivo" rows="5" [maxlength]="getMaxLength('publicoObjetivo')"
-						placeholder="Nos dirigimos principalmente a personas que..."></textarea>
-					<div class="flex justify-between items-center mt-1">
-						<mat-error
-							*ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('required') && emprendimientoForm.get('publicoObjetivo')?.touched"
-							class="text-xs text-red-500">
-							Este campo es requerido
+				<div *ngIf="showCarreraFields" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Carrera</mat-label>
+						<input matInput formControlName="carrera" placeholder="Ingeniería Industrial">
+						<mat-error *ngIf="emprendimientoForm.get('carrera')?.hasError('required')">
+							La carrera es requerida
 						</mat-error>
-						<mat-error *ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('maxlength')"
-							class="text-xs text-red-500">
-							Excede el límite de caracteres
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" class="w-full" *ngIf="showSemestreField">
+						<mat-label>*Semestre</mat-label>
+						<input matInput formControlName="semestre" type="number" placeholder="5" min="1" max="10">
+						<mat-error *ngIf="emprendimientoForm.get('semestre')?.hasError('required')">
+							El semestre es requerido
 						</mat-error>
-						<span class="text-xs text-gray-500 ml-auto">
-							{{ getRemainingChars('publicoObjetivo') }} caracteres restantes
-						</span>
-					</div>
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" class="w-full" *ngIf="showAnoGraduacionField">
+						<mat-label>*Año de graduación</mat-label>
+						<input matInput formControlName="anoGraduacion" type="number" placeholder="2020">
+						<mat-error *ngIf="emprendimientoForm.get('anoGraduacion')?.hasError('required')">
+							El año de graduación es requerido
+						</mat-error>
+					</mat-form-field>
 				</div>
-			</div>
 
-			<!-- ¿Cuál es el propósito o misión como emprendedor/a? -->
-			<div class="mb-6">
-				<label class="block text-sm font-medium text-gray-700 mb-2">
-					*¿Cuál es el propósito o misión como emprendedor/a?
-				</label>
-				<textarea
-					class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					formControlName="proposito" rows="5" [maxlength]="getMaxLength('proposito')"
-					placeholder="Nuestro propósito es..."></textarea>
-				<div class="flex justify-between items-center mt-1">
-					<mat-error
-						*ngIf="emprendimientoForm.get('proposito')?.hasError('required') && emprendimientoForm.get('proposito')?.touched"
-						class="text-xs text-red-500">
-						Este campo es requerido
-					</mat-error>
-					<mat-error *ngIf="emprendimientoForm.get('proposito')?.hasError('maxlength')"
-						class="text-xs text-red-500">
-						Excede el límite de caracteres
-					</mat-error>
-					<span class="text-xs text-gray-500 ml-auto">
-						{{ getRemainingChars('proposito') }} caracteres restantes
-					</span>
+				<div *ngIf="showParienteField" class="mb-6">
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Nombre del pariente</mat-label>
+						<input matInput formControlName="nombrePariente" placeholder="Ingrese el nombre del pariente">
+						<mat-error *ngIf="emprendimientoForm.get('nombrePariente')?.hasError('required')">
+							El nombre del pariente es requerido
+						</mat-error>
+					</mat-form-field>
 				</div>
-			</div>
 
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
-
-	<!-- SECCIÓN 5: Historia del emprendimiento y Presencia Digital -->
-	<div *ngIf="currentStep === 5">
-		<form [formGroup]="emprendimientoForm">
-			<!-- Resumen general del emprendimiento (Historia) -->
-			<div class="mb-6">
-				<label class="block text-sm font-medium text-gray-700 mb-2">
-					Historia del emprendimiento
-				</label>
-				<textarea
-					class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-					formControlName="historiaEmprendimiento" rows="5"
-					[maxlength]="getMaxLength('historiaEmprendimiento')"
-					placeholder="Mi emprendimiento nacio..."></textarea>
-				<div class="flex justify-between items-center mt-1">
-					<mat-error
-						*ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('required') && emprendimientoForm.get('historiaEmprendimiento')?.touched"
-						class="text-xs text-red-500">
-						Este campo es requerido
-					</mat-error>
-					<mat-error *ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('maxlength')"
-						class="text-xs text-red-500">
-						Excede el límite de caracteres permitido
-					</mat-error>
-					<span class="text-xs text-gray-500 ml-auto">
-						{{ getRemainingChars('historiaEmprendimiento') }} caracteres restantes
-					</span>
+				<div class="mb-6">
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>*Integrantes del Emprendedor</mat-label>
+						<input matInput formControlName="integrantesEmprendedor" placeholder="Edgar Trejos">
+						<mat-error *ngIf="emprendimientoForm.get('integrantesEmprendedor')?.hasError('required')">
+							Los integrantes del emprendedor son requeridos
+						</mat-error>
+					</mat-form-field>
 				</div>
-			</div>
 
-			<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center mt-8">
-				Presencia digital y contacto
+				<div class="flex justify-center mt-8">
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- SECCIÓN 2: Información del emprendimiento -->
+		<div *ngIf="currentStep === 2">
+			<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
+				Información del emprendimiento
 			</h2>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<!-- Instagram -->
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>Instagram (u otra red principal)</mat-label>
-					<input matInput formControlName="instagram" placeholder="@dulceMania">
-				</mat-form-field>
+			<form [formGroup]="emprendimientoForm">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>Nombre comercial</mat-label>
+						<input matInput formControlName="nombreComercial" placeholder="Gatoulu">
+						<mat-error *ngIf="emprendimientoForm.get('nombreComercial')?.hasError('required')">
+							El nombre comercial es requerido
+						</mat-error>
+					</mat-form-field>
 
-				<!-- Sitio Web -->
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>Sitio Web</mat-label>
-					<input matInput formControlName="sitioWeb" placeholder="http://www.dulcemania.com">
-				</mat-form-field>
-			</div>
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>Año de creación</mat-label>
+						<input matInput formControlName="anoCreacion" type="number" placeholder="2010">
+						<mat-error *ngIf="emprendimientoForm.get('anoCreacion')?.hasError('required')">
+							El año de creación es requerido
+						</mat-error>
+					</mat-form-field>
+				</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-				<!-- WhatsApp de contacto -->
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>WhatsApp de contacto</mat-label>
-					<input matInput formControlName="whatsapp" placeholder="+593 99 123 4567">
-				</mat-form-field>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<app-provincias-search
+						[placeholder]="'Seleccionar provincia'"
+						[required]="false"
+						(provinciaSelected)="onProvinciaSelected($event)"
+						[disabled]="soloLectura"
+						formControlName="provincia">
+					</app-provincias-search>
 
-				<!-- TikTok -->
-				<mat-form-field appearance="outline" class="w-full">
-					<mat-label>Tiktok</mat-label>
-					<input matInput formControlName="tiktok" placeholder="@dulceMania">
-				</mat-form-field>
-			</div>
+					<!-- Ciudad -->
+					<app-ciudades-search
+						[placeholder]="'Seleccionar ciudad'"
+						[required]="false"
+						[provincia]="provinciaSeleccionada"
+						(ciudadSelected)="onCiudadSelected($event)"
+						[disabled]="soloLectura"
+						formControlName="ciudad">
+					</app-ciudades-search>
+				</div>
 
-			<!-- ¿Aceptas que estos datos se muestren públicamente en la plataforma? -->
-			<div class="mb-6">
-				<label class="block text-sm font-medium text-gray-700 mb-3">
-					¿Aceptas que estos datos se muestren públicamente en la plataforma?
-				</label>
-				<mat-radio-group formControlName="aceptaMostrarDatos" class="flex gap-6">
-					<mat-radio-button value="SI">Sí</mat-radio-button>
-					<mat-radio-button value="NO">No</mat-radio-button>
-				</mat-radio-group>
-				<mat-error
-					*ngIf="emprendimientoForm.get('aceptaMostrarDatos')?.invalid && emprendimientoForm.get('aceptaMostrarDatos')?.touched"
-					class="text-red-500 text-xs mt-1">
-					Debe seleccionar una opción
-				</mat-error>
-			</div>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							Tipo de emprendimiento
+						</label>
+						<mat-radio-group formControlName="tipoEmprendimiento" class="flex flex-col gap-2">
+							<mat-radio-button *ngFor="let tipo of tiposEmprendimiento" [value]="tipo.id" class="mb-2">
+								{{ tipo.subTipo }}
+							</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('tipoEmprendimiento')?.invalid && emprendimientoForm.get('tipoEmprendimiento')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar un tipo de emprendimiento
+						</mat-error>
+					</div>
 
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							¿El emprendimiento esta actualmente activo?
+						</label>
+						<mat-radio-group formControlName="emprendimientoActivo" class="flex flex-col gap-2">
+							<mat-radio-button value="SI" class="mb-2">SI</mat-radio-button>
+							<mat-radio-button value="NO">NO</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('emprendimientoActivo')?.invalid && emprendimientoForm.get('emprendimientoActivo')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
+						</mat-error>
+					</div>
+				</div>
 
-	<!-- SECCIÓN 6: Material multimedia -->
-	<div *ngIf="currentStep === 6">
-		<h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
-			Material multimedia
-		</h2>
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						¿Con qué tipo de personería jurídica o registro tributario cuenta actualmente su emprendimiento?
+					</label>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<mat-radio-group formControlName="personaJuridica" class="flex flex-col gap-2">
+							<mat-radio-button *ngFor="let opcion of opcionesPersonaJuridica" [value]="opcion.id"
+								class="mb-2">
+								{{ opcion.opcion }}
+							</mat-radio-button>
+						</mat-radio-group>
+					</div>
+					<mat-error
+						*ngIf="emprendimientoForm.get('personaJuridica')?.invalid && emprendimientoForm.get('personaJuridica')?.touched"
+						class="text-red-500 text-xs mt-1">
+						Debe seleccionar una opción
+					</mat-error>
+				</div>
 
-		<p class="text-center text-gray-600 mb-8">
-			Adjunte los siguiente elementos para completar tu perfil
-		</p>
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
 
-		<form [formGroup]="emprendimientoForm">
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-				<!-- Logo del emprendimiento -->
-				<div class="text-center">
-					<h3 class="font-semibold text-gray-800 mb-2">
-						Logo del emprendimiento
-					</h3>
-					<p class="text-sm text-gray-600 mb-4">
-						(formato JPG o PNG, fondo blanco o transparente).
-					</p>
+		<!-- SECCIÓN 3: Categorías del emprendimiento -->
+		<div *ngIf="currentStep === 3">
+			<h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
+				Categorías del emprendimiento
+			</h2>
 
-					<div
-						class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px] flex flex-col items-center justify-center">
-						<div *ngIf="!logoPreview" class="text-center">
-							<label class="cursor-pointer">
-								<input type="file" accept="image/jpeg,image/png" (change)="onLogoSelected($event)"
-									class="hidden">
-								<span
-									class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
-									Seleccionar logo
-								</span>
-							</label>
+			<p class="text-center text-gray-600 mb-8">
+				Selecciona el rubro que mejor represente tu emprendimiento<br>
+				(puedes escoger hasta 2)
+			</p>
+
+			<form [formGroup]="emprendimientoForm">
+				<div class="mb-6">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div *ngFor="let categoria of categorias"
+							class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+							[class.border-orange-500]="isCategoriaSelected(categoria.id)"
+							[class.bg-orange-50]="isCategoriaSelected(categoria.id)"
+							(click)="toggleCategoria(categoria.id)">
+							<mat-checkbox [checked]="isCategoriaSelected(categoria.id)"
+								[disabled]="!isCategoriaSelected(categoria.id) && categoriasSeleccionadas.length >= 2"
+								(change)="onCategoriaChange(categoria.id, $event)" (click)="$event.stopPropagation()"
+								class="mr-3">
+							</mat-checkbox>
+							<span class="text-gray-800">{{ categoria.nombre }}</span>
 						</div>
 
-						<div *ngIf="logoPreview" class="relative">
-							<img [src]="logoPreview" alt="Logo preview" class="max-w-full max-h-48 rounded-lg">
-							<button type="button" (click)="removeLogo()"
-								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
-								<mat-icon class="text-sm">close</mat-icon>
-							</button>
+						<!-- Opción "Otro" -->
+						<div class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+							[class.border-orange-500]="showOtraCategoria" [class.bg-orange-50]="showOtraCategoria"
+							(click)="toggleOtraCategoria()">
+							<mat-checkbox [checked]="showOtraCategoria"
+								[disabled]="!showOtraCategoria && categoriasSeleccionadas.length >= 2"
+								(change)="onOtraCategoriaChange($event)" (click)="$event.stopPropagation()" class="mr-3">
+							</mat-checkbox>
+							<span class="text-gray-800">Otro</span>
+						</div>
+					</div>
+
+					<!-- Campo de texto para "Otro" -->
+					<div *ngIf="showOtraCategoria" class="mt-4">
+						<mat-form-field appearance="outline" class="w-full">
+							<mat-label>Especifica la categoría</mat-label>
+							<input matInput formControlName="otraCategoria" placeholder="Ingrese la categoría">
+							<mat-error *ngIf="emprendimientoForm.get('otraCategoria')?.hasError('required')">
+								Debe especificar la categoría
+							</mat-error>
+						</mat-form-field>
+					</div>
+
+					<mat-error
+						*ngIf="emprendimientoForm.get('categorias')?.invalid && emprendimientoForm.get('categorias')?.touched"
+						class="text-red-500 text-sm mt-2 block">
+						Debe seleccionar al menos una categoría
+					</mat-error>
+
+					<p class="text-sm text-gray-500 mt-3">
+						Categorías seleccionadas: {{ categoriasSeleccionadas.length }} / 2
+					</p>
+				</div>
+
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- SECCIÓN 4: Descripción del emprendimiento -->
+		<div *ngIf="currentStep === 4">
+			<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
+				Descripción del emprendimiento
+			</h2>
+
+			<form [formGroup]="emprendimientoForm">
+				<!-- Resumen general del emprendimiento -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						*Resumen general del emprendimiento
+					</label>
+					<textarea
+						class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						formControlName="resumenGeneral" rows="5" [maxlength]="getMaxLength('resumenGeneral')"
+						placeholder="Describe tu emprendimiento..."></textarea>
+					<div class="flex justify-between items-center mt-1">
+						<mat-error
+							*ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('required') && emprendimientoForm.get('resumenGeneral')?.touched"
+							class="text-xs text-red-500">
+							Este campo es requerido
+						</mat-error>
+						<mat-error *ngIf="emprendimientoForm.get('resumenGeneral')?.hasError('maxlength')"
+							class="text-xs text-red-500">
+							Excede el límite de caracteres permitido
+						</mat-error>
+						<span class="text-xs text-gray-500 ml-auto">
+							{{ getRemainingChars('resumenGeneral') }} caracteres restantes
+						</span>
+					</div>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<!-- ¿Qué lo hace diferente o innovador? -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							*¿Qué lo hace diferente o innovador?
+						</label>
+						<textarea
+							class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+							formControlName="queLoHaceDiferente" rows="5" [maxlength]="getMaxLength('queLoHaceDiferente')"
+							placeholder="Nuestro emprendimiento se diferencia por..."></textarea>
+						<div class="flex justify-between items-center mt-1">
+							<mat-error
+								*ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('required') && emprendimientoForm.get('queLoHaceDiferente')?.touched"
+								class="text-xs text-red-500">
+								Este campo es requerido
+							</mat-error>
+							<mat-error *ngIf="emprendimientoForm.get('queLoHaceDiferente')?.hasError('maxlength')"
+								class="text-xs text-red-500">
+								Excede el límite de caracteres
+							</mat-error>
+							<span class="text-xs text-gray-500 ml-auto">
+								{{ getRemainingChars('queLoHaceDiferente') }} caracteres restantes
+							</span>
+						</div>
+					</div>
+
+					<!-- ¿A qué público objetivo te diriges? -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-2">
+							*¿A qué público objetivo te diriges?
+						</label>
+						<textarea
+							class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+							formControlName="publicoObjetivo" rows="5" [maxlength]="getMaxLength('publicoObjetivo')"
+							placeholder="Nos dirigimos principalmente a personas que..."></textarea>
+						<div class="flex justify-between items-center mt-1">
+							<mat-error
+								*ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('required') && emprendimientoForm.get('publicoObjetivo')?.touched"
+								class="text-xs text-red-500">
+								Este campo es requerido
+							</mat-error>
+							<mat-error *ngIf="emprendimientoForm.get('publicoObjetivo')?.hasError('maxlength')"
+								class="text-xs text-red-500">
+								Excede el límite de caracteres
+							</mat-error>
+							<span class="text-xs text-gray-500 ml-auto">
+								{{ getRemainingChars('publicoObjetivo') }} caracteres restantes
+							</span>
 						</div>
 					</div>
 				</div>
 
-				<!-- Mínimo 2 fotos de productos -->
-				<div class="text-center">
-					<h3 class="font-semibold text-gray-800 mb-2">
-						Mínimo 2 fotos de productos o
-					</h3>
-					<p class="text-sm text-gray-600 mb-4">
-						servicios representativos (buena calidad).
-					</p>
+				<!-- ¿Cuál es el propósito o misión como emprendedor/a? -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						*¿Cuál es el propósito o misión como emprendedor/a?
+					</label>
+					<textarea
+						class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						formControlName="proposito" rows="5" [maxlength]="getMaxLength('proposito')"
+						placeholder="Nuestro propósito es..."></textarea>
+					<div class="flex justify-between items-center mt-1">
+						<mat-error
+							*ngIf="emprendimientoForm.get('proposito')?.hasError('required') && emprendimientoForm.get('proposito')?.touched"
+							class="text-xs text-red-500">
+							Este campo es requerido
+						</mat-error>
+						<mat-error *ngIf="emprendimientoForm.get('proposito')?.hasError('maxlength')"
+							class="text-xs text-red-500">
+							Excede el límite de caracteres
+						</mat-error>
+						<span class="text-xs text-gray-500 ml-auto">
+							{{ getRemainingChars('proposito') }} caracteres restantes
+						</span>
+					</div>
+				</div>
 
-					<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px]">
-						<div *ngIf="fotosProductosPreview.length === 0"
-							class="text-center h-full flex flex-col items-center justify-center">
-							<label class="cursor-pointer">
-								<input type="file" accept="image/*" multiple (change)="onFotosProductosSelected($event)"
-									class="hidden">
-								<span
-									class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
-									Seleccionar fotos (máx. 2)
-								</span>
-							</label>
-						</div>
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
 
-						<div *ngIf="fotosProductosPreview.length > 0" class="grid grid-cols-2 gap-4">
-							<div *ngFor="let preview of fotosProductosPreview; let i = index" class="relative">
-								<img [src]="preview" alt="Foto producto" class="w-full h-32 object-cover rounded-lg">
-								<button type="button" (click)="removeFotoProducto(i)"
-									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs">
+		<!-- SECCIÓN 5: Historia del emprendimiento y Presencia Digital -->
+		<div *ngIf="currentStep === 5">
+			<form [formGroup]="emprendimientoForm">
+				<!-- Resumen general del emprendimiento (Historia) -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-gray-700 mb-2">
+						Historia del emprendimiento
+					</label>
+					<textarea
+						class="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						formControlName="historiaEmprendimiento" rows="5"
+						[maxlength]="getMaxLength('historiaEmprendimiento')"
+						placeholder="Mi emprendimiento nacio..."></textarea>
+					<div class="flex justify-between items-center mt-1">
+						<mat-error
+							*ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('required') && emprendimientoForm.get('historiaEmprendimiento')?.touched"
+							class="text-xs text-red-500">
+							Este campo es requerido
+						</mat-error>
+						<mat-error *ngIf="emprendimientoForm.get('historiaEmprendimiento')?.hasError('maxlength')"
+							class="text-xs text-red-500">
+							Excede el límite de caracteres permitido
+						</mat-error>
+						<span class="text-xs text-gray-500 ml-auto">
+							{{ getRemainingChars('historiaEmprendimiento') }} caracteres restantes
+						</span>
+					</div>
+				</div>
+
+				<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center mt-8">
+					Presencia digital y contacto
+				</h2>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<!-- Instagram -->
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>Instagram (u otra red principal)</mat-label>
+						<input matInput formControlName="instagram" placeholder="@dulceMania">
+					</mat-form-field>
+
+					<!-- Sitio Web -->
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>Sitio Web</mat-label>
+						<input matInput formControlName="sitioWeb" placeholder="http://www.dulcemania.com">
+					</mat-form-field>
+				</div>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<!-- WhatsApp de contacto -->
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>WhatsApp de contacto</mat-label>
+						<input matInput formControlName="whatsapp" placeholder="+593 99 123 4567">
+					</mat-form-field>
+
+					<!-- TikTok -->
+					<mat-form-field appearance="outline" class="w-full">
+						<mat-label>Tiktok</mat-label>
+						<input matInput formControlName="tiktok" placeholder="@dulceMania">
+					</mat-form-field>
+				</div>
+
+				<!-- ¿Aceptas que estos datos se muestren públicamente en la plataforma? -->
+				<div class="mb-6">
+					<label class="block text-sm font-medium text-gray-700 mb-3">
+						¿Aceptas que estos datos se muestren públicamente en la plataforma?
+					</label>
+					<mat-radio-group formControlName="aceptaMostrarDatos" class="flex gap-6">
+						<mat-radio-button value="SI">Sí</mat-radio-button>
+						<mat-radio-button value="NO">No</mat-radio-button>
+					</mat-radio-group>
+					<mat-error
+						*ngIf="emprendimientoForm.get('aceptaMostrarDatos')?.invalid && emprendimientoForm.get('aceptaMostrarDatos')?.touched"
+						class="text-red-500 text-xs mt-1">
+						Debe seleccionar una opción
+					</mat-error>
+				</div>
+
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- SECCIÓN 6: Material multimedia -->
+		<div *ngIf="currentStep === 6">
+			<h2 class="text-2xl font-bold text-blue-600 mb-4 text-center">
+				Material multimedia
+			</h2>
+
+			<p class="text-center text-gray-600 mb-8">
+				Adjunte los siguiente elementos para completar tu perfil
+			</p>
+
+			<form [formGroup]="emprendimientoForm">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+					<!-- Logo del emprendimiento -->
+					<div class="text-center">
+						<h3 class="font-semibold text-gray-800 mb-2">
+							Logo del emprendimiento
+						</h3>
+						<p class="text-sm text-gray-600 mb-4">
+							(formato JPG o PNG, fondo blanco o transparente).
+						</p>
+
+						<div
+							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px] flex flex-col items-center justify-center">
+							<div *ngIf="!logoPreview" class="text-center">
+								<label class="cursor-pointer">
+									<input type="file" accept="image/jpeg,image/png" (change)="onLogoSelected($event)"
+										class="hidden">
+									<span
+										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+										Seleccionar logo
+									</span>
+								</label>
+							</div>
+
+							<div *ngIf="logoPreview" class="relative">
+								<img [src]="logoPreview" alt="Logo preview" class="max-w-full max-h-48 rounded-lg">
+								<button type="button" (click)="removeLogo()"
+									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
 									<mat-icon class="text-sm">close</mat-icon>
 								</button>
 							</div>
+						</div>
+					</div>
 
-							<!-- Botón para agregar más fotos si no hay 2 -->
-							<div *ngIf="fotosProductosPreview.length < 2"
-								class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-								<label class="cursor-pointer text-center p-4">
-									<input type="file" accept="image/*" (change)="onFotosProductosSelected($event)"
+					<!-- Mínimo 2 fotos de productos -->
+					<div class="text-center">
+						<h3 class="font-semibold text-gray-800 mb-2">
+							Mínimo 2 fotos de productos o
+						</h3>
+						<p class="text-sm text-gray-600 mb-4">
+							servicios representativos (buena calidad).
+						</p>
+
+						<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px]">
+							<div *ngIf="fotosProductosPreview.length === 0"
+								class="text-center h-full flex flex-col items-center justify-center">
+								<label class="cursor-pointer">
+									<input type="file" accept="image/*" multiple (change)="onFotosProductosSelected($event)"
 										class="hidden">
-									<mat-icon class="text-gray-400 text-4xl">add_photo_alternate</mat-icon>
-									<p class="text-xs text-gray-500 mt-2">Agregar foto</p>
+									<span
+										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+										Seleccionar fotos (máx. 2)
+									</span>
 								</label>
+							</div>
+
+							<div *ngIf="fotosProductosPreview.length > 0" class="grid grid-cols-2 gap-4">
+								<div *ngFor="let preview of fotosProductosPreview; let i = index" class="relative">
+									<img [src]="preview" alt="Foto producto" class="w-full h-32 object-cover rounded-lg">
+									<button type="button" (click)="removeFotoProducto(i)"
+										class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs">
+										<mat-icon class="text-sm">close</mat-icon>
+									</button>
+								</div>
+
+								<!-- Botón para agregar más fotos si no hay 2 -->
+								<div *ngIf="fotosProductosPreview.length < 2"
+									class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+									<label class="cursor-pointer text-center p-4">
+										<input type="file" accept="image/*" (change)="onFotosProductosSelected($event)"
+											class="hidden">
+										<mat-icon class="text-gray-400 text-4xl">add_photo_alternate</mat-icon>
+										<p class="text-xs text-gray-500 mt-2">Agregar foto</p>
+									</label>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-				<!-- Video corto de presentación -->
-				<div class="text-center">
-					<h3 class="font-semibold text-gray-800 mb-2">
-						Video corto de presentación
-					</h3>
-					<p class="text-sm text-gray-600 mb-4">
-						(máx. 1 minuto)
-					</p>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+					<!-- Video corto de presentación -->
+					<div class="text-center">
+						<h3 class="font-semibold text-gray-800 mb-2">
+							Video corto de presentación
+						</h3>
+						<p class="text-sm text-gray-600 mb-4">
+							(máx. 1 minuto)
+						</p>
 
-					<div
-						class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
-						<div *ngIf="!videoPreview" class="text-center">
-							<label class="cursor-pointer">
-								<input type="file" accept="video/*" (change)="onVideoSelected($event)" class="hidden">
-								<span
-									class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
-									Seleccionar video (opcional)
-								</span>
-							</label>
+						<div
+							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+							<div *ngIf="!videoPreview" class="text-center">
+								<label class="cursor-pointer">
+									<input type="file" accept="video/*" (change)="onVideoSelected($event)" class="hidden">
+									<span
+										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+										Seleccionar video (opcional)
+									</span>
+								</label>
+							</div>
+
+							<div *ngIf="videoPreview" class="relative w-full">
+								<video [src]="videoPreview" controls class="w-full max-h-48 rounded-lg"></video>
+								<button type="button" (click)="removeVideo()"
+									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
+									<mat-icon class="text-sm">close</mat-icon>
+								</button>
+							</div>
 						</div>
+					</div>
 
-						<div *ngIf="videoPreview" class="relative w-full">
-							<video [src]="videoPreview" controls class="w-full max-h-48 rounded-lg"></video>
-							<button type="button" (click)="removeVideo()"
-								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
-								<mat-icon class="text-sm">close</mat-icon>
-							</button>
+					<!-- Portada personalizada -->
+					<div class="text-center">
+						<h3 class="font-semibold text-gray-800 mb-2">
+							Portada personalizada
+						</h3>
+						<p class="text-sm text-gray-600 mb-4">
+							(estilo banner)
+						</p>
+
+						<div
+							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+							<div *ngIf="!bannerPreview" class="text-center">
+								<label class="cursor-pointer">
+									<input type="file" accept="image/*" (change)="onBannerSelected($event)" class="hidden">
+									<span
+										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+										Seleccionar banner (opcional)
+									</span>
+								</label>
+							</div>
+
+							<div *ngIf="bannerPreview" class="relative w-full">
+								<img [src]="bannerPreview" alt="Banner preview"
+									class="w-full max-h-32 object-cover rounded-lg">
+								<button type="button" (click)="removeBanner()"
+									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
+									<mat-icon class="text-sm">close</mat-icon>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
 
-				<!-- Portada personalizada -->
-				<div class="text-center">
-					<h3 class="font-semibold text-gray-800 mb-2">
-						Portada personalizada
-					</h3>
-					<p class="text-sm text-gray-600 mb-4">
-						(estilo banner)
-					</p>
-
-					<div
-						class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
-						<div *ngIf="!bannerPreview" class="text-center">
-							<label class="cursor-pointer">
-								<input type="file" accept="image/*" (change)="onBannerSelected($event)" class="hidden">
-								<span
-									class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
-									Seleccionar banner (opcional)
-								</span>
-							</label>
-						</div>
-
-						<div *ngIf="bannerPreview" class="relative w-full">
-							<img [src]="bannerPreview" alt="Banner preview"
-								class="w-full max-h-32 object-cover rounded-lg">
-							<button type="button" (click)="removeBanner()"
-								class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
-								<mat-icon class="text-sm">close</mat-icon>
-							</button>
-						</div>
-					</div>
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
 				</div>
-			</div>
+			</form>
+		</div>
 
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
-
-	<!-- SECCIÓN 7: Métricas básicas y Participación en la comunidad -->
-	<div *ngIf="currentStep === 7">
-		<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
-			Métricas básicas
-		</h2>
-
-		<form [formGroup]="emprendimientoForm">
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-				<!-- ¿Con cuántos clientes aproximadamente cuentas? -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-3">
-						¿Con cuántos clientes aproximadamente cuentas?
-					</label>
-					<mat-radio-group formControlName="cantidadClientes" class="flex gap-4">
-						<mat-radio-button value="1-10">1-10</mat-radio-button>
-						<mat-radio-button value="11-50">11-50</mat-radio-button>
-						<mat-radio-button value="51-100">51-100</mat-radio-button>
-						<mat-radio-button value="Mas de 100">Más de 100</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('cantidadClientes')?.invalid && emprendimientoForm.get('cantidadClientes')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar una opción
-					</mat-error>
-				</div>
-
-				<!-- ¿Has generado ventas? -->
-				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-3">
-						¿Has generado ventas?
-					</label>
-					<mat-radio-group formControlName="generadoVentas" class="flex flex-col gap-2">
-						<mat-radio-button value="SI" class="mb-2">Sí</mat-radio-button>
-						<mat-radio-button value="NO">No</mat-radio-button>
-					</mat-radio-group>
-					<mat-error
-						*ngIf="emprendimientoForm.get('generadoVentas')?.invalid && emprendimientoForm.get('generadoVentas')?.touched"
-						class="text-red-500 text-xs mt-1">
-						Debe seleccionar una opción
-					</mat-error>
-				</div>
-			</div>
-
-			<!-- ¿Has participado en algún programa de incubación UEES? -->
-			<div class="mb-8">
-				<label class="block text-sm font-medium text-gray-700 mb-3">
-					¿Has participado en algún programa de incubación UEES?
-				</label>
-				<div class="flex items-center gap-4">
-					<mat-radio-group formControlName="participadoIncubacion" class="flex gap-6">
-						<mat-radio-button value="SI">Sí</mat-radio-button>
-						<mat-radio-button value="NO">No</mat-radio-button>
-					</mat-radio-group>
-
-					<mat-form-field appearance="outline" class="flex-1"
-						*ngIf="emprendimientoForm.get('participadoIncubacion')?.value === 'SI'">
-						<mat-label>Indica cual en caso de sí</mat-label>
-						<input matInput formControlName="nombreProgramaIncubacion" placeholder="Ingrese su nombre">
-						<mat-error *ngIf="emprendimientoForm.get('nombreProgramaIncubacion')?.hasError('required')">
-							Este campo es requerido si participó
-						</mat-error>
-					</mat-form-field>
-				</div>
-				<mat-error
-					*ngIf="emprendimientoForm.get('participadoIncubacion')?.invalid && emprendimientoForm.get('participadoIncubacion')?.touched"
-					class="text-red-500 text-xs mt-1">
-					Debe seleccionar una opción
-				</mat-error>
-			</div>
-
-			<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center mt-12">
-				Participación en la comunidad
+		<!-- SECCIÓN 7: Métricas básicas y Participación en la comunidad -->
+		<div *ngIf="currentStep === 7">
+			<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
+				Métricas básicas
 			</h2>
 
-			<!-- Preguntas dinámicas de participación en la comunidad -->
-			<div class="space-y-6 mb-8">
-				<div *ngFor="let opcion of opcionesParticipacionComunidad">
+			<form [formGroup]="emprendimientoForm">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+					<!-- ¿Con cuántos clientes aproximadamente cuentas? -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-3">
+							¿Con cuántos clientes aproximadamente cuentas?
+						</label>
+						<mat-radio-group formControlName="cantidadClientes" class="flex gap-4">
+							<mat-radio-button value="1-10">1-10</mat-radio-button>
+							<mat-radio-button value="11-50">11-50</mat-radio-button>
+							<mat-radio-button value="51-100">51-100</mat-radio-button>
+							<mat-radio-button value="Mas de 100">Más de 100</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('cantidadClientes')?.invalid && emprendimientoForm.get('cantidadClientes')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
+						</mat-error>
+					</div>
+
+					<!-- ¿Has generado ventas? -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 mb-3">
+							¿Has generado ventas?
+						</label>
+						<mat-radio-group formControlName="generadoVentas" class="flex flex-col gap-2">
+							<mat-radio-button value="SI" class="mb-2">Sí</mat-radio-button>
+							<mat-radio-button value="NO">No</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('generadoVentas')?.invalid && emprendimientoForm.get('generadoVentas')?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
+						</mat-error>
+					</div>
+				</div>
+
+				<!-- ¿Has participado en algún programa de incubación UEES? -->
+				<div class="mb-8">
 					<label class="block text-sm font-medium text-gray-700 mb-3">
-						{{ opcion.opcion }}
+						¿Has participado en algún programa de incubación UEES?
 					</label>
-					<mat-radio-group [formControlName]="'participacion_' + opcion.id" class="flex gap-6">
-						<mat-radio-button value="SI">Sí</mat-radio-button>
-						<mat-radio-button value="NO">No</mat-radio-button>
-					</mat-radio-group>
+					<div class="flex items-center gap-4">
+						<mat-radio-group formControlName="participadoIncubacion" class="flex gap-6">
+							<mat-radio-button value="SI">Sí</mat-radio-button>
+							<mat-radio-button value="NO">No</mat-radio-button>
+						</mat-radio-group>
+
+						<mat-form-field appearance="outline" class="flex-1"
+							*ngIf="emprendimientoForm.get('participadoIncubacion')?.value === 'SI'">
+							<mat-label>Indica cual en caso de sí</mat-label>
+							<input matInput formControlName="nombreProgramaIncubacion" placeholder="Ingrese su nombre">
+							<mat-error *ngIf="emprendimientoForm.get('nombreProgramaIncubacion')?.hasError('required')">
+								Este campo es requerido si participó
+							</mat-error>
+						</mat-form-field>
+					</div>
 					<mat-error
-						*ngIf="emprendimientoForm.get('participacion_' + opcion.id)?.invalid && emprendimientoForm.get('participacion_' + opcion.id)?.touched"
+						*ngIf="emprendimientoForm.get('participadoIncubacion')?.invalid && emprendimientoForm.get('participadoIncubacion')?.touched"
 						class="text-red-500 text-xs mt-1">
 						Debe seleccionar una opción
 					</mat-error>
 				</div>
-			</div>
 
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Siguiente
-				</button>
-			</div>
-		</form>
-	</div>
+				<h2 class="text-2xl font-bold text-blue-600 mb-6 text-center mt-12">
+					Participación en la comunidad
+				</h2>
 
-	<!-- SECCIÓN 8: Declaraciones finales -->
-	<div *ngIf="currentStep === 8">
-		<h2 class="text-2xl font-bold text-blue-600 mb-8 text-center">
-			Declaraciones finales
-		</h2>
-
-		<form [formGroup]="emprendimientoForm">
-			<div class="space-y-4 mb-8">
-				<div *ngFor="let declaracion of declaracionesFinales" class="flex items-center gap-3">
-					<mat-checkbox [formControlName]="'declaracion_' + declaracion.id" class="mt-1"></mat-checkbox>
-					<label class="text-sm text-gray-800 cursor-pointer" (click)="toggleDeclaracion(declaracion.id)">
-						{{ declaracion.declaracion }}
-					</label>
+				<!-- Preguntas dinámicas de participación en la comunidad -->
+				<div class="space-y-6 mb-8">
+					<div *ngFor="let opcion of opcionesParticipacionComunidad">
+						<label class="block text-sm font-medium text-gray-700 mb-3">
+							{{ opcion.opcion }}
+						</label>
+						<mat-radio-group [formControlName]="'participacion_' + opcion.id" class="flex gap-6">
+							<mat-radio-button value="SI">Sí</mat-radio-button>
+							<mat-radio-button value="NO">No</mat-radio-button>
+						</mat-radio-group>
+						<mat-error
+							*ngIf="emprendimientoForm.get('participacion_' + opcion.id)?.invalid && emprendimientoForm.get('participacion_' + opcion.id)?.touched"
+							class="text-red-500 text-xs mt-1">
+							Debe seleccionar una opción
+						</mat-error>
+					</div>
 				</div>
-			</div>
 
-			<div class="flex justify-center gap-4 mt-8">
-				<button mat-raised-button type="button" (click)="atras()"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Atrás
-				</button>
-				<button mat-raised-button type="button" (click)="siguiente()" *ngIf="esCreacion"
-					class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-					Enviar
-				</button>
-			</div>
-		</form>
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Siguiente
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- SECCIÓN 8: Declaraciones finales -->
+		<div *ngIf="currentStep === 8">
+			<h2 class="text-2xl font-bold text-blue-600 mb-8 text-center">
+				Declaraciones finales
+			</h2>
+
+			<form [formGroup]="emprendimientoForm">
+				<div class="space-y-4 mb-8">
+					<div *ngFor="let declaracion of declaracionesFinales" class="flex items-center gap-3">
+						<mat-checkbox [formControlName]="'declaracion_' + declaracion.id" class="mt-1"></mat-checkbox>
+						<label class="text-sm text-gray-800 cursor-pointer" (click)="toggleDeclaracion(declaracion.id)">
+							{{ declaracion.declaracion }}
+						</label>
+					</div>
+				</div>
+
+				<div class="flex justify-center gap-4 mt-8">
+					<button mat-raised-button type="button" (click)="atras()"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Atrás
+					</button>
+					<button mat-raised-button type="button" (click)="siguiente()" *ngIf="esCreacion"
+						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
+						Enviar
+					</button>
+				</div>
+			</form>
+		</div>
 	</div>
 
 </div>

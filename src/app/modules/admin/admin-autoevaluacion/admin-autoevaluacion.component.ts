@@ -218,10 +218,6 @@ export class AdminAutoevaluacionComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	editarAutoevaluacion(autoevaluacion: ListadoAutoevaluacionDTO): void {
-		this.router.navigate(['/admin/autoevaluacion/edit', autoevaluacion.idAutoevaluacion]);
-	}
-
 	formatearFecha(fecha: string): string {
 		if (!fecha) return '-';
 		const date = new Date(fecha);

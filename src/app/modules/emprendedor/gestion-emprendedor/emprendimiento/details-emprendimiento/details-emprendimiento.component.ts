@@ -1,3 +1,4 @@
+import { CanActivate } from '@angular/router';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,6 +8,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProvinciasSearchComponent } from '../../../../../shared/general/provincias-search/provincias-searc.component';
 import { CiudadesSearchComponent } from '../../../../../shared/general/ciudades-search/ciudades-search.component';
 import { Provincia, Ciudad, Categoria } from '../../../../../shared/general/shared-general.types';
@@ -15,10 +17,12 @@ import { EmprendimientoService } from '../../../../../core/services/emprendimien
 import { SharedGeneralService } from '../../../../../shared/general/shared-general.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { SolicitudesService } from '../../../../../core/services/solicitudes.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
 	selector: 'app-details-emprendimiento',
 	templateUrl: './details-emprendimiento.component.html',
+	styleUrls: ['./details-emprendimiento.component.css'],
 	standalone: true,
 	imports: [
 		CommonModule,
@@ -29,17 +33,19 @@ import { SolicitudesService } from '../../../../../core/services/solicitudes.ser
 		MatButtonModule,
 		MatCheckboxModule,
 		MatIconModule,
+		MatProgressSpinnerModule,
 		ProvinciasSearchComponent,
 		CiudadesSearchComponent
 	]
 })
 export class DetailsEmprendimientoComponent implements OnInit {
 	@Input() modo: 'crear' | 'editar-emprendedor' | 'revisar-admin' = 'crear';
-	@Input() emprendimientoId?: number; // Para emprendedor
-	@Input() solicitudId?: number; // Para admin
+	@Input() emprendimientoId?: number;
+	@Input() solicitudId?: number;
 	
 	@Output() emprendimientoCreado = new EventEmitter<void>();
 	@Output() emprendimientoEditado = new EventEmitter<void>();
+	
 	emprendimientoForm!: FormGroup;
 	showCarreraFields = false;
 	showSemestreField = false;
@@ -47,6 +53,11 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	showParienteField = false;
 	showOtraCategoria = false;
 	currentStep = 1;
+
+	// 🔥 NUEVO: Estados de carga
+	cargandoDatos = false;
+	datosBasicosCargados = false;
+	datosEmprendimientoCargados = false;
 
 	// Datos para sección 2
 	tiposEmprendimiento: TipoEmprendimiento[] = [];
@@ -74,13 +85,13 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	videoSeleccionado: boolean = false;
 	fotosProductosSeleccionadas: boolean = false;
 
-	// Datos para sección 7 - Participación en la comunidad
+	// Datos para sección 7
 	opcionesParticipacionComunidad: OpcionParticipacionComunidad[] = [];
 
-	// Datos para sección 8 - Declaraciones finales
+	// Datos para sección 8
 	declaracionesFinales: DeclaracionFinal[] = [];
 
-    // Datos para comparación (solo admin)
+	// Datos para comparación (solo admin)
 	datosOriginales?: EmprendimientoDetalle;
 	diferencias?: any[];
 
@@ -90,74 +101,75 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		private sharedGeneralService: SharedGeneralService,
 		private solicitudesService: SolicitudesService,
 		private authService: AuthService 
-
 	) { }
 
 	ngOnInit(): void {
 		this.initForm();
 		this.setupConditionalValidations();
-		this.loadData();
-		this.cargarDatosSegunModo();
+		this.cargarDatosIniciales();
 	}
 
-	initForm(): void {
-		this.emprendimientoForm = this.fb.group({
-			// Sección 1: Información del representante
-			nombreCompleto: ['', Validators.required],
-			numeroTelefonico: ['',[Validators.required, Validators.pattern('^[0-9]+$'), Validators.pattern('^[0-9]{10}$')]],
-			correoCoorporativo: ['', [Validators.required, Validators.email]],
-			correoPersonal: ['', [Validators.required, Validators.email]],
-			identificacion: ['',Validators.required],
-			tienePariente: ['', Validators.required],
-			carrera: [''],
-			anoGraduacion: [''],
-			semestre: [''],
-			nombrePariente: [''],
-			integrantesEmprendedor: ['', Validators.required],
+	// 🔥 NUEVO: Método unificado para cargar todos los datos
+	private cargarDatosIniciales(): void {
+		this.cargandoDatos = true;
 
-			// Sección 2: Información del emprendimiento
-			nombreComercial: [''],
-			anoCreacion: [''],
-			ciudad: [null],
-			provincia: [null],
-			tipoEmprendimiento: [''],
-			emprendimientoActivo: [''],
-			personaJuridica: [''],
+		// Cargar datos básicos del sistema (catálogos, tipos, etc.)
+		const datosBasicos$ = forkJoin({
+			tiposEmprendimiento: this.emprendimientoService.getTiposEmprendimiento(),
+			opcionesPersonaJuridica: this.emprendimientoService.getOpcionesPersonaJuridica(),
+			categorias: this.sharedGeneralService.getCategorias(),
+			descripciones: this.emprendimientoService.getDescripciones(),
+			opcionesParticipacion: this.emprendimientoService.getOpcionesParticipacionComunidad(),
+			declaraciones: this.emprendimientoService.getDeclaracionesFinales()
+		});
 
-			// Sección 3: Categorías
-			categorias: [[]],
-			otraCategoria: [''],
+		datosBasicos$.subscribe({
+			next: (datos) => {
+				// Asignar datos básicos
+				this.tiposEmprendimiento = datos.tiposEmprendimiento;
+				this.opcionesPersonaJuridica = datos.opcionesPersonaJuridica.filter(o => o.estado);
+				this.categorias = datos.categorias;
+				this.descripciones = datos.descripciones.filter(d => d.estado);
+				this.opcionesParticipacionComunidad = datos.opcionesParticipacion;
+				this.declaracionesFinales = datos.declaraciones;
 
-			// Sección 4: Descripciones
-			resumenGeneral: ['', Validators.required],
-			queLoHaceDiferente: ['', Validators.required],
-			publicoObjetivo: ['', Validators.required],
-			proposito: ['', Validators.required],
+				// Agregar controles dinámicos
+				this.agregarControlesDinamicos();
 
-			// Sección 5: Historia y Presencia Digital
-			historiaEmprendimiento: ['', Validators.required],
-			instagram: [''],
-			sitioWeb: [''],
-			whatsapp: [''],
-			tiktok: [''],
-			aceptaMostrarDatos: ['', Validators.required],
-			
+				this.datosBasicosCargados = true;
 
-			// Sección 6: Multimedia
-			logo: [null, Validators.required],
-			fotosProductos: [null, Validators.required],
-			video: [null],
-			banner: [null],
-
-			// Sección 7: Métricas básicas
-			cantidadClientes: ['', Validators.required],
-			generadoVentas: ['', Validators.required],
-			participadoIncubacion: ['', Validators.required],
-			nombreProgramaIncubacion: ['']
+				// Ahora cargar datos del emprendimiento si es necesario
+				this.cargarDatosSegunModo();
+			},
+			error: (error) => {
+				console.error('Error al cargar datos básicos:', error);
+				this.cargandoDatos = false;
+				alert('Error al cargar los datos iniciales. Por favor, recarga la página.');
+			}
 		});
 	}
 
-		private cargarDatosSegunModo(): void {
+	// 🔥 Agregar controles dinámicos después de cargar datos
+	private agregarControlesDinamicos(): void {
+		// Participación comunidad
+		this.opcionesParticipacionComunidad.forEach(opcion => {
+			this.emprendimientoForm.addControl(
+				`participacion_${opcion.id}`,
+				this.fb.control('', Validators.required)
+			);
+		});
+
+		// Declaraciones finales
+		this.declaracionesFinales.forEach(declaracion => {
+			const validators = declaracion.obligatoria ? [Validators.requiredTrue] : [];
+			this.emprendimientoForm.addControl(
+				`declaracion_${declaracion.id}`,
+				this.fb.control(false, validators)
+			);
+		});
+	}
+
+	private cargarDatosSegunModo(): void {
 		switch (this.modo) {
 			case 'editar-emprendedor':
 				this.cargarEmprendimientoEmprendedor();
@@ -168,6 +180,8 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			case 'crear':
 			default:
 				// No cargar nada, formulario vacío
+				this.cargandoDatos = false;
+				this.datosEmprendimientoCargados = true;
 				break;
 		}
 	}
@@ -175,38 +189,70 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	private cargarEmprendimientoEmprendedor(): void {
 		if (!this.emprendimientoId) {
 			console.error('No se proporcionó emprendimientoId');
+			this.cargandoDatos = false;
 			return;
 		}
 
-		// Usar la API de "mi vista" que devuelve datosActuales y datosPropuestos
 		this.solicitudesService.obtenerMiVistaSolicitud(this.emprendimientoId).subscribe({
 			next: (response) => {
 				console.log('Mi vista emprendedor:', response);
 				
-				// Si tiene solicitud activa, mostrar los datos propuestos
-				// Si no, mostrar los datos actuales
 				const datosAMostrar = response.tieneSolicitudActiva 
 					? response.datosPropuestos 
 					: response.datosActuales;
 				
 				this.llenarFormulario(datosAMostrar);
 				
-				// Opcional: guardar info adicional
 				if (response.tieneSolicitudActiva) {
 					console.log('Tiene solicitud activa:', response.estadoSolicitud);
 					console.log('Observaciones:', response.observaciones);
 				}
+
+				this.datosEmprendimientoCargados = true;
+				this.cargandoDatos = false;
 			},
 			error: (error) => {
 				console.error('Error al cargar mi vista:', error);
+				this.cargandoDatos = false;
 				alert('Error al cargar los datos del emprendimiento');
 			}
 		});
 	}
 
-	// ============================================
-	// MÉTODO COMÚN PARA LLENAR FORMULARIO
-	// ============================================
+	private cargarSolicitudAdmin(): void {
+		if (!this.solicitudId) {
+			console.error('No se proporcionó solicitudId');
+			this.cargandoDatos = false;
+			return;
+		}
+
+		this.solicitudesService.obtenerDetalleSolicitudAdmin(this.solicitudId).subscribe({
+			next: (response) => {
+				console.log('Detalle solicitud admin:', response);
+				
+				this.llenarFormulario(response.datosPropuestos);
+				
+				if (response.datosOriginales) {
+					this.datosOriginales = response.datosOriginales;
+					this.diferencias = response.diferencias;
+					console.log('Diferencias encontradas:', this.diferencias);
+				}
+
+				this.datosEmprendimientoCargados = true;
+				this.cargandoDatos = false;
+			},
+			error: (error) => {
+				console.error('Error al cargar solicitud admin:', error);
+				this.cargandoDatos = false;
+				alert('Error al cargar los datos de la solicitud');
+			}
+		});
+	}
+
+	// 🔥 GETTER para saber si está todo listo
+	get datosCompletamenteCargados(): boolean {
+		return this.datosBasicosCargados && this.datosEmprendimientoCargados;
+	}
 
 	private llenarFormulario(data: EmprendimientoDetalle): void {
 		console.log('Llenando formulario con:', data);
@@ -225,7 +271,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			nombrePariente: data.informacionRepresentante?.nombrePariente || '',
 			integrantesEmprendedor: data.informacionRepresentante?.integrantesEquipo || '',
 
-			//Información del emprendimiento
 			nombreComercial: data.nombreComercial || '',
 			anoCreacion: data.anioCreacion ? new Date(data.anioCreacion).getFullYear() : '',
 			tipoEmprendimiento: data.tipoEmprendimientoId || '',
@@ -235,32 +280,18 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		});
 
 		if (data.ciudad?.provincia) {
-			console.log('🌍 [FORM] Cargando ubicación:', {
-				provincia: data.ciudad.provincia.nombre,
-				ciudad: data.ciudad.nombreCiudad
-			});
-			
-			// 1. Asignar provincia al estado del componente
 			this.provinciaSeleccionada = data.ciudad.provincia;
-			
-			// 2. Asignar AMBOS valores al formulario en un solo patchValue
-			// Esto asegura que se procesen juntos
 			this.emprendimientoForm.patchValue({
 				provincia: data.ciudad.provincia,
 				ciudad: data.ciudad
 			}, { emitEvent: true });
-			
-			console.log('✅ [FORM] Provincia y ciudad asignadas al formulario');
 		}
 
-
-		//Cargar categorías
 		if (data.categorias && data.categorias.length > 0) {
 			this.categoriasSeleccionadas = data.categorias.map(c => c.id);
 			this.emprendimientoForm.patchValue({ categorias: this.categoriasSeleccionadas });
 		}
 
-		//Cargar descripciones
 		if (data.descripciones) {
 			data.descripciones.forEach((desc: any) => {
 				switch (desc.idDescripcion) {
@@ -283,7 +314,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		}
 
-		//Cargar presencias digitales
 		if (data.presenciasDigitales) {
 			data.presenciasDigitales.forEach((presencia: any) => {
 				const campo = presencia.plataforma === 'sitio_web' ? 'sitioWeb' : presencia.plataforma;
@@ -293,7 +323,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		}
 
-		//Cargar métricas
 		if (data.metricas) {
 			data.metricas.forEach((metrica: any) => {
 				switch (metrica.metricaId) {
@@ -310,12 +339,10 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		}
 
-		//Cargar multimedia (solo previews, no archivos)
 		if (data.multimedia && data.multimedia.length > 0) {
 			this.cargarMultimediaExistente(data.multimedia);
 		}
 
-		//Cargar participaciones comunidad
 		if (data.participacionesComunidad) {
 			data.participacionesComunidad.forEach((participacion: any) => {
 				const valor = participacion.respuesta ? 'SI' : 'NO';
@@ -325,7 +352,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		}
 
-		//Cargar declaraciones
 		if (data.declaracionesFinales) {
 			data.declaracionesFinales.forEach((declaracion: any) => {
 				this.emprendimientoForm.patchValue({
@@ -339,16 +365,13 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		}
 	}
 
-	//Cargar previews de multimedia existente (URLs de S3)
 	private cargarMultimediaExistente(multimedia: any[]): void {
 		multimedia.forEach(media => {
 			const nombreLower = media.nombreActivo?.toLowerCase() || '';
 			
-			// Detectar tipo por nombre del archivo
 			if (nombreLower.includes('logo') || multimedia.indexOf(media) === 0) {
 				this.logoPreview = media.urlArchivo;
-				this.logoSeleccionado = true
-
+				this.logoSeleccionado = true;
 			} else if (nombreLower.includes('banner')) {
 				this.bannerPreview = media.urlArchivo;
 				this.bannerSeleccionado = true;
@@ -356,104 +379,82 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				this.videoPreview = media.urlArchivo;
 				this.videoSeleccionado = true; 
 			} else {
-				// Asumimos que es foto de producto
 				this.fotosProductosPreview.push(media.urlArchivo);
 				this.fotosProductosSeleccionadas = true;
 			}
-
-			this.actualizarValidacionMultimedia();
-
 		});
 
+		this.actualizarValidacionMultimedia();
 	}
 
 	private actualizarValidacionMultimedia(): void {
-	// Si hay logo existente, quitar validación requerida
-	if (this.logoSeleccionado && this.logoPreview) {
-		const logoControl = this.emprendimientoForm.get('logo');
-		logoControl?.clearValidators();
-		logoControl?.updateValueAndValidity();
-	}
-	
-	// Si hay fotos existentes, quitar validación requerida
-	if (this.fotosProductosSeleccionadas && this.fotosProductosPreview.length >= 2) {
-		const fotosControl = this.emprendimientoForm.get('fotosProductos');
-		fotosControl?.clearValidators();
-		fotosControl?.updateValueAndValidity();
-	}
-	
-	// Opcional: lo mismo para video y banner si son requeridos
-	if (this.videoSeleccionado && this.videoPreview) {
-		const videoControl = this.emprendimientoForm.get('video');
-		videoControl?.clearValidators();
-		videoControl?.updateValueAndValidity();
-	}
-	
-	if (this.bannerSeleccionado && this.bannerPreview) {
-		const bannerControl = this.emprendimientoForm.get('banner');
-		bannerControl?.clearValidators();
-		bannerControl?.updateValueAndValidity();
-	}
-}
-
-	// ============================================
-	// GETTERS PARA CONTROLAR LA UI
-	// ============================================
-	get esCreacion(): boolean {
-		return this.modo === 'crear';
-	}
-
-	get esEdicionEmprendedor(): boolean {
-		return this.modo === 'editar-emprendedor';
-	}
-
-	get esRevisionAdmin(): boolean {
-		return this.modo === 'revisar-admin';
-	}
-
-	get soloLectura(): boolean {
-		return this.modo === 'revisar-admin';
-	}
-
-	get puedeEditar(): boolean {
-		return this.modo === 'crear' || this.modo === 'editar-emprendedor';
-	}
-
-	get muestraComparacion(): boolean {
-		return this.modo === 'revisar-admin' && this.datosOriginales != null;
-	}
-
-	// ============================================
-	// API DEL ADMIN
-	// ============================================
-	private cargarSolicitudAdmin(): void {
-		if (!this.solicitudId) {
-			console.error('No se proporcionó solicitudId');
-			return;
+		if (this.logoSeleccionado && this.logoPreview) {
+			const logoControl = this.emprendimientoForm.get('logo');
+			logoControl?.clearValidators();
+			logoControl?.updateValueAndValidity();
 		}
+		
+		if (this.fotosProductosSeleccionadas && this.fotosProductosPreview.length >= 2) {
+			const fotosControl = this.emprendimientoForm.get('fotosProductos');
+			fotosControl?.clearValidators();
+			fotosControl?.updateValueAndValidity();
+		}
+		
+		if (this.videoSeleccionado && this.videoPreview) {
+			const videoControl = this.emprendimientoForm.get('video');
+			videoControl?.clearValidators();
+			videoControl?.updateValueAndValidity();
+		}
+		
+		if (this.bannerSeleccionado && this.bannerPreview) {
+			const bannerControl = this.emprendimientoForm.get('banner');
+			bannerControl?.clearValidators();
+			bannerControl?.updateValueAndValidity();
+		}
+	}
 
-		// API del admin: devuelve datosPropuestos, solicitud, datosOriginales (si hay)
-		this.solicitudesService.obtenerDetalleSolicitudAdmin(this.solicitudId).subscribe({
-			next: (response) => {
-				console.log('Detalle solicitud admin:', response);
-				
-				// Llenar formulario con DATOS PROPUESTOS (lo que el emprendedor quiere cambiar)
-				this.llenarFormulario(response.datosPropuestos);
-				
-				// Guardar datos originales para comparación (si es actualización)
-				if (response.datosOriginales) {
-					this.datosOriginales = response.datosOriginales;
-					this.diferencias = response.diferencias;
-					console.log('Diferencias encontradas:', this.diferencias);
-				}
-			},
-			error: (error) => {
-				console.error('Error al cargar solicitud admin:', error);
-				alert('Error al cargar los datos de la solicitud');
-			}
+	initForm(): void {
+		this.emprendimientoForm = this.fb.group({
+			nombreCompleto: ['', Validators.required],
+			numeroTelefonico: ['', [Validators.required, Validators.pattern('^[0-9]+$'), Validators.pattern('^[0-9]{10}$')]],
+			correoCoorporativo: ['', [Validators.required, Validators.email]],
+			correoPersonal: ['', [Validators.required, Validators.email]],
+			identificacion: ['', Validators.required],
+			tienePariente: ['', Validators.required],
+			carrera: [''],
+			anoGraduacion: [''],
+			semestre: [''],
+			nombrePariente: [''],
+			integrantesEmprendedor: ['', Validators.required],
+			nombreComercial: [''],
+			anoCreacion: [''],
+			ciudad: [null],
+			provincia: [null],
+			tipoEmprendimiento: [''],
+			emprendimientoActivo: [''],
+			personaJuridica: [''],
+			categorias: [[]],
+			otraCategoria: [''],
+			resumenGeneral: ['', Validators.required],
+			queLoHaceDiferente: ['', Validators.required],
+			publicoObjetivo: ['', Validators.required],
+			proposito: ['', Validators.required],
+			historiaEmprendimiento: ['', Validators.required],
+			instagram: [''],
+			sitioWeb: [''],
+			whatsapp: [''],
+			tiktok: [''],
+			aceptaMostrarDatos: ['', Validators.required],
+			logo: [null, Validators.required],
+			fotosProductos: [null, Validators.required],
+			video: [null],
+			banner: [null],
+			cantidadClientes: ['', Validators.required],
+			generadoVentas: ['', Validators.required],
+			participadoIncubacion: ['', Validators.required],
+			nombreProgramaIncubacion: ['']
 		});
 	}
-
 
 	setupConditionalValidations(): void {
 		this.emprendimientoForm.get('identificacion')?.valueChanges.subscribe(value => {
@@ -461,7 +462,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			this.showSemestreField = value === 'Estudiante';
 			this.showAnoGraduacionField = value === 'Alumni';
 
-			// Limpiar validadores primero
 			this.emprendimientoForm.get('carrera')?.clearValidators();
 			this.emprendimientoForm.get('semestre')?.clearValidators();
 			this.emprendimientoForm.get('anoGraduacion')?.clearValidators();
@@ -498,7 +498,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			this.emprendimientoForm.get('nombrePariente')?.updateValueAndValidity();
 		});
 
-		// Validación condicional para programa de incubación
 		this.emprendimientoForm.get('participadoIncubacion')?.valueChanges.subscribe(value => {
 			if (value === 'SI') {
 				this.emprendimientoForm.get('nombreProgramaIncubacion')?.setValidators([Validators.required]);
@@ -511,80 +510,33 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		});
 	}
 
-	loadData(): void {
-		this.emprendimientoService.getTiposEmprendimiento().subscribe({
-			next: (tipos) => {
-				this.tiposEmprendimiento = tipos;
-			},
-			error: (error) => {
-				console.error('Error al cargar tipos de emprendimiento:', error);
-			}
-		});
-
-		this.emprendimientoService.getOpcionesPersonaJuridica().subscribe({
-			next: (opciones) => {
-				this.opcionesPersonaJuridica = opciones.filter(o => o.estado);
-			},
-			error: (error) => {
-				console.error('Error al cargar opciones persona jurídica:', error);
-			}
-		});
-
-		this.sharedGeneralService.getCategorias().subscribe({
-			next: (categorias) => {
-				this.categorias = categorias;
-			},
-			error: (error) => {
-				console.error('Error al cargar categorías:', error);
-			}
-		});
-
-		this.emprendimientoService.getDescripciones().subscribe({
-			next: (descripciones) => {
-				this.descripciones = descripciones.filter(d => d.estado);
-			},
-			error: (error) => {
-				console.error('Error al cargar descripciones:', error);
-			}
-		});
-
-		// Cargar opciones de participación en la comunidad
-		this.emprendimientoService.getOpcionesParticipacionComunidad().subscribe({
-			next: (opciones) => {
-				this.opcionesParticipacionComunidad = opciones;
-				// Agregar controles dinámicos al formulario
-				opciones.forEach(opcion => {
-					this.emprendimientoForm.addControl(
-						`participacion_${opcion.id}`,
-						this.fb.control('', Validators.required)
-					);
-				});
-			},
-			error: (error) => {
-				console.error('Error al cargar opciones de participación en la comunidad:', error);
-			}
-		});
-
-		// Cargar declaraciones finales
-		this.emprendimientoService.getDeclaracionesFinales().subscribe({
-			next: (declaraciones) => {
-				this.declaracionesFinales = declaraciones;
-				// Agregar controles dinámicos al formulario
-				declaraciones.forEach(declaracion => {
-					const validators = declaracion.obligatoria ? [Validators.requiredTrue] : [];
-					this.emprendimientoForm.addControl(
-						`declaracion_${declaracion.id}`,
-						this.fb.control(false, validators)
-					);
-				});
-			},
-			error: (error) => {
-				console.error('Error al cargar declaraciones finales:', error);
-			}
-		});
+	get esCreacion(): boolean {
+		return this.modo === 'crear';
 	}
 
-	// Métodos para manejo de archivos multimedia
+	get esEdicionEmprendedor(): boolean {
+		return this.modo === 'editar-emprendedor';
+	}
+
+	get esRevisionAdmin(): boolean {
+		return this.modo === 'revisar-admin';
+	}
+
+	get soloLectura(): boolean {
+		return this.modo === 'revisar-admin';
+	}
+
+	get puedeEditar(): boolean {
+		return this.modo === 'crear' || this.modo === 'editar-emprendedor';
+	}
+
+	get muestraComparacion(): boolean {
+		return this.modo === 'revisar-admin' && this.datosOriginales != null;
+	}
+
+	// Resto de métodos (onLogoSelected, siguiente, atras, onSubmit, etc.) permanecen igual...
+	// [CONTINÚA CON TUS MÉTODOS EXISTENTES]
+
 	onLogoSelected(event: any): void {
 		const file = event.target.files[0];
 		if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
@@ -771,7 +723,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	siguiente(): void {
-		// ✅ Si es solo lectura, avanzar sin validaciones
 		if (this.soloLectura) {
 			if (this.currentStep < 8) {
 				this.currentStep++;
@@ -895,13 +846,8 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				this.currentStep = 6;
 			}
 		} else if (this.currentStep === 6) {
-			// ✅ Considerar archivos existentes O nuevos
 			const tieneLogo = !!this.logoFile || (this.logoSeleccionado && !!this.logoPreview);
 			const totalFotos = this.fotosProductos.length + this.fotosProductosPreview.length;
-
-			console.log('🔍 Validando multimedia (paso 6):');
-			console.log('Tiene logo?', tieneLogo);
-			console.log('Total fotos:', totalFotos);
 
 			if (!tieneLogo) {
 				alert('El logo es requerido');
@@ -915,7 +861,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 			this.currentStep = 7;
 		} else if (this.currentStep === 7) {
-			// Validar métricas básicas
 			const seccion7Fields = ['cantidadClientes', 'generadoVentas', 'participadoIncubacion'];
 
 			let seccion7Valid = true;
@@ -927,7 +872,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				}
 			});
 
-			// Validar campo condicional
 			if (this.emprendimientoForm.get('participadoIncubacion')?.value === 'SI') {
 				const nombreProgramaControl = this.emprendimientoForm.get('nombreProgramaIncubacion');
 				nombreProgramaControl?.markAsTouched();
@@ -936,7 +880,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				}
 			}
 
-			// Validar participación en la comunidad
 			this.opcionesParticipacionComunidad.forEach(opcion => {
 				const control = this.emprendimientoForm.get(`participacion_${opcion.id}`);
 				control?.markAsTouched();
@@ -949,7 +892,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 				this.currentStep = 8;
 			}
 		} else if (this.currentStep === 8) {
-			// Validar declaraciones finales
 			let seccion8Valid = true;
 
 			this.declaracionesFinales.forEach(declaracion => {
@@ -976,7 +918,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 	onSubmit(tipoAccion: 'CREAR' | 'BORRADOR' = 'CREAR'): void {
 		const formValues = this.emprendimientoForm.value;
-
 		const perfil = this.authService.getPerfilLocal();
 
 		if (!perfil || !perfil.id) {
@@ -984,7 +925,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			return;
 		}
 
-		// ✅ PREPARAR TIPOS DE MULTIMEDIA (esto SÍ va en el JSON)
 		const tiposMultimedia: string[] = [];
 
 		if (this.logoFile) {
@@ -1003,7 +943,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			tiposMultimedia.push('BANNER');
 		}
 
-		// Construir el objeto JSON según el formato requerido
 		const requestBody = {
 			usuarioId: perfil.id,
 			tipoAccion: tipoAccion,
@@ -1040,7 +979,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			}),
 			descripciones: [
 				{ idDescripcion: 1, respuesta: formValues.resumenGeneral },
-				{ idDescripcion: 2, respuesta: formValues.historiaEmprendimiento }, // ✅ Orden correcto
+				{ idDescripcion: 2, respuesta: formValues.historiaEmprendimiento },
 				{ idDescripcion: 3, respuesta: formValues.queLoHaceDiferente },
 				{ idDescripcion: 4, respuesta: formValues.publicoObjetivo },
 				{ idDescripcion: 5, respuesta: formValues.proposito }
@@ -1053,11 +992,9 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			presenciasDigitales: [] as any[],
 			participacionesComunidad: [] as any[],
 			declaracionesFinales: [] as any[],
-			tiposMultimedia: tiposMultimedia // ✅ Solo tipos, NO archivos
-			// ❌ NO incluir "imagenes" aquí
+			tiposMultimedia: tiposMultimedia
 		};
 
-		// Agregar presencias digitales si tienen valor
 		if (formValues.instagram) {
 			requestBody.presenciasDigitales.push({
 				plataforma: 'instagram',
@@ -1083,7 +1020,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		}
 
-		// Agregar participaciones en la comunidad
 		this.opcionesParticipacionComunidad.forEach(opcion => {
 			const valor = formValues[`participacion_${opcion.id}`];
 			requestBody.participacionesComunidad.push({
@@ -1092,7 +1028,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		});
 
-		// Agregar declaraciones finales
 		this.declaracionesFinales.forEach(declaracion => {
 			const aceptada = formValues[`declaracion_${declaracion.id}`];
 			requestBody.declaracionesFinales.push({
@@ -1103,13 +1038,9 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			});
 		});
 
-		// Crear FormData para enviar JSON + archivos
 		const formData = new FormData();
-		
-		// Agregar el JSON como string
 		formData.append('data', JSON.stringify(requestBody));
 
-		// ✅ Agregar archivos con la key "imagenes" (todos con la misma key)
 		if (this.logoFile) {
 			formData.append('imagenes', this.logoFile);
 		}
@@ -1126,16 +1057,11 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			formData.append('imagenes', this.bannerFile);
 		}
 
-		console.log('Request Body:', requestBody);
-		console.log('FormData preparado con archivos');
-
-		// Enviar al backend
 		this.emprendimientoService.crearEmprendimiento(formData).subscribe({
 			next: (response) => {
 				console.log('Emprendimiento creado exitosamente:', response);
 				
 				if (tipoAccion === 'CREAR') {
-					// Si es CREAR, enviar automáticamente para aprobación
 					const emprendimientoId = response.id || response;
 					
 					this.solicitudesService.enviarParaAprobacion(emprendimientoId).subscribe({
@@ -1161,6 +1087,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			}
 		});
 	}
+
 	guardarBorrador(): void {
 		this.onSubmit('BORRADOR');
 	}
