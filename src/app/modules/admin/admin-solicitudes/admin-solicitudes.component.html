@@ -15,35 +15,9 @@
 
 		<div class="flex flex-col h-full p-6 overflow-hidden">
 
-			<!-- Tabs de estado de solicitudes -->
-			<div class="mb-4 flex justify-start">
-				<ul
-					class="inline-flex text-sm font-medium text-center text-gray-700 bg-gray-100 rounded-full shadow-sm overflow-hidden">
-					<li>
-						<button (click)="setTab(0)"
-							[class]="selectedTab === 0
-                ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
-                : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-							Pendientes
-						</button>
-					</li>
-					<li>
-						<button (click)="setTab(1)"
-							[class]="selectedTab === 1
-                ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
-                : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-							En espera
-						</button>
-					</li>
-					<li>
-						<button (click)="setTab(2)"
-							[class]="selectedTab === 2
-                ? 'px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-full shadow-sm focus:outline-none transition-all duration-300'
-                : 'px-5 py-2 text-sm text-gray-600 bg-transparent focus:outline-none hover:text-gray-900 transition-all duration-300'">
-							Pendientes de Actualizar
-						</button>
-					</li>
-				</ul>
+<!-- Título de sección -->
+		<div class="mb-4">
+			<h2 class="text-2xl font-bold text-gray-800">Pendientes</h2>
 			</div>
 
 			<!-- Tarjeta de filtros -->
@@ -200,24 +174,6 @@
 							[pageSizeOptions]="pageSizeOptions" (page)="cambiarPagina($event)" showFirstLastButtons>
 						</mat-paginator>
 					</div>
-				</div>
-			</ng-container>
-
-			<!-- CONTENIDO TAB EN ESPERA -->
-			<ng-container *ngIf="selectedTab === 1">
-				<div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
-					<p class="text-gray-400 text-lg">
-						Sección "En espera" aún no implementada.
-					</p>
-				</div>
-			</ng-container>
-
-			<!-- CONTENIDO TAB PENDIENTES DE ACTUALIZAR -->
-			<ng-container *ngIf="selectedTab === 2">
-				<div class="flex-1 flex items-center justify-center bg-white rounded-xl shadow-md">
-					<p class="text-gray-400 text-lg">
-						Sección "Pendientes de Actualizar" aún no implementada.
-					</p>
 				</div>
 			</ng-container>
 
