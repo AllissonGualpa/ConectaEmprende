@@ -1,49 +1,50 @@
 export interface Tag {
-	idTag: number;
-	nombre: string;
+  idTag: number;
+  nombre: string;
 }
 
 export interface BlogCreate {
-	titulo: string;
-	resumen: string;
-	contenido: string;
-	tags: Tag[];
-	imagenDestacada: File | null;
-	estado: string;
+  titulo: string;
+  resumen: string;
+  contenido: string;
+  tags: Tag[];
+  imagenDestacada: File | null;
+  estado: string;
 }
 
 export interface BlogArticle {
+  resumen: string;
   idArticulo: number;
-	id: number;
-	titulo: string;
-	descripcionCorta: string;
-	contenido: string;
-	urlImagen: string;
-	fechaCreacion: string;
-	fechaPublicacion?: string;
-	tags: Tag[];
-	estado: string;
+  titulo: string;
+  descripcionCorta: string;
+  contenido: string;
+  urlImagen: string;
+  fechaCreacion: string;
+  fechaPublicacion?: string;
+  tags: Tag[];
+  estado: string;
 }
 
-// Representa la fila que usa el admin list (observa idArticulo en el front)
 export interface AdminBlog {
-	idArticulo: number;
-	titulo: string;
-	descripcionCorta?: string;
-	contenido?: string;
-	urlImagen?: string;
-	fechaCreacion?: string;
-	nombreUsuario?: string;
-	tags?: Tag[];
-	estado?: string;
+  idArticulo: number;
+  titulo: string;
+  descripcionCorta?: string;
+  contenido?: string;
+  urlImagen?: string;
+  fechaCreacion?: string;
+  nombreUsuario?: string;
+  tags?: Tag[];
+  estado?: string;
 }
 
-// Respuesta paginada genérica
+export interface PageableInfo {
+  page: number;
+  size: number;
+  length: number;
+  lastPage: number;
+}
+
 export interface PaginatedResponse<T> {
-  pageable: AdminBlog[];
-	content: T[];
-	totalElements: number;
-	totalPages: number;
-	number: number;
-	size: number;
+  content: T[];
+  pageable: PageableInfo;
 }

@@ -336,7 +336,30 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   }
 
   private crearArticulo(estado: string) {
-    this.blogService.createBlog(this.blog, estado).subscribe({
+    // Crear FormData para enviar la imagen y demás campos
+    const formData = new FormData();
+
+    formData.append('titulo', this.blog.titulo);
+    formData.append('descripcionCorta', this.blog.resumen);
+    formData.append('contenido', this.blog.contenido);
+    formData.append('estado', estado);
+
+    // Agregar la imagen si existe
+    if (this.blog.imagenDestacada instanceof File) {
+      formData.append('imagen', this.blog.imagenDestacada);
+    }
+
+    // Agregar los IDs de los tags
+    const idsTags = this.blog.tags.map((t: Tag) => t.idTag);
+    idsTags.forEach((id: number) => {
+      formData.append('idsTags', id.toString());
+    });
+
+    // Obtener el ID del usuario
+    const idUsuario = Number(localStorage.getItem('idUsuario') || '1');
+
+    // Llamar al servicio con FormData y el idUsuario
+    this.blogService.createBlog(formData, idUsuario).subscribe({
       next: () => {
         const mensaje = estado === 'PUBLICADO'
           ? 'El artículo se publicó correctamente.'
@@ -355,11 +378,23 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error('Error al crear el artículo:', err);
+
+        // Mostrar mensaje más específico según el error
+        let errorMessage = 'No se pudo guardar el artículo. Revisa la información e inténtalo nuevamente.';
+
+        if (err.status === 400) {
+          errorMessage = 'Datos inválidos. Verifica que todos los campos estén correctos.';
+        } else if (err.status === 401 || err.status === 403) {
+          errorMessage = 'No tienes permisos para crear artículos. Por favor, inicia sesión nuevamente.';
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
+        }
+
         this.dialog.open(MensajeConfirmacionComponent, {
           data: {
             type: 'error',
-            subject: 'Blog',
-            subtitle: 'No se pudo guardar el artículo. Revisa la información e inténtalo nuevamente.'
+            subject: 'Error al crear blog',
+            subtitle: errorMessage
           }
         });
         this.guardando = false;

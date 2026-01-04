@@ -72,19 +72,18 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
     private router: Router,
     private dialog: MatDialog,
     private authServices: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
-    // 1) Primero cargamos tags sin tocar loading global
+    // Forzar recarga cada vez que se accede al componente
     this.loadTagsAndBlogs();
 
-    // 2) Suscribir término de búsqueda con debounce para llamar al API
     this.searchSub = this.searchSubject
       .pipe(debounceTime(400), distinctUntilChanged())
       .subscribe((value: string) => {
         this.searchTerm = value;
-        this.currentPage = 0; // reset paginación al buscar
-        this.loadBlogs(); // solicitar al API usando titulo = searchTerm
+        this.currentPage = 0;
+        this.loadBlogs();
       });
   }
 
@@ -140,51 +139,24 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe({
-        next: (response) => {
-          // Detecta si la respuesta tiene paginación
-          if (
-            response &&
-            typeof response === 'object' &&
-            'pageable' in response
-          ) {
-            const r = response as any;
-            this.blogs = r.content || [];
-            this.filteredBlogs = [...this.blogs];
-            this.totalElements = Number(r.pageable.length) || 0;
-            this.totalPages = Number(r.pageable.lastPage) + 1 || 1;
-            this.currentPage = Number(r.pageable.page) || 0;
-            this.pageSize = Number(r.pageable.size) || this.pageSize;
-          }
-          // Si el backend devuelve un array plano
-          else if (Array.isArray(response)) {
-            this.blogs = response;
-            this.filteredBlogs = [...response];
-            this.totalElements = response.length;
-            this.totalPages = Math.ceil(this.totalElements / this.pageSize);
-          }
+        next: (r) => {
+          this.blogs = r.content || [];
+          this.filteredBlogs = [...this.blogs];
 
-          this.applyFilters();
+          this.totalElements = Number(r.pageable?.length) || 0;
+          this.pageSize = Number(r.pageable?.size) || this.pageSize;
+          this.currentPage = Number(r.pageable?.page) || 0;
+          this.totalPages = Number(r.pageable?.lastPage ?? 0) + 1;
+
           this.computePaginationInfo();
         },
         error: (error) => {
           console.error('Error al cargar blogs:', error);
           this.blogs = [];
           this.filteredBlogs = [];
-          if (error.status === 401) {
-            this.dialog.open(MensajeConfirmacionComponent, {
-              width: '420px',
-              data: {
-                subject: 'Sesión expirada',
-                title: 'Tu sesión ha expirado',
-                subtitle: 'Por favor, inicia sesión nuevamente.',
-                type: 'error',
-              },
-            });
-            this.authServices.logout();
-            this.router.navigate(['/login']);
-          }
-        },
+        }
       });
+
   }
 
   applyFilters() {
@@ -344,15 +316,14 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
                 width: '420px',
                 data: {
                   subject: 'Blog',
-                  title: `Blog ${
-                    accion === 'archivar' ? 'archivado' : 'desarchivado'
-                  } exitosamente`,
+                  title: `Blog ${accion === 'archivar' ? 'archivado' : 'desarchivado'
+                    } exitosamente`,
                   type: 'success',
                 },
               });
               this.loadBlogs(); // Recargar blogs después de la operación
             },
-            error: (err) => {
+            error: (err: any) => {
               console.error(`Error al ${accion} blog:`, err);
               this.dialog.open(MensajeConfirmacionComponent, {
                 width: '420px',
