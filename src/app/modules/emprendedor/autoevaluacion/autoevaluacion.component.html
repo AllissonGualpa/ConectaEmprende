@@ -1,0 +1,100 @@
+<div class="min-h-screen bg-gray-50">
+	<!-- Barra de progreso -->
+	<mat-progress-bar mode="determinate" [value]="progreso" class="sticky top-0 z-50" color="warn">
+	</mat-progress-bar>
+
+	<!-- Contenido principal -->
+	<div class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8" *ngIf="formulario && preguntaActual">
+
+		<!-- Mensaje introductorio (solo en la primera pregunta) -->
+		<div *ngIf="esPrimeraPregunta" class="mb-12">
+			<h1 class="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-8 leading-tight">
+				Recibiste una calificación baja… pero cada reto es una oportunidad
+			</h1>
+
+			<mat-card class="shadow-lg">
+				<mat-card-content class="p-6">
+					<p class="text-lg font-semibold text-gray-800 mb-4">Hola,</p>
+					<p class="text-gray-700 leading-relaxed">
+						Uno de tus visitantes ha dejado una valoración baja (2 estrellas o menos) en el perfil de tu
+						emprendimiento.
+						No te preocupes, ¡sabemos que siempre se puede mejorar! Por eso te invitamos a responder estas
+						<strong>{{ formulario.preguntas.length }} preguntas breves</strong> para ayudarte a reflexionar
+						y seguir creciendo 💪✨.
+					</p>
+				</mat-card-content>
+			</mat-card>
+		</div>
+
+		<!-- Pregunta actual -->
+		<mat-card class="shadow-lg mb-8">
+			<mat-card-content class="p-6 sm:p-8">
+				<!-- Indicador de pregunta -->
+				<div class="flex items-center justify-between mb-6">
+					<span class="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+						Pregunta {{ preguntaActualIndex + 1 }} de {{ formulario.preguntas.length }}
+					</span>
+				</div>
+
+				<!-- Título de la pregunta -->
+				<h2 class="text-xl sm:text-2xl font-semibold text-gray-900 mb-6">
+					{{ preguntaActual.pregunta }}
+				</h2>
+
+				<p class="text-sm text-gray-600 mb-6" *ngIf="preguntaActual.tipo === 'MULTIPLE'">
+					(Selecciona mínimo 1, máximo {{ preguntaActual.numeroRespuestas }})
+				</p>
+
+				<!-- Formulario de respuestas -->
+				<form [formGroup]="respuestaForm" class="space-y-4">
+
+					<!-- Opciones tipo MULTIPLE (checkboxes) -->
+					<div *ngIf="preguntaActual.tipo === 'MULTIPLE' && preguntaActual.opciones" class="space-y-3"
+						formArrayName="opcionesMultiples">
+						<div *ngFor="let opcion of preguntaActual.opciones; let i = index" class="flex items-start">
+							<mat-checkbox [formControlName]="i" (change)="onCheckboxChange(i)" class="w-full"
+								color="warn">
+								<span class="text-base text-gray-800 leading-relaxed">
+									{{ opcion.opcion }}
+								</span>
+							</mat-checkbox>
+						</div>
+					</div>
+
+					<!-- Opciones tipo ESCALA (radio buttons) -->
+					<mat-radio-group *ngIf="preguntaActual.tipo === 'ESCALA' && preguntaActual.opciones"
+						formControlName="respuesta" class="flex flex-col space-y-3" color="warn">
+						<mat-radio-button *ngFor="let opcion of preguntaActual.opciones" [value]="opcion.idOpcion"
+							class="text-base text-gray-800">
+							{{ opcion.opcion }}
+						</mat-radio-button>
+					</mat-radio-group>
+				</form>
+			</mat-card-content>
+		</mat-card>
+
+		<!-- Botones de acción -->
+		<div class="flex justify-end gap-4">
+			<!-- Botón Cancelar (solo visible en modo dialog) -->
+			<button *ngIf="esModoDialog" mat-stroked-button (click)="cerrarDialog()"
+				class="px-8 py-3 text-lg font-medium">
+				Cancelar
+			</button>
+
+			<!-- Botón Siguiente/Finalizar -->
+			<button mat-raised-button color="warn" [disabled]="!respuestaForm.valid" (click)="siguiente()"
+				class="px-8 py-3 text-lg font-medium">
+				{{ esUltimaPregunta ? 'Finalizar' : 'Siguiente' }}
+				<mat-icon class="ml-2">arrow_forward</mat-icon>
+			</button>
+		</div>
+	</div>
+
+	<!-- Loading state -->
+	<div *ngIf="!formulario" class="flex items-center justify-center min-h-screen">
+		<div class="text-center">
+			<div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
+			<p class="text-gray-600 text-lg">Cargando formulario...</p>
+		</div>
+	</div>
+</div>

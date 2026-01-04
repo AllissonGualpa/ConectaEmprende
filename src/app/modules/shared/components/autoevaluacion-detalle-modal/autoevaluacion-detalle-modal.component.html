@@ -1,88 +1,106 @@
-<div class="relative bg-white rounded-xl shadow-xl w-full max-w-4xl p-6">
-
-  <!-- Botón cerrar -->
-  <button
-    (click)="cerrar()"
-    class="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
-  >
-    <mat-icon>close</mat-icon>
-  </button>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-    <!-- COLUMNA IZQUIERDA -->
+<div class="relative max-w-4xl">
+  <!-- Header -->
+  <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-white sticky top-0 z-10">
     <div>
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">
-        Emprendimiento: <span class="font-bold">RockFeld</span>
-      </h2>
+      <h2 class="text-2xl font-bold text-gray-900">Detalle de Autoevaluación</h2>
+      <p class="text-sm text-gray-500 mt-1">{{ nombreEmprendimiento }}</p>
+    </div>
+    <button mat-icon-button (click)="cerrar()" class="text-gray-400 hover:text-gray-600">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-      <!-- Valoración -->
-      <div class="flex items-center gap-1 mb-4">
-        <span class="text-sm text-gray-700 mr-2">Valoración:</span>
-        <mat-icon class="text-yellow-400 text-base">star</mat-icon>
-        <mat-icon class="text-yellow-400 text-base">star</mat-icon>
-        <mat-icon class="text-gray-300 text-base">star</mat-icon>
-        <mat-icon class="text-gray-300 text-base">star</mat-icon>
-        <mat-icon class="text-gray-300 text-base">star</mat-icon>
-      </div>
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-12">
+    <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span class="text-gray-500 text-sm">Cargando respuestas...</span>
+  </div>
 
-      <!-- Comentario -->
-      <div class="mb-4">
-        <p class="text-sm font-semibold text-gray-800 mb-1">Comentario:</p>
-        <p class="text-sm text-gray-600 leading-relaxed">
-          El producto está bien pero el empaque es horrible. La caja llegó toda
-          aplastada y el plástico se rompió antes de abrirlo. Para el precio que
-          cobran deberían invertir en mejor packaging. Mi experiencia de
-          unboxing fue decepcionante.
-        </p>
-      </div>
+  <!-- Contenido -->
+  <div *ngIf="!loading" class="p-6 max-h-[65vh] overflow-y-auto bg-gray-50">
+    
+    <!-- Lista de respuestas agrupadas -->
+    <div class="space-y-6">
+      <div *ngFor="let respuesta of respuestasAgrupadas; let i = index" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        
+        <!-- Pregunta -->
+        <div class="flex items-start gap-3 mb-4">
+          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-500 text-white font-bold text-sm flex-shrink-0">
+            {{ (currentPage * pageSize) + i + 1 }}
+          </span>
+          <h3 class="text-lg font-semibold text-gray-900 leading-tight">{{ respuesta.pregunta }}</h3>
+        </div>
 
-      <!-- Fechas -->
-      <div class="text-sm text-gray-600 space-y-1">
-        <p><span class="font-semibold">Fecha de envío:</span> 31/07/2025</p>
-        <p><span class="font-semibold">Fecha de respuesta:</span> 31/07/2025</p>
+        <!-- Respuestas (opciones múltiples) -->
+        <div *ngIf="respuesta.opciones.length > 0" class="ml-11">
+          <p class="text-sm font-medium text-gray-600 mb-3">Opciones seleccionadas:</p>
+          <ul class="space-y-2">
+            <li *ngFor="let opcion of respuesta.opciones" class="flex items-start gap-3 bg-orange-50 rounded-lg p-3">
+              <mat-icon class="text-orange-500 text-xl flex-shrink-0">check_circle</mat-icon>
+              <span class="text-gray-800">{{ opcion.opcion }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Respuesta escala -->
+        <div *ngIf="respuesta.valorescala !== null && respuesta.valorescala !== undefined" class="ml-11">
+          <p class="text-sm font-medium text-gray-600 mb-3">Valoración en escala:</p>
+          <div class="inline-flex items-center px-4 py-2 rounded-lg bg-orange-500 text-white font-bold text-lg">
+            {{ respuesta.valorescala }}
+          </div>
+        </div>
+
+        <!-- Sin respuesta -->
+        <div *ngIf="respuesta.opciones.length === 0 && (respuesta.valorescala === null || respuesta.valorescala === undefined)" class="ml-11">
+          <p class="text-sm text-gray-400 italic">Sin respuesta registrada</p>
+        </div>
       </div>
     </div>
 
-    <!-- COLUMNA DERECHA -->
-    <div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">
-        Respuestas
-      </h3>
+    <!-- Sin resultados -->
+    <div *ngIf="respuestasAgrupadas.length === 0" class="text-center py-16 bg-white rounded-lg">
+      <mat-icon class="text-gray-300 text-6xl mb-4">search_off</mat-icon>
+      <p class="text-gray-500 text-lg font-medium">No hay respuestas disponibles</p>
+      <p class="text-gray-400 text-sm mt-2">Esta autoevaluación no tiene respuestas registradas</p>
+    </div>
+  </div>
 
-      <div class="space-y-4 text-sm text-gray-700">
+  <!-- Paginación -->
+  <div *ngIf="!loading && totalPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white">
+    <div class="flex items-center justify-between">
+      <div class="text-sm text-gray-600">
+        Página <span class="font-semibold">{{ currentPage + 1 }}</span> de <span class="font-semibold">{{ totalPages }}</span>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <button 
+          mat-stroked-button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 0"
+          class="disabled:opacity-50">
+          <mat-icon>chevron_left</mat-icon>
+          Anterior
+        </button>
 
-        <div>
-          <p class="font-semibold mb-1">
-            ¿Qué crees que pudo haber causado esta experiencia negativa?
-          </p>
-          <p>
-            Mala atención o falta de respuesta al cliente.<br>
-            El cliente tuvo una mala interpretación o expectativa.
-          </p>
-        </div>
-
-        <div>
-          <p class="font-semibold mb-1">
-            ¿Qué acciones estás planeando tomar para mejorar esta situación?
-          </p>
-          <p>
-            Mejorar mi comunicación con los clientes.<br>
-            Incluir descripciones claras del producto o servicio.
-          </p>
-        </div>
-
-        <div>
-          <p class="font-semibold mb-1">
-            ¿Cuál de estas áreas estás priorizando actualmente en tu emprendimiento?
-          </p>
-          <p>
-            Comunicación en redes sociales o canales digitales.
-          </p>
-        </div>
-
+        <button 
+          mat-stroked-button 
+          (click)="nextPage()" 
+          [disabled]="currentPage >= totalPages - 1"
+          class="disabled:opacity-50">
+          Siguiente
+          <mat-icon>chevron_right</mat-icon>
+        </button>
       </div>
     </div>
+  </div>
 
+  <!-- Footer -->
+  <div class="flex justify-end gap-3 p-6 border-t border-gray-200 bg-white">
+    <button mat-raised-button color="warn" (click)="cerrar()">
+      Cerrar
+    </button>
   </div>
 </div>

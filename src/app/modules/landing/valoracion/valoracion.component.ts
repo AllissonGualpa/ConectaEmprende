@@ -6,6 +6,8 @@ import { Subject, takeUntil, switchMap } from 'rxjs';
 import { Formulario, Pregunta } from '../../../core/types/formulario.types';
 import { FormulariosService } from '../../../core/services/formulario.service';
 import { EmprendimientoService } from '../../../core/services/emprendimiento.service';
+import { ValoracionService } from '../../../core/services/valoracion.service';
+import { OpcionRespuestaRequestDTO } from '../../../core/types/valoracion.types';
 
 @Component({
     selector: 'app-valoracion',
@@ -34,6 +36,7 @@ export class ValoracionComponent implements OnInit, OnDestroy {
         private fb: FormBuilder,
         private formulariosService: FormulariosService,
         private emprendimientoService: EmprendimientoService,
+        private valoracionService: ValoracionService,
         private route: ActivatedRoute,
         private router: Router
     ) { }
@@ -168,42 +171,45 @@ export class ValoracionComponent implements OnInit, OnDestroy {
         }
 
         this.enviando = true;
+        this.error = '';
 
-        const respuestas = this.formularioData!.preguntas.map(pregunta => ({
-            idPregunta: pregunta.idPregunta,
-            respuesta: this.valoracionForm.get(`pregunta_${pregunta.idPregunta}`)?.value
-        }));
+        // Construir el payload según el formato esperado por el backend
+        const respuestas: OpcionRespuestaRequestDTO[] = this.formularioData!.preguntas.map(pregunta => {
+            const valor = this.valoracionForm.get(`pregunta_${pregunta.idPregunta}`)?.value;
+            
+            return {
+                idEmprendimiento: this.idEmprendimiento,
+                idRespuesta: null,
+                idRespuestaValoracion: null,
+                idsPregunta: pregunta.idPregunta,
+                idsOpciones: null, // Para valoraciones de escala no hay opciones
+                valorescala: valor,
+                tipoFormulario: this.tipoFormulario
+            };
+        });
 
-        const payload = {
-            idFormulario: this.formularioData!.idFormulario,
-            idEmprendimiento: this.idEmprendimiento,
-            respuestas
-        };
+        console.log('Payload a enviar:', respuestas);
 
-        // TODO: Implementar método de envío en el service cuando exista el endpoint
-        console.log('Payload a enviar:', payload);
-
-        // Simulación temporal
-        setTimeout(() => {
-            this.enviado = true;
-            this.enviando = false;
-        }, 1000);
-
-        /**
-         * Cuando tengas el endpoint, descomentar:
-         * 
-         * this.formulariosService.enviarValoracion(payload).subscribe({
-         *   next: () => {
-         *     this.enviado = true;
-         *     this.enviando = false;
-         *   },
-         *   error: (err) => {
-         *     this.error = 'Error al enviar la valoración. Por favor, intenta nuevamente.';
-         *     this.enviando = false;
-         *     console.error('Error al enviar valoración:', err);
-         *   }
-         * });
-         */
+        // Enviar al backend
+        this.valoracionService.guardarRespuestas(respuestas)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    console.log('Valoración guardada exitosamente:', response);
+                    this.enviado = true;
+                    this.enviando = false;
+                    
+                    // Opcional: Redirigir después de unos segundos
+                    // setTimeout(() => {
+                    //     this.router.navigate(['/']);
+                    // }, 3000);
+                },
+                error: (err) => {
+                    console.error('Error al enviar valoración:', err);
+                    this.error = 'Error al enviar la valoración. Por favor, intenta nuevamente.';
+                    this.enviando = false;
+                }
+            });
     }
 
     obtenerEtiquetaEscala(pregunta: Pregunta, valor: number): string {

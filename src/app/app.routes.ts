@@ -23,8 +23,8 @@ import { AdminSolicitudesComponent } from './modules/admin/admin-solicitudes/adm
 import { EmprendimientoDetailComponent } from './modules/landing/emprendimiento-detail/emprendimiento-detail.component';
 import { EvaluacionComponent } from './modules/landing/evaluacion/evaluacion.component';
 import { AdminEventoComponent } from './modules/admin/eventoAdmin/admin-evento/admin-evento.component';
-import { AutoevaluacionComponent } from './modules/landing/autoevaluacion/autoevaluacion.component';
 import { ValoracionComponent } from './modules/landing/valoracion/valoracion.component';
+import { AutoevaluacionComponent } from './modules/emprendedor/autoevaluacion/autoevaluacion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -44,11 +44,10 @@ export const routes: Routes = [
   { path: 'blog/:id', component: BlogDetailComponent },
   { path: 'eventos', component: EventosComponent },
   { path: 'eventos/:id', component: EventoDetailComponent },
-  { path: 'evaluacion', component: EvaluacionComponent },
   { path: 'valoracion/:id', component: ValoracionComponent },
   {path: 'roadmap', component: RoadmapComponent},
-  { path: 'autoevaluacion/:id', component: AutoevaluacionComponent },
-  {path: 'autoevaluacion', component: AutoevaluacionComponent },
+  { path: 'autoevaluacion/:idEmprendimiento/:idRespuestaValoracion', component: AutoevaluacionComponent },
+
 
 
   // Emprendedor

@@ -1,78 +1,61 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-
-export interface NotificationDto {
-  id: number;
-  titulo: string;
-  mensaje: string;
-  enlace: string | null;
-  leida: boolean;
-  fechaCreacion: string;
-  fechaLectura: string | null;
-  prioridad: string;
-  tipoNombre: string;
-  icono: string | null;
-  color: string | null;
-  metadata: any;
-  emprendimientoId: number | null;
-  nombreEmprendimiento: string | null;
-  solicitudId: number | null;
-  motivo: string | null;  // ⭐ NUEVO
-  observaciones: string | null;  // ⭐ NUEVO
-}
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Notificacion, NotificacionesResponse } from '../types/notificacion.types';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
-export class NotificationService {
-  private baseUrl = `${environment.api_url}${environment.api_notificaciones}`;
+export class NotificacionesService {
 
-  constructor(private http: HttpClient) {}
+    private readonly _notificaciones = new BehaviorSubject<NotificacionesResponse | null>(null);
 
-  /**
-   * GET /v1/notificacion?id={usuarioId}
-   * Devuelve el array content[] si la respuesta está paginada.
-   * Se aceptan page/size opcionales.
-   */
-  getNotificaciones(usuarioId: number, page?: number, size?: number): Observable<NotificationDto[]> {
-    const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    let params = new HttpParams().set('id', usuarioId.toString());
-    if (page !== undefined) params = params.set('page', String(page));
-    if (size !== undefined) params = params.set('size', String(size));
+    constructor(private _httpClient: HttpClient) { }
 
-    return this.http
-      .get<any>(`${this.baseUrl}`, { headers, params })
-      .pipe(
-        map(resp => {
-          // si viene paginado, tomar resp.content; si no, suponer que resp es ya un array
-          if (resp && Array.isArray(resp.content)) return resp.content as NotificationDto[];
-          if (Array.isArray(resp)) return resp as NotificationDto[];
-          return [];
-        })
-      );
-  }
+    /**
+     * Getter for notificaciones
+     */
+    get notificaciones$(): Observable<NotificacionesResponse | null> {
+        return this._notificaciones.asObservable();
+    }
 
-  /**
-   * GET paginado - devuelve la respuesta completa para leer content y metadatos
-   */
-  getNotificacionesPaged(usuarioId: number, page = 0, size = 10): Observable<any> {
-    const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
-    let params = new HttpParams().set('id', usuarioId.toString());
-    params = params.set('page', String(page));
-    params = params.set('size', String(size));
+    // -----------------------------------------------------------------------------------------------------
+    // @ Reset BehaviorSubject
+    // -----------------------------------------------------------------------------------------------------
 
-    return this.http.get<any>(`${this.baseUrl}`, { headers, params });
-  }
+    resetNotificaciones(): void {
+        this._notificaciones.next(null);
+    }
 
-  obtenerNotificacionPorId(id: number): Observable<NotificationDto> {
-    const token = localStorage.getItem('token');
-    const headers = token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
 
-    return this.http.get<NotificationDto>(`${this.baseUrl}/${id}`, { headers });
-  }
+    /**
+     * Obtener notificaciones
+     * @param page - Número de página (opcional, por defecto 0)
+     * @param size - Tamaño de página (opcional, por defecto 10)
+     * @returns Observable con la respuesta de notificaciones
+     */
+    obtenerNotificaciones(page: number = 0, size: number = 10): Observable<NotificacionesResponse> {
+        return this._httpClient.get<NotificacionesResponse>(
+            `${environment.api_url}/v1/notificacion?page=${page}&size=${size}`
+        ).pipe(
+            tap((response) => {
+                this._notificaciones.next(response);
+            })
+        );
+    }
+
+    /**
+     * Obtener notificación por ID
+     * @param id - ID de la notificación
+     * @returns Observable con la notificación
+     */
+    obtenerNotificacionPorId(id: number): Observable<Notificacion> {
+        return this._httpClient.get<Notificacion>(
+            `${environment.api_url}/v1/notificacion/${id}`
+        );
+    }
 }

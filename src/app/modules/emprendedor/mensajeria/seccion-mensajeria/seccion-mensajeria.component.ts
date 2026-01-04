@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationService, NotificationDto } from '../../../../core/services/notification.service';
 import { AuthService } from '../../../auth/auth.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +7,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DetailsMensajeriaComponent } from '../details-mensajeria/details-mensajeria.component';
+import { Notificacion } from '../../../../core/types/notificacion.types';
+import { NotificacionesService } from '../../../../core/services/notification.service';
+import { Router } from '@angular/router';
+import { AutoevaluacionComponent } from '../../autoevaluacion/autoevaluacion.component';
+
 @Component({
   selector: 'app-seccion-mensajeria',
   standalone: true,
@@ -23,7 +27,7 @@ import { DetailsMensajeriaComponent } from '../details-mensajeria/details-mensaj
   styleUrl: './seccion-mensajeria.component.css'
 })
 export class SeccionMensajeriaComponent implements OnInit {
-  notificaciones: NotificationDto[] = [];
+  notificaciones: Notificacion[] = [];
   loading = false;
   displayedColumns: string[] = ['id', 'titulo', 'mensaje', 'fecha', 'hora', 'estado', 'accion'];
   
@@ -34,31 +38,26 @@ export class SeccionMensajeriaComponent implements OnInit {
   totalPages = 0;
 
   constructor(
-    private notificationService: NotificationService,
+    private notificacionesService: NotificacionesService,
     private authService: AuthService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private _router: Router
   ) {}
 
   ngOnInit(): void {
-    const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
-    const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
-    if (!usuarioId) {
-      this.notificaciones = [];
-      return;
-    }
-
-    this.loadPage(usuarioId, 0);
+    this.loadPage(0);
   }
 
-  private loadPage(usuarioId: number, pageIndex: number): void {
+  private loadPage(pageIndex: number): void {
     this.loading = true;
-    this.notificationService.getNotificacionesPaged(usuarioId, pageIndex, this.size).subscribe({
+    this.notificacionesService.obtenerNotificaciones(pageIndex, this.size).subscribe({
       next: (resp) => {
         this.notificaciones = resp?.content || [];
-        this.totalElements = resp?.totalElements || 0;
-        this.totalPages = resp?.totalPages ?? Math.ceil((this.totalElements || 0) / this.size);
-        this.page = resp?.number ?? pageIndex;
+        this.totalElements = resp?.pageable.length || 0;
+        this.totalPages = resp?.pageable.lastPage + 1 || 1;
+        this.page = resp?.pageable.page ?? pageIndex;
         this.loading = false;
+        
         // --- NOTIFICACIÓN SIMULADA (MENSAJE QUEMADO PARA DEMO) ---
         //borrar desp
         const yaExiste = this.notificaciones.some(n => n.id === 9999);
@@ -71,8 +70,18 @@ export class SeccionMensajeriaComponent implements OnInit {
               fechaCreacion: new Date().toISOString(),
               leida: false,
               tipoNombre: 'Alerta',
-              // ...otros campos necesarios para la tabla...
-            } as any,
+              titulo: 'Autoevaluación requerida',
+              enlace: '',
+              fechaLectura: null,
+              prioridad: null,
+              icono: null,
+              color: null,
+              metadata: null,
+              emprendimientoId: 0,
+              solicitudId: null,
+              motivo: null,
+              observaciones: null
+            },
             ...this.notificaciones
           ];
           this.totalElements++;
@@ -92,26 +101,17 @@ export class SeccionMensajeriaComponent implements OnInit {
 
   prevPage(): void {
     if (this.page <= 0) return;
-    const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
-    const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
-    if (!usuarioId) return;
-    this.loadPage(usuarioId, this.page - 1);
+    this.loadPage(this.page - 1);
   }
 
   nextPage(): void {
     if (this.page >= (this.totalPages - 1)) return;
-    const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
-    const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
-    if (!usuarioId) return;
-    this.loadPage(usuarioId, this.page + 1);
+    this.loadPage(this.page + 1);
   }
 
   goToPage(n: number): void {
     if (n < 0 || n >= this.totalPages) return;
-    const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
-    const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
-    if (!usuarioId) return;
-    this.loadPage(usuarioId, n);
+    this.loadPage(n);
   }
 
   getFecha(fechaIso?: string): string {
@@ -124,7 +124,7 @@ export class SeccionMensajeriaComponent implements OnInit {
     return new Date(fechaIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  abrirNotificacion(notificacion: NotificationDto): void {
+  abrirNotificacion(notificacion: Notificacion): void {
     // --- LÓGICA PARA MENSAJE QUEMADO (DEMO) ---
     // Puedes borrar este if después de la presentación
     if (notificacion.id === 9999) {
@@ -142,8 +142,23 @@ export class SeccionMensajeriaComponent implements OnInit {
       return;
     }
     // --- FIN MENSAJE QUEMADO ---
+  if (notificacion.tipoNombre === 'Autoevaluación Requerida' || 
+      notificacion.titulo === 'Autoevaluación requerida') {
     
-    console.log('Abriendo notificación en modal:', notificacion);
+        const idRespuestaValoracion = notificacion.enlace;
+        this.dialog.open(AutoevaluacionComponent, {
+          width: '90vw',
+          maxWidth: '1200px',
+          maxHeight: '90vh',
+          data: { 
+            idEmprendimiento: notificacion.emprendimientoId, 
+            idRespuestaValoracion: idRespuestaValoracion 
+          },
+          panelClass: 'custom-dialog-container',
+          disableClose: true
+        });
+        return;
+        }
     
     // Abrir modal con los datos de la notificación
     const dialogRef = this.dialog.open(DetailsMensajeriaComponent, {
@@ -162,11 +177,7 @@ export class SeccionMensajeriaComponent implements OnInit {
         notificacion.leida = true;
         
         // Opcional: recargar la página actual para refrescar los datos
-        const perfil = this.authService.getPerfilLocal ? this.authService.getPerfilLocal() : null;
-        const usuarioId = perfil && perfil.id ? perfil.id : Number(localStorage.getItem('usuarioId') || 0);
-        if (usuarioId) {
-          this.loadPage(usuarioId, this.page);
-        }
+        this.loadPage(this.page);
       }
     });
   }
