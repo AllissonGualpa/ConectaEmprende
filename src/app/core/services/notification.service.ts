@@ -58,4 +58,17 @@ export class NotificacionesService {
             `${environment.api_url}/v1/notificacion/${id}`
         );
     }
+
+    /**
+     * Marcar notificación como leída
+     * @param usuarioId - ID del usuario
+     * @param notificacionId - ID de la notificación
+     * @returns Observable vacío
+     */
+    marcarComoLeida(usuarioId: number, notificacionId: number): Observable<any> {
+        return this._httpClient.put(
+            `${environment.api_url}/v1/notificacion/marcar-leida?usuarioId=${usuarioId}&notificacionId=${notificacionId}`,
+            {}
+        );
+    }
 }
