@@ -5,15 +5,15 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
 import { AuthService } from '../../auth/auth.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
 import { 
-  DashboardService, 
   EmprendimientoMenosVisto,
   EmprendimientoTop,
   CategoriaMasVista,
   PreguntaAutoevaluacion, 
   CategoriaConVistas,
   RankingGlobalDTO
-} from '../dashboard.service';
+} from '../../../core/types/dashboard.types';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
