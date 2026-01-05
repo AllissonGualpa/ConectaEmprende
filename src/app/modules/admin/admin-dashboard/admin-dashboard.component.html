@@ -300,13 +300,16 @@
             <select class="border rounded px-3 py-2 text-sm flex-1" 
                     [(ngModel)]="filtroEmprendimiento"
                     (change)="aplicarFiltros()">
-              <option [value]="null">Todos los emprendimientos</option>
-              <option *ngFor="let emp of todosEmprendimientos" [value]="emp.id">{{ emp.nombre }}</option>
+              <option [ngValue]="null">Todos los emprendimientos</option>
+              <option *ngFor="let emp of todosEmprendimientos" [ngValue]="emp.id">
+                {{ emp.nombreComercial || emp.nombreComercialEmprendimiento || emp.nombre || 'Sin nombre' }}
+              </option>
             </select>
             <input type="date" 
                    class="border rounded px-3 py-2 text-sm flex-1" 
                    [(ngModel)]="filtroFecha"
-                   (change)="aplicarFiltros()" />
+                   (change)="aplicarFiltros()" 
+                   placeholder="Filtrar por fecha" />
           </div>
 
           <ul class="space-y-4">

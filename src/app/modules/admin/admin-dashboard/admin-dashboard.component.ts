@@ -11,7 +11,8 @@ import {
   EmprendimientoTop,
   CategoriaMasVista,
   PreguntaAutoevaluacion, 
-  CategoriaConVistas
+  CategoriaConVistas,
+  RankingGlobalDTO
 } from '../dashboard.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -46,7 +47,9 @@ export class AdminDashboardComponent implements OnInit {
   // Agregar después de categoriaMasVista
 categoriasOrdenadas: CategoriaConVistas[] = [];
   // Lista de todos los emprendimientos para el filtro
-  todosEmprendimientos: EmprendimientoTop[] = [];
+  todosEmprendimientos: any[] = [];
+  // Guardar todas las preguntas del formulario
+  todasLasPreguntas: any[] = [];
 
   // Filtros para preguntas
   filtroEmprendimiento: number | null = null;
@@ -97,70 +100,84 @@ cargarDatos() {
   this.errorMessage = '';
 
   forkJoin({
-    filtrosMetricas: this.dashboardService.getFiltrosMetricas().pipe(
+    menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(
       catchError((error) => {
-        console.warn('Error al cargar métricas filtradas:', error);
+        console.warn('Error al cargar emprendimientos menos vistos:', error);
+        return of([]);
+      })
+    ),
+    masVistos: this.dashboardService.getTopEmprendimientos().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar emprendimientos más vistos:', error);
         return of([]);
       })
     ),
     mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(
       catchError((error) => {
         console.warn('Error al cargar emprendimientos mejor valorados:', error);
-        return of(this.getDatosMockMejorValorados());
+        return of([]);
       })
     ),
     peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(
       catchError((error) => {
         console.warn('Error al cargar emprendimientos peor valorados:', error);
-        return of(this.getDatosMockPeorValorados());
+        return of([]);
       })
     ),
     categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(
       catchError((error) => {
         console.warn('Error al cargar categorías más vistas:', error);
-        return of([]); // ← CAMBIO AQUÍ: retornar array vacío, no objeto
+        return of([]);
+      })
+    ),
+    formularioAutoevaluacion: this.dashboardService.obtenerFormularioAutoevaluacion().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar formulario de autoevaluación:', error);
+        return of(null);
+      })
+    ),
+    todosEmprendimientos: this.dashboardService.getTodosEmprendimientos().pipe(
+      catchError((error) => {
+        console.warn('Error al cargar todos los emprendimientos:', error);
+        return of([]);
       })
     ),
   }).subscribe({
     next: (data) => {
-      // Procesar datos de filtrosMetricas
-      const metricas = data.filtrosMetricas || [];
-      
-      // Ordenar por vistas de MAYOR a MENOR para Top Emprendimientos
-      const topSorted = [...metricas].sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
-      this.topEmprendimientos = topSorted.map(emp => ({
-        id: emp.idEmprendimiento,
-        nombre: emp.nombreEmprendimiento,
-        categoria: '',
-        visitas: emp.vistas,
-        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+      // Procesar emprendimientos menos vistos
+      this.emprendimientosMenosVistos = (data.menosVistos || []).map(emp => ({
+        ...emp,
+        iniciales: this.dashboardService.generarIniciales(emp.nombre)
       }));
 
-      // Ordenar por vistas de MENOR a MAYOR para Menos Vistos
-      const menosSorted = [...metricas].sort((a, b) => (a.vistas || 0) - (b.vistas || 0));
-      this.emprendimientosMenosVistos = menosSorted.map(emp => ({
-        id: emp.idEmprendimiento,
-        nombre: emp.nombreEmprendimiento,
-        categoria: '',
-        visitas: emp.vistas,
-        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+      // Procesar top emprendimientos (más vistos)
+      this.topEmprendimientos = (data.masVistos || []).map(emp => ({
+        id: emp.id,
+        nombre: emp.nombre,
+        categoria: emp.categoria || '',
+        visitas: emp.visitas,
+        iniciales: this.dashboardService.generarIniciales(emp.nombre)
       }));
 
-      // Mejor valorados
+      // Procesar mejor valorados (RankingGlobalDTO)
       this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => ({
-        ...emp,
-        iniciales: this.dashboardService.generarIniciales(emp.nombre)
+        id: emp.idEmprendimiento,
+        nombre: emp.nombreEmprendimiento,
+        categoria: '',
+        calificacion: emp.promedioGlobal,
+        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
       }));
 
-      // Peor valorados
+      // Procesar peor valorados (RankingGlobalDTO)
       this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => ({
-        ...emp,
-        iniciales: this.dashboardService.generarIniciales(emp.nombre)
+        id: emp.idEmprendimiento,
+        nombre: emp.nombreEmprendimiento,
+        categoria: '',
+        calificacion: emp.promedioGlobal,
+        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
       }));
 
-// Reemplaza esta sección:
-    // Procesar categorías ordenadas de mayor a menor
-// Procesar categorías ordenadas de mayor a menor
+      // Procesar categorías ordenadas de mayor a menor
       this.categoriasOrdenadas = (data.categoriasMasVistas || [])
         .sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
 
@@ -173,16 +190,25 @@ cargarDatos() {
           }
         : null;
 
-      // Combinar todos los emprendimientos para el filtro
-      this.todosEmprendimientos = [
-        ...this.topEmprendimientos,
-        ...this.emprendimientosMejorValorados
-      ].filter((emp, index, self) => 
-        index === self.findIndex((e) => e.id === emp.id)
-      );
+      // Cargar todos los emprendimientos para el filtro
+      this.todosEmprendimientos = data.todosEmprendimientos || [];
 
-      // Datos mock para preguntas de autoevaluación
-      this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
+      // Procesar preguntas de autoevaluación
+      if (data.formularioAutoevaluacion && data.formularioAutoevaluacion.preguntas) {
+        // Guardar todas las preguntas para usarlas con el filtro
+        this.todasLasPreguntas = data.formularioAutoevaluacion.preguntas;
+        
+        // Cargar rankings para las primeras 5 preguntas (sin filtro de emprendimiento)
+        const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
+        this.cargarRankingsPreguntas(preguntasLimitadas, null);
+      } else {
+        // Si no hay formulario, usar datos mock
+        this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
+      }
+
+      // Actualizar stats basado en los datos recibidos
+      this.stats.emprendimientos = this.topEmprendimientos.length || this.stats.emprendimientos;
+      this.stats.totalVisits = this.topEmprendimientos.reduce((sum, emp) => sum + (emp.visitas || 0), 0) || this.stats.totalVisits;
 
       this.isLoading = false;
     },
@@ -193,6 +219,54 @@ cargarDatos() {
     }
   });
 }
+
+  // Método auxiliar para cargar rankings de preguntas
+  private cargarRankingsPreguntas(preguntas: any[], idEmprendimiento: number | null = null) {
+    const rankingRequests = preguntas.map(pregunta => {
+      // Solo pasar idEmprendimiento si tiene un valor válido
+      const idTipoEmprendimiento = idEmprendimiento !== null ? idEmprendimiento : undefined;
+      
+      return this.dashboardService.getRankingPorPregunta(
+        pregunta.idPregunta, 
+        idTipoEmprendimiento, 
+        0, 
+        100
+      ).pipe(
+        catchError(() => of({ content: [], pageable: {} }))
+      );
+    });
+
+    forkJoin(rankingRequests).subscribe({
+      next: (rankings) => {
+        this.preguntasAutoevaluacion = preguntas.map((pregunta, index) => {
+          const ranking = rankings[index];
+          const contenido = ranking?.content || [];
+          
+          let promedio = 0;
+          
+          if (idEmprendimiento) {
+            // Si hay filtro de emprendimiento, buscar solo ese emprendimiento
+            const emprendimientoEspecifico = contenido.find((item: any) => item.idEmprendimiento === idEmprendimiento);
+            promedio = emprendimientoEspecifico?.promedioPregunta || 0;
+          } else {
+            // Si no hay filtro, calcular promedio de todos los emprendimientos
+            promedio = contenido.length > 0
+              ? contenido.reduce((sum: number, item: any) => sum + (item.promedioPregunta || 0), 0) / contenido.length
+              : 0;
+          }
+
+          return {
+            pregunta: pregunta.pregunta,
+            promedio: promedio
+          };
+        });
+      },
+      error: (error) => {
+        console.warn('Error al cargar rankings de preguntas:', error);
+        this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
+      }
+    });
+  }
   // Métodos para datos mock (de ejemplo) - solo para presentar JAJA
   private getDatosMockMenosVistos(): EmprendimientoMenosVisto[] {
     return [
@@ -244,12 +318,28 @@ cargarDatos() {
 
   // Aplicar filtros a preguntas de autoevaluación
   aplicarFiltros() {
-    // Por ahora solo filtra los datos mock
+    // Convertir el valor a número o null de forma segura
+    let emprendimientoId: number | null = null;
+    
+    if (this.filtroEmprendimiento !== null && this.filtroEmprendimiento !== undefined) {
+      const idNumerico = Number(this.filtroEmprendimiento);
+      if (!isNaN(idNumerico)) {
+        emprendimientoId = idNumerico;
+      }
+    }
+    
     console.log('Filtros aplicados:', {
-      emprendimiento: this.filtroEmprendimiento,
+      emprendimiento: emprendimientoId,
       fecha: this.filtroFecha
     });
     
+    if (this.todasLasPreguntas.length > 0) {
+      // Limitar a las primeras 5 preguntas
+      const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
+      
+      // Recargar rankings con el filtro de emprendimiento
+      this.cargarRankingsPreguntas(preguntasLimitadas, emprendimientoId);
+    }
   }
 
   // Helper para obtener color de avatar según el índice
