@@ -72,6 +72,20 @@ export interface MetricasGenerales {
   totalVisitas: number;
 }
 
+export interface RankingGlobalDTO {
+  idEmprendimiento: number;
+  nombreEmprendimiento: string;
+  promedioGlobal: number;
+}
+
+export interface RankingPreguntaDTO {
+  idEmprendimiento: number;
+  nombreEmprendimiento: string;
+  idPregunta: number;
+  pregunta: string;
+  promedioPregunta: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -111,26 +125,10 @@ export class DashboardService {
   }
 
   // ============================
-  // metricas generales
-  // ============================
-  getMetricasGenerales(): Observable<MetricasGenerales> {
-    const url = `${this.baseUrl}/v1/metricas-generales`;
-
-    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarObjeto(res, {
-        totalUsuarios: 0,
-        totalEmprendimientos: 0,
-        totalVisitas: 0
-      })),
-      catchError(err => throwError(() => err))
-    );
-  }
-
-  // ============================
   // EMPRENDIMIENTOS MENOS VISTOS
   // ============================
   getEmprendimientosMenosVistos(): Observable<EmprendimientoMenosVisto[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/emprendimiento/menor-vista`;
+    const url = `${this.baseUrl}/v1/metricas-generales/emprendimientos/menos-vistos`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<EmprendimientoMenosVisto>(res)),
@@ -139,10 +137,10 @@ export class DashboardService {
   }
 
   // ============================
-  // TOP EMPRENDIMIENTOS
+  // TOP EMPRENDIMIENTOS (MÁS VISTOS)
   // ============================
   getTopEmprendimientos(): Observable<EmprendimientoTop[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/emprendimiento/mayor-vista`;
+    const url = `${this.baseUrl}/v1/metricas-generales/emprendimientos/mas-vistos`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<EmprendimientoTop>(res)),
@@ -151,25 +149,25 @@ export class DashboardService {
   }
 
   // ============================
-  // MEJOR VALORADOS
+  // MEJOR VALORADOS (ASC)
   // ============================
-  getEmprendimientosMejorValorados(): Observable<EmprendimientoTop[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/emprendimiento/mayor-valoracion`;
+  getEmprendimientosMejorValorados(): Observable<RankingGlobalDTO[]> {
+    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/asc`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarArray<EmprendimientoTop>(res)),
+      map(res => this.normalizarArray<RankingGlobalDTO>(res)),
       catchError(err => throwError(() => err))
     );
   }
 
   // ============================
-  // PEOR VALORADOS
+  // PEOR VALORADOS (DESC)
   // ============================
-  getEmprendimientosPeorValorados(): Observable<EmprendimientoTop[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/emprendimiento/menor-valoracion`;
+  getEmprendimientosPeorValorados(): Observable<RankingGlobalDTO[]> {
+    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/desc`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarArray<EmprendimientoTop>(res)),
+      map(res => this.normalizarArray<RankingGlobalDTO>(res)),
       catchError(err => throwError(() => err))
     );
   }
@@ -188,20 +186,37 @@ export class DashboardService {
       );
   }
 
-
   // ============================
-  // PREGUNTAS AUTOEVALUACIÓN
+  // RANKING POR PREGUNTA AUTOEVALUACIÓN
   // ============================
-  getPreguntasAutoevaluacion(emprendimientoId?: number, fecha?: string): Observable<PreguntaAutoevaluacion[]> {
-    let url = `${this.baseUrl}/v1/metricas-generales/preguntas-autoevaluacion`;
-    const params: string[] = [];
-
-    if (emprendimientoId) params.push(`emprendimientoId=${emprendimientoId}`);
-    if (fecha) params.push(`fecha=${fecha}`);
-    if (params.length) url += '?' + params.join('&');
+  getRankingPorPregunta(
+    idPregunta: number, 
+    idTipoEmprendimiento?: number,
+    page: number = 0, 
+    size: number = 20
+  ): Observable<any> {
+    let url = `${this.baseUrl}/v1/metricas-generales/pregunta/${idPregunta}?page=${page}&size=${size}`;
+    
+    // Solo agregar el parámetro si es un número válido (no null, undefined, NaN o string)
+    if (idTipoEmprendimiento !== undefined && 
+        idTipoEmprendimiento !== null && 
+        typeof idTipoEmprendimiento === 'number' &&
+        !isNaN(idTipoEmprendimiento)) {
+      url += `&idTipoEmprendimiento=${idTipoEmprendimiento}`;
+    }
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarArray<PreguntaAutoevaluacion>(res)),
+      catchError(err => throwError(() => err))
+    );
+  }
+
+  // ============================
+  // OBTENER FORMULARIO DE AUTOEVALUACIÓN
+  // ============================
+  obtenerFormularioAutoevaluacion(): Observable<any> {
+    const url = `${this.baseUrl}/v1/formularios/tipo/AUTOEVALUACION`;
+    
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       catchError(err => throwError(() => err))
     );
   }
@@ -214,35 +229,6 @@ export class DashboardService {
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<any>(res)),
-      catchError(err => throwError(() => err))
-    );
-  }
-
-
-  getFiltrosMetricas(options?: {
-    emprendimientoId?: number;
-    fechaInicio?: string;
-    fechaFin?: string;
-  }): Observable<FiltroMetrica[]> {
-    let url = `${this.baseUrl}/v1/metricas-generales/filtros`;
-    const params: string[] = [];
-
-    if (options?.emprendimientoId) {
-      params.push(`emprendimientoId=${options.emprendimientoId}`);
-    }
-    if (options?.fechaInicio) {
-      params.push(`fechaInicio=${options.fechaInicio}`);
-    }
-    if (options?.fechaFin) {
-      params.push(`fechaFin=${options.fechaFin}`);
-    }
-
-    if (params.length) {
-      url += '?' + params.join('&');
-    }
-
-    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      map(res => this.normalizarArray<FiltroMetrica>(res)),
       catchError(err => throwError(() => err))
     );
   }
