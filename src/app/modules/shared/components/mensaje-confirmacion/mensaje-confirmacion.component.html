@@ -4,10 +4,12 @@
     'dialog-success': type === 'success',
     'dialog-error': type === 'error',
     'dialog-info': type === 'info',
-    'dialog-warning': type === 'warning'
+    'dialog-warning': type === 'warning',
+    'dialog-confirm': type === 'confirm'
   }"
 >
-  <button class="close-button" (click)="close()">
+  <!-- Botón X solo aparece para tipos que no son 'confirm' -->
+  <button *ngIf="type !== 'confirm'" class="close-button" (click)="close()">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
@@ -66,6 +68,19 @@
       >
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
       </svg>
+
+      <!-- Icono CONFIRM  -->
+      <svg
+        *ngIf="type === 'confirm'"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="icon-svg icon-confirm"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+      </svg>
     </div>
 
     <div class="dialog-text">
@@ -73,6 +88,26 @@
       <p *ngIf="subtitle" class="dialog-subtitle">
         {{ subtitle }}
       </p>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="dialog-actions">
+      <!-- Para confirm, mostrar Cancelar y Confirmar -->
+      <ng-container *ngIf="type === 'confirm'">
+        <button class="btn btn-cancel" (click)="cancel()">
+          Cancelar
+        </button>
+        <button class="btn btn-confirm" (click)="confirm()">
+          Confirmar
+        </button>
+      </ng-container>
+
+      <!-- Para otros tipos, solo mostrar Aceptar -->
+      <ng-container *ngIf="type !== 'confirm'">
+        <button class="btn btn-single" (click)="close()">
+          Aceptar
+        </button>
+      </ng-container>
     </div>
   </div>
 </div>
@@ -148,6 +183,11 @@
     stroke-width: 2;
   }
 
+  .icon-confirm {
+    color: #8b5cf6;
+    stroke-width: 2;
+  }
+
   .dialog-text {
     width: 100%;
   }
@@ -164,5 +204,51 @@
     font-size: 15px;
     line-height: 1.6;
     color: #6b7280;
+  }
+
+  .dialog-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-cancel {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+
+  .btn-cancel:hover {
+    background-color: #e5e7eb;
+  }
+
+  .btn-confirm {
+    background-color: #ED6C1C;
+    color: white;
+  }
+
+  .btn-confirm:hover {
+    background-color: #dc5f14;
+  }
+
+  .btn-single {
+    background-color: #ED6C1C;
+    color: white;
+    min-width: 120px;
+  }
+
+  .btn-single:hover {
+    background-color: #dc5f14;
   }
 </style>
