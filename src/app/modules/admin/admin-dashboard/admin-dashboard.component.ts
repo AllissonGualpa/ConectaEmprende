@@ -110,166 +110,21 @@ cargarDatos() {
   this.errorMessage = '';
 
   forkJoin({
-    menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar emprendimientos menos vistos:', error);
-        return of([]);
-      })
-    ),
-    masVistos: this.dashboardService.getTopEmprendimientos().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar emprendimientos más vistos:', error);
-        return of([]);
-      })
-    ),
-    mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar emprendimientos mejor valorados:', error);
-        return of([]);
-      })
-    ),
-    peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar emprendimientos peor valorados:', error);
-        return of([]);
-      })
-    ),
-    categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar categorías más vistas:', error);
-        return of([]);
-      })
-    ),
-    formularioAutoevaluacion: this.dashboardService.obtenerFormularioAutoevaluacion().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar formulario de autoevaluación:', error);
-        return of(null);
-      })
-    ),
-    todosEmprendimientos: this.dashboardService.getTodosEmprendimientos().pipe(
-      catchError((error) => {
-        console.warn('Error al cargar todos los emprendimientos:', error);
-        return of([]);
-      })
-    ),
+    menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(catchError(() => of([]))),
+    masVistos: this.dashboardService.getTopEmprendimientos().pipe(catchError(() => of([]))),
+    mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(catchError(() => of([]))),
+    peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(catchError(() => of([]))),
+    categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(catchError(() => of([]))),
+    formularioAutoevaluacion: this.dashboardService.obtenerFormularioAutoevaluacion().pipe(catchError(() => of(null))),
+    todosEmprendimientos: this.dashboardService.getTodosEmprendimientos().pipe(catchError(() => of([]))),
   }).subscribe({
     next: (data) => {
-      // Cargar todos los emprendimientos para el filtro y obtener categorías
       this.todosEmprendimientos = data.todosEmprendimientos || [];
-
-      // Procesar emprendimientos menos vistos con categoría
-      this.emprendimientosMenosVistos = (data.menosVistos || []).map(emp => {
-        const idEmp = emp.idEmprendimiento || emp.id || 0;
-        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === idEmp);
-        
-        // Obtener la primera categoría (principal) del array de categorías
-        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
-          ? empDetallado.categorias[0].nombre
-          : (empDetallado?.nombreCategoria || emp.categoria || '');
-        
-        return {
-          id: emp.id || emp.idEmprendimiento || 0,
-          idEmprendimiento: idEmp,
-          nombreEmprendimiento: emp.nombreEmprendimiento || emp.nombre || '',
-          nombre: emp.nombreEmprendimiento || emp.nombre || '', // Para compatibilidad con el template
-          categoria: categoriaPrincipal,
-          vistas: emp.vistas || emp.visitas || 0,
-          visitas: emp.vistas || emp.visitas || 0, // Para compatibilidad con el template
-          fechaRegistro: emp.fechaRegistro || '',
-          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento || emp.nombre || '')
-        };
-      });
-
-      // Procesar top emprendimientos (más vistos) con categoría
-      this.topEmprendimientos = (data.masVistos || []).map(emp => {
-        const idEmp = emp.idEmprendimiento || emp.id || 0;
-        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === idEmp);
-        
-        // Obtener la primera categoría (principal) del array de categorías
-        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
-          ? empDetallado.categorias[0].nombre
-          : (empDetallado?.nombreCategoria || emp.categoria || '');
-        
-        return {
-          id: emp.id || emp.idEmprendimiento || 0,
-          idEmprendimiento: idEmp,
-          nombreEmprendimiento: emp.nombreEmprendimiento || emp.nombre || '',
-          nombre: emp.nombreEmprendimiento || emp.nombre || '', // Para compatibilidad con el template
-          categoria: categoriaPrincipal,
-          vistas: emp.vistas || emp.visitas || 0,
-          visitas: emp.vistas || emp.visitas || 0, // Para compatibilidad con el template
-          fechaRegistro: emp.fechaRegistro || '',
-          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento || emp.nombre || '')
-        };
-      });
-
-      // Procesar mejor valorados (RankingGlobalDTO)
-      this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => {
-        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === emp.idEmprendimiento);
-        
-        // Obtener la primera categoría (principal) del array de categorías
-        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
-          ? empDetallado.categorias[0].nombre
-          : (empDetallado?.nombreCategoria || '');
-        
-        return {
-          id: emp.idEmprendimiento,
-          nombre: emp.nombreEmprendimiento,
-          categoria: categoriaPrincipal,
-          calificacion: emp.promedioGlobal,
-          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
-        };
-      });
-
-      // Procesar peor valorados (RankingGlobalDTO)
-      this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => {
-        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === emp.idEmprendimiento);
-        
-        // Obtener la primera categoría (principal) del array de categorías
-        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
-          ? empDetallado.categorias[0].nombre
-          : (empDetallado?.nombreCategoria || '');
-        
-        return {
-          id: emp.idEmprendimiento,
-          nombre: emp.nombreEmprendimiento,
-          categoria: categoriaPrincipal,
-          calificacion: emp.promedioGlobal,
-          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
-        };
-      });
-
-      // Procesar categorías ordenadas de mayor a menor
-      this.categoriasOrdenadas = (data.categoriasMasVistas || [])
-        .sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
-
-      // Mantener la categoría principal (la primera)
-      this.categoriaMasVista = this.categoriasOrdenadas.length > 0 
-        ? {
-            nombre: this.categoriasOrdenadas[0].categoria.nombre,
-            visitas: this.categoriasOrdenadas[0].vistas,
-            ejemplo: this.categoriasOrdenadas[0].categoria.descripcion || 'Categoría líder en visitas'
-          }
-        : null;
-
-      // Procesar preguntas de autoevaluación
-      if (data.formularioAutoevaluacion && data.formularioAutoevaluacion.preguntas) {
-        // Guardar todas las preguntas para usarlas con el filtro
-        this.todasLasPreguntas = data.formularioAutoevaluacion.preguntas;
-        
-        // Cargar rankings para las primeras 5 preguntas (sin filtro de emprendimiento)
-        const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
-        this.cargarRankingsPreguntas(preguntasLimitadas, null);
-      } else {
-        // Si no hay formulario, usar datos mock
-        this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
-      }
-
-      // Actualizar stats basado en los datos recibidos
-      this.stats.emprendimientos = this.topEmprendimientos.length || this.stats.emprendimientos;
-      this.stats.totalVisits = this.topEmprendimientos.reduce((sum, emp) => sum + (emp.visitas || 0), 0) || this.stats.totalVisits;
-
-      // Procesar datos temporales para el gráfico
+      
+      this.procesarEmprendimientos(data);
+      this.procesarCategorias(data.categoriasMasVistas);
+      this.procesarPreguntasAutoevaluacion(data.formularioAutoevaluacion);
+      this.actualizarEstadisticas();
       this.procesarDatosTemporales();
 
       this.isLoading = false;
@@ -282,52 +137,129 @@ cargarDatos() {
   });
 }
 
+  // Método para procesar todos los tipos de emprendimientos
+  private procesarEmprendimientos(data: any) {
+    this.emprendimientosMenosVistos = this.mapearEmprendimientosConVistas(data.menosVistos || []);
+    this.topEmprendimientos = this.mapearEmprendimientosConVistas(data.masVistos || []);
+    this.emprendimientosMejorValorados = this.mapearEmprendimientosValorados(data.mejorValorados || []);
+    this.emprendimientosPeorValorados = this.mapearEmprendimientosValorados(data.peorValorados || []);
+  }
+
+  // Mapear emprendimientos con vistas (para menos vistos y más vistos)
+  private mapearEmprendimientosConVistas(emprendimientos: any[]): any[] {
+    return emprendimientos.map(emp => {
+      const idEmp = emp.idEmprendimiento || emp.id || 0;
+      const categoria = this.obtenerCategoriaPrincipal(idEmp, emp.categoria);
+      const nombre = emp.nombreEmprendimiento || emp.nombre || '';
+      
+      return {
+        id: emp.id || idEmp || 0,
+        idEmprendimiento: idEmp,
+        nombreEmprendimiento: nombre,
+        nombre: nombre,
+        categoria: categoria,
+        vistas: emp.vistas || emp.visitas || 0,
+        visitas: emp.vistas || emp.visitas || 0,
+        fechaRegistro: emp.fechaRegistro || '',
+        iniciales: this.dashboardService.generarIniciales(nombre)
+      };
+    });
+  }
+
+  // Mapear emprendimientos valorados (para mejor y peor valorados)
+  private mapearEmprendimientosValorados(emprendimientos: RankingGlobalDTO[]): EmprendimientoTop[] {
+    return emprendimientos.map(emp => {
+      const categoria = this.obtenerCategoriaPrincipal(emp.idEmprendimiento);
+      
+      return {
+        id: emp.idEmprendimiento,
+        nombre: emp.nombreEmprendimiento,
+        categoria: categoria,
+        calificacion: emp.promedioGlobal,
+        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+      };
+    });
+  }
+
+  // Obtener la categoría principal de un emprendimiento
+  private obtenerCategoriaPrincipal(idEmprendimiento: number, categoriaFallback: string = ''): string {
+    const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === idEmprendimiento);
+    
+    if (empDetallado?.categorias && empDetallado.categorias.length > 0) {
+      return empDetallado.categorias[0].nombre;
+    }
+    
+    return empDetallado?.nombreCategoria || categoriaFallback || '';
+  }
+
+  // Procesar categorías más vistas
+  private procesarCategorias(categoriasMasVistas: CategoriaConVistas[] | null) {
+    this.categoriasOrdenadas = (categoriasMasVistas || [])
+      .sort((a, b) => (b.vistas || 0) - (a.vistas || 0));
+
+    this.categoriaMasVista = this.categoriasOrdenadas.length > 0 
+      ? {
+          nombre: this.categoriasOrdenadas[0].categoria.nombre,
+          visitas: this.categoriasOrdenadas[0].vistas,
+          ejemplo: this.categoriasOrdenadas[0].categoria.descripcion || 'Categoría líder en visitas'
+        }
+      : null;
+  }
+
+  // Procesar preguntas de autoevaluación
+  private procesarPreguntasAutoevaluacion(formulario: any) {
+    if (formulario && formulario.preguntas) {
+      this.todasLasPreguntas = formulario.preguntas;
+      const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
+      this.cargarRankingsPreguntas(preguntasLimitadas, null);
+    } else {
+      this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
+    }
+  }
+
+  // Actualizar estadísticas del dashboard
+  private actualizarEstadisticas() {
+    this.stats.emprendimientos = this.topEmprendimientos.length || this.stats.emprendimientos;
+    this.stats.totalVisits = this.topEmprendimientos.reduce((sum, emp) => sum + (emp.visitas || 0), 0) || this.stats.totalVisits;
+  }
+
   // Método auxiliar para cargar rankings de preguntas
   private cargarRankingsPreguntas(preguntas: any[], idEmprendimiento: number | null = null) {
-    const rankingRequests = preguntas.map(pregunta => {
-      // Solo pasar idEmprendimiento si tiene un valor válido
-      const idTipoEmprendimiento = idEmprendimiento !== null ? idEmprendimiento : undefined;
-      
-      return this.dashboardService.getRankingPorPregunta(
+    const rankingRequests = preguntas.map(pregunta => 
+      this.dashboardService.getRankingPorPregunta(
         pregunta.idPregunta, 
-        idTipoEmprendimiento, 
+        idEmprendimiento !== null ? idEmprendimiento : undefined, 
         0, 
         100
-      ).pipe(
-        catchError(() => of({ content: [], pageable: {} }))
-      );
-    });
+      ).pipe(catchError(() => of({ content: [], pageable: {} })))
+    );
 
     forkJoin(rankingRequests).subscribe({
       next: (rankings) => {
-        this.preguntasAutoevaluacion = preguntas.map((pregunta, index) => {
-          const ranking = rankings[index];
-          const contenido = ranking?.content || [];
-          
-          let promedio = 0;
-          
-          if (idEmprendimiento) {
-            // Si hay filtro de emprendimiento, buscar solo ese emprendimiento
-            const emprendimientoEspecifico = contenido.find((item: any) => item.idEmprendimiento === idEmprendimiento);
-            promedio = emprendimientoEspecifico?.promedioPregunta || 0;
-          } else {
-            // Si no hay filtro, calcular promedio de todos los emprendimientos
-            promedio = contenido.length > 0
-              ? contenido.reduce((sum: number, item: any) => sum + (item.promedioPregunta || 0), 0) / contenido.length
-              : 0;
-          }
-
-          return {
-            pregunta: pregunta.pregunta,
-            promedio: promedio
-          };
-        });
+        this.preguntasAutoevaluacion = preguntas.map((pregunta, index) => ({
+          pregunta: pregunta.pregunta,
+          promedio: this.calcularPromedioRanking(rankings[index], idEmprendimiento)
+        }));
       },
       error: (error) => {
         console.warn('Error al cargar rankings de preguntas:', error);
         this.preguntasAutoevaluacion = this.getDatosMockPreguntas();
       }
     });
+  }
+
+  // Calcular promedio según ranking y filtro
+  private calcularPromedioRanking(ranking: any, idEmprendimiento: number | null): number {
+    const contenido = ranking?.content || [];
+    
+    if (idEmprendimiento) {
+      const emprendimientoEspecifico = contenido.find((item: any) => item.idEmprendimiento === idEmprendimiento);
+      return emprendimientoEspecifico?.promedioPregunta || 0;
+    }
+    
+    return contenido.length > 0
+      ? contenido.reduce((sum: number, item: any) => sum + (item.promedioPregunta || 0), 0) / contenido.length
+      : 0;
   }
  
   private getDatosMockPreguntas(): PreguntaAutoevaluacion[] {
@@ -340,23 +272,20 @@ cargarDatos() {
 
   // Aplicar filtros a preguntas de autoevaluación
   aplicarFiltros() {
-    // Convertir el valor a número o null de forma segura
-    let emprendimientoId: number | null = null;
-    
-    if (this.filtroEmprendimiento !== null && this.filtroEmprendimiento !== undefined) {
-      const idNumerico = Number(this.filtroEmprendimiento);
-      if (!isNaN(idNumerico)) {
-        emprendimientoId = idNumerico;
-      }
-    }
+    const emprendimientoId = this.validarIdEmprendimiento(this.filtroEmprendimiento);
     
     if (this.todasLasPreguntas.length > 0) {
-      // Limitar a las primeras 5 preguntas
       const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
-      
-      // Recargar rankings con el filtro de emprendimiento
       this.cargarRankingsPreguntas(preguntasLimitadas, emprendimientoId);
     }
+  }
+
+  // Validar y convertir ID de emprendimiento
+  private validarIdEmprendimiento(valor: any): number | null {
+    if (valor === null || valor === undefined) return null;
+    
+    const idNumerico = Number(valor);
+    return !isNaN(idNumerico) ? idNumerico : null;
   }
 
   // Helper para obtener color de avatar según el índice
@@ -388,18 +317,23 @@ cargarDatos() {
       return;
     }
 
-    // Agrupar emprendimientos por mes
+    const emprendimientosPorMes = this.agruparEmprendimientosPorMes();
+    this.datosGraficoTemporal = this.generarDatosTemporales(emprendimientosPorMes);
+    this.actualizarTotalesGrafico();
+    this.generarPuntosGrafico();
+  }
+
+  // Agrupar emprendimientos por mes
+  private agruparEmprendimientosPorMes(): { [key: string]: number } {
     const emprendimientosPorMes: { [key: string]: number } = {};
     
     this.todosEmprendimientos.forEach(emp => {
-      // Intentar obtener la fecha de diferentes campos posibles
       const fechaPosible = emp.fechaRegistro || emp.fechaCreacion || emp.createdAt || emp.fecha || emp.fechaAlta;
       
       if (fechaPosible) {
         try {
           const fecha = new Date(fechaPosible);
           
-          // Validar que la fecha sea válida
           if (!isNaN(fecha.getTime())) {
             const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
             emprendimientosPorMes[mesAnio] = (emprendimientosPorMes[mesAnio] || 0) + 1;
@@ -410,94 +344,119 @@ cargarDatos() {
       }
     });
 
-    // Ordenar por fecha y calcular acumulado
+    return emprendimientosPorMes;
+  }
+
+  // Generar datos temporales con acumulado
+  private generarDatosTemporales(emprendimientosPorMes: { [key: string]: number }): { mes: string, cantidad: number, acumulado: number }[] {
     const mesesOrdenados = Object.keys(emprendimientosPorMes).sort();
-    let acumulado = 0;
     
-    this.datosGraficoTemporal = mesesOrdenados.map(mes => {
+    if (mesesOrdenados.length === 0) {
+      return this.generarDatosMesActual();
+    }
+
+    let acumulado = 0;
+    const datos = mesesOrdenados.map(mes => {
       acumulado += emprendimientosPorMes[mes];
-      return {
-        mes,
-        cantidad: emprendimientosPorMes[mes],
-        acumulado
-      };
+      return { mes, cantidad: emprendimientosPorMes[mes], acumulado };
     });
 
-    // Si no hay datos con fechas, usar el total de emprendimientos en el mes actual
-    if (this.datosGraficoTemporal.length === 0 && this.todosEmprendimientos.length > 0) {
-      const hoy = new Date();
-      const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-      this.datosGraficoTemporal = [{
-        mes: mesActual,
-        cantidad: this.todosEmprendimientos.length,
-        acumulado: this.todosEmprendimientos.length
-      }];
-    }
+    return this.normalizarDatosTemporales(datos, emprendimientosPorMes);
+  }
 
-    // Si hay pocos meses de datos (menos de 6), extender con los últimos 6 meses
-    if (this.datosGraficoTemporal.length > 0 && this.datosGraficoTemporal.length < 6) {
-      const hoy = new Date();
-      const ultimosMeses: { mes: string, cantidad: number, acumulado: number }[] = [];
-      
-      // Generar últimos 6 meses
-      for (let i = 5; i >= 0; i--) {
-        const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-        const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-        const cantidad = emprendimientosPorMes[mesAnio] || 0;
-        const acumuladoPrevio = ultimosMeses.length > 0 
-          ? ultimosMeses[ultimosMeses.length - 1].acumulado 
-          : 0;
-        ultimosMeses.push({ 
-          mes: mesAnio, 
-          cantidad, 
-          acumulado: acumuladoPrevio + cantidad 
-        });
-      }
-      
-      this.datosGraficoTemporal = ultimosMeses;
-    } else if (this.datosGraficoTemporal.length >= 6) {
-      // Limitar a los últimos 12 meses
-      this.datosGraficoTemporal = this.datosGraficoTemporal.slice(-12);
-    }
-
-    this.totalEmprendimientos = this.datosGraficoTemporal.length > 0 
-      ? this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1].acumulado 
-      : this.todosEmprendimientos.length;
+  // Generar datos para el mes actual si no hay datos
+  private generarDatosMesActual(): { mes: string, cantidad: number, acumulado: number }[] {
+    if (this.todosEmprendimientos.length === 0) return [];
     
-    this.ultimoMesCantidad = this.datosGraficoTemporal.length > 0
-      ? this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1].cantidad
-      : 0;
+    const hoy = new Date();
+    const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    return [{ mes: mesActual, cantidad: this.todosEmprendimientos.length, acumulado: this.todosEmprendimientos.length }];
+  }
 
-    // Generar puntos del gráfico
-    this.generarPuntosGrafico();
+  // Normalizar datos temporales (extender o limitar según necesidad)
+  private normalizarDatosTemporales(
+    datos: { mes: string, cantidad: number, acumulado: number }[], 
+    emprendimientosPorMes: { [key: string]: number }
+  ): { mes: string, cantidad: number, acumulado: number }[] {
+    if (datos.length < 6) {
+      return this.extenderUltimosSeisMeses(emprendimientosPorMes);
+    }
+    
+    if (datos.length >= 6) {
+      return datos.slice(-12); // Limitar a últimos 12 meses
+    }
+    
+    return datos;
+  }
+
+  // Extender con los últimos 6 meses
+  private extenderUltimosSeisMeses(emprendimientosPorMes: { [key: string]: number }): { mes: string, cantidad: number, acumulado: number }[] {
+    const hoy = new Date();
+    const ultimosMeses: { mes: string, cantidad: number, acumulado: number }[] = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+      const cantidad = emprendimientosPorMes[mesAnio] || 0;
+      const acumuladoPrevio = ultimosMeses.length > 0 ? ultimosMeses[ultimosMeses.length - 1].acumulado : 0;
+      
+      ultimosMeses.push({ mes: mesAnio, cantidad, acumulado: acumuladoPrevio + cantidad });
+    }
+    
+    return ultimosMeses;
+  }
+
+  // Actualizar totales del gráfico
+  private actualizarTotalesGrafico() {
+    const ultimoDato = this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1];
+    
+    this.totalEmprendimientos = ultimoDato?.acumulado || this.todosEmprendimientos.length;
+    this.ultimoMesCantidad = ultimoDato?.cantidad || 0;
   }
 
   private generarPuntosGrafico() {
     if (this.datosGraficoTemporal.length === 0) {
-      this.puntosGrafico = [];
-      this.pathLineaGrafico = '';
-      this.pathAreaGrafico = '';
+      this.limpiarGrafico();
       return;
     }
 
-    const margenIzq = 50;
-    const margenDer = 20;
-    const margenSup = 30;
-    const margenInf = 40;
-    const alturaGrafico = 240;
-    const anchoUtil = this.anchoGrafico - margenIzq - margenDer;
-    const alturaUtil = alturaGrafico - margenSup - margenInf;
-
+    const configuracion = this.obtenerConfiguracionGrafico();
     this.maxEmprendimientos = Math.max(...this.datosGraficoTemporal.map(d => d.acumulado), 1);
-    const numPuntos = this.datosGraficoTemporal.length;
-    const espacioEntrePuntos = anchoUtil / Math.max(numPuntos - 1, 1);
+    
+    this.puntosGrafico = this.calcularPuntosGrafico(configuracion);
+    this.pathLineaGrafico = this.generarPathLinea();
+    this.pathAreaGrafico = this.generarPathArea(configuracion.alturaGrafico, configuracion.margenInf);
+  }
 
-    // Generar puntos
-    this.puntosGrafico = this.datosGraficoTemporal.map((dato, index) => {
-      const x = margenIzq + (index * espacioEntrePuntos);
-      const y = alturaGrafico - margenInf - ((dato.acumulado / this.maxEmprendimientos) * alturaUtil);
+  // Limpiar gráfico
+  private limpiarGrafico() {
+    this.puntosGrafico = [];
+    this.pathLineaGrafico = '';
+    this.pathAreaGrafico = '';
+  }
+
+  // Obtener configuración del gráfico
+  private obtenerConfiguracionGrafico() {
+    return {
+      margenIzq: 50,
+      margenDer: 20,
+      margenSup: 30,
+      margenInf: 40,
+      alturaGrafico: 240,
+      anchoUtil: this.anchoGrafico - 50 - 20,
+      alturaUtil: 240 - 30 - 40
+    };
+  }
+
+  // Calcular puntos del gráfico
+  private calcularPuntosGrafico(config: any): { x: number, y: number, valor: number, label: string, labelCorto: string }[] {
+    const numPuntos = this.datosGraficoTemporal.length;
+    const espacioEntrePuntos = config.anchoUtil / Math.max(numPuntos - 1, 1);
+
+    return this.datosGraficoTemporal.map((dato, index) => {
+      const x = config.margenIzq + (index * espacioEntrePuntos);
+      const y = config.alturaGrafico - config.margenInf - ((dato.acumulado / this.maxEmprendimientos) * config.alturaUtil);
       
-      // Formatear etiqueta del mes
       const [anio, mes] = dato.mes.split('-');
       const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
       const labelCorto = meses[parseInt(mes) - 1] || mes;
@@ -505,19 +464,27 @@ cargarDatos() {
 
       return { x, y, valor: dato.acumulado, label, labelCorto };
     });
+  }
 
-    // Generar path para la línea
-    this.pathLineaGrafico = this.puntosGrafico
+  // Generar path para la línea
+  private generarPathLinea(): string {
+    return this.puntosGrafico
       .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
       .join(' ');
+  }
 
-    // Generar path para el área
+  // Generar path para el área
+  private generarPathArea(alturaGrafico: number, margenInf: number): string {
+    const primerPunto = this.puntosGrafico[0];
+    const ultimoPunto = this.puntosGrafico[this.puntosGrafico.length - 1];
+    
     const puntosArea = [
-      `M ${this.puntosGrafico[0].x} ${alturaGrafico - margenInf}`,
+      `M ${primerPunto.x} ${alturaGrafico - margenInf}`,
       ...this.puntosGrafico.map(p => `L ${p.x} ${p.y}`),
-      `L ${this.puntosGrafico[this.puntosGrafico.length - 1].x} ${alturaGrafico - margenInf}`,
+      `L ${ultimoPunto.x} ${alturaGrafico - margenInf}`,
       'Z'
     ];
-    this.pathAreaGrafico = puntosArea.join(' ');
+    
+    return puntosArea.join(' ');
   }
 }
