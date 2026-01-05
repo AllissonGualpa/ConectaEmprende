@@ -118,10 +118,10 @@ export class EventosComponent implements OnInit {
 
   // LOAD EVENTS
   private loadEventosFromServer(): void {
-    const currentMonth = new Date().getMonth() + 1;
+    //const currentMonth = new Date().getMonth() + 1;
 
     this.eventoService.getPublicEvents({
-      mes: currentMonth,
+      //mes: currentMonth,
       page: 0,
       size: this.pageSize
     }).subscribe({
