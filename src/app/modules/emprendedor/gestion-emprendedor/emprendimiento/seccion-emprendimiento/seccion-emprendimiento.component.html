@@ -47,8 +47,8 @@
 			<div *ngIf="cardsArray.length">
 				<!-- Conectar evento discover para abrir modal de edición -->
 				<app-cards [items]="cardsArray" [pageSize]="6" [ctaLabel]="'Editar'" [showRoadmapButton]="true"
-					[roadmapLabel]="'Roadmap'" [showStatus]="true" (discover)="openEditSolicitudModal($event)"
-					(roadmap)="onRoadmapClick($event)">
+					[roadmapLabel]="'Roadmap'" [showStatus]="true" [fixedHeightCards]="true"
+					(discover)="openEditSolicitudModal($event)" (roadmap)="onRoadmapClick($event)">
 				</app-cards>
 			</div>
 		</ng-container>

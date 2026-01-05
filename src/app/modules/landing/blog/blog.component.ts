@@ -5,7 +5,7 @@ import { FooterComponent } from '../../../layout/footer/footer.component';
 import { SearchBarComponent, SearchPayload } from '../../shared/components/search-bar/search-bar.component';
 import { CardsComponent } from '../../../layout/cards/cards.component';
 import { Router } from '@angular/router';
-import { BlogService } from '../../admin/blog.service';
+import { BlogService } from '../../../core/services/blog.service';
 
 interface BlogArticulo {
   idArticulo: number;
@@ -37,12 +37,12 @@ export class BlogComponent implements OnInit {
   error: string | null = null;
   tagsOptions: { label: string; value: number }[] = [];
 
-  // 🔹 Variables para la paginación
+  // Variables para la paginación
   currentPage = 0;
   totalPages = 0;
   pageSize = 10;
 
-  // 🔹 Variables para búsqueda y filtros
+  // Variables para búsqueda y filtros
   currentQuery = '';
   currentTag: string = '';
 
