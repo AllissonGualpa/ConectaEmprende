@@ -154,6 +154,17 @@
 		<!-- CONTENIDO PRINCIPAL -->
 		<div class="space-y-8">
 
+			<section *ngIf="getVideo()" class="bg-white rounded-xl shadow-sm p-6">
+				<h2 class="text-2xl font-bold text-center mb-6 text-[#276BC7]">Video de Presentación</h2>
+				<div class="flex justify-center">
+					<video 
+						[src]="getVideo()!" 
+						controls 
+						class="max-w-3xl w-full rounded-lg shadow-lg">
+						Tu navegador no soporta la reproducción de video.
+					</video>
+				</div>
+			</section>
 			<!-- QUÉ OFRECE -->
 			<section *ngIf="getQueOfrece()" class="bg-white rounded-xl shadow-sm p-6">
 				<h2 class="text-2xl font-bold text-center mb-6 text-[#276BC7]">¿Qué Ofrece?</h2>

@@ -61,6 +61,32 @@ export class SolicitudesService {
     }
 
     /**
+     * Guardar propuesta de cambios para emprendimiento PUBLICADO
+     * @param emprendimientoId - ID del emprendimiento
+     * @param datosPropuestos - Datos propuestos para modificación
+     * @returns Observable con la respuesta del servidor
+     */
+    guardarPropuesta(emprendimientoId: number, datosPropuestos: any): Observable<any> {
+        return this._httpClient.post(
+            `${environment.api_url}/v1/solicitudes/emprendimiento/${emprendimientoId}/propuesta`,
+            datosPropuestos
+        );
+    }
+
+    /**
+     * Modificar y reenviar solicitud (Emprendedor)
+     * @param solicitudId - ID de la solicitud a modificar
+     * @param datosActualizados - Datos actualizados del emprendimiento
+     * @returns Observable con la respuesta del servidor
+     */
+    modificarYReenviar(solicitudId: number, datosActualizados: any): Observable<any> {
+        return this._httpClient.put(
+            `${environment.api_url}/v1/solicitudes/${solicitudId}/modificar-reenviar`,
+            datosActualizados
+        );
+    }
+
+    /**
      * Listar solicitudes pendientes (Admin)
      * @param page - Número de página (default: 0)
      * @param size - Tamaño de página (default: 10)

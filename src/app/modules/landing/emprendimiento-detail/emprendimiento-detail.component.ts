@@ -144,8 +144,28 @@ export class EmprendimientoDetailComponent implements OnInit {
     if (!this.emprendimiento?.multimedia) return [];
     
     return this.emprendimiento.multimedia
-      .filter(m => m.nombreActivo?.toUpperCase().includes('FOTOPRODUCTO'))
+      .filter(m => m.nombreActivo?.toUpperCase().includes('FOTO_PRODUCTO'))
       .map(m => m.urlArchivo);
+  }
+  getVideo(): string | null {
+    if (!this.emprendimiento?.multimedia) return null;
+    
+    const video = this.emprendimiento.multimedia.find(
+      m => m.nombreActivo?.toUpperCase().includes('VIDEO') || 
+          m.urlArchivo?.includes('.mp4')
+    );
+    
+    return video?.urlArchivo || null;
+  }
+
+  getBanner(): string | null {
+    if (!this.emprendimiento?.multimedia) return null;
+    
+    const banner = this.emprendimiento.multimedia.find(
+      m => m.nombreActivo?.toUpperCase().includes('BANNER')
+    );
+    
+    return banner?.urlArchivo || null;
   }
 
   getPresenciaDigital(plataforma: string): string | null {
