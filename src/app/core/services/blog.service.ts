@@ -125,16 +125,18 @@ export class BlogService {
     idUsuario: number
   ): Observable<any> {
     const url = `${this.baseApiUrl}/articulos/${id}/${accion}?idUsuario=${idUsuario}`;
-    
-    return this.http.patch(
+
+    return this.http.put(
       url,
       {},
-      { headers: this.getHeaders() }
+      {
+        headers: this.getHeaders(),
+        responseType: 'text'
+      }
     );
   }
 
   // Obtener artículos públicos (paginados) — usado por la landing
-
   getPublicArticles(params: {
     page: number;
     size: number;
