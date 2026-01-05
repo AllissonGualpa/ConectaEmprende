@@ -7,9 +7,14 @@ import { environment } from '../../../environments/environment';
 // Interfaces
 export interface EmprendimientoMenosVisto {
   id: number;
-  nombre: string;
-  categoria: string;
-  visitas: number;
+  idEmprendimiento: number;
+  nombreEmprendimiento: string;
+  vistas: number;
+  fechaRegistro: string;
+  // Campos adicionales para el componente
+  nombre?: string;
+  categoria?: string;
+  visitas?: number;
   iniciales?: string;
 }
 
@@ -48,10 +53,14 @@ export interface CategoriaMasVistaResponse {
 
 export interface EmprendimientoTop {
   id: number;
-  nombre: string;
-  categoria: string;
+  idEmprendimiento?: number;
+  nombre?: string;
+  nombreEmprendimiento?: string;
+  categoria?: string;
   calificacion?: number;
   visitas?: number;
+  vistas?: number;
+  fechaRegistro?: string;
   iniciales?: string;
 }
 

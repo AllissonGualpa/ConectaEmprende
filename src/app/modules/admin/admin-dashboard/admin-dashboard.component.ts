@@ -144,38 +144,90 @@ cargarDatos() {
     ),
   }).subscribe({
     next: (data) => {
-      // Procesar emprendimientos menos vistos
-      this.emprendimientosMenosVistos = (data.menosVistos || []).map(emp => ({
-        ...emp,
-        iniciales: this.dashboardService.generarIniciales(emp.nombre)
-      }));
+      // Cargar todos los emprendimientos para el filtro y obtener categorías
+      this.todosEmprendimientos = data.todosEmprendimientos || [];
 
-      // Procesar top emprendimientos (más vistos)
-      this.topEmprendimientos = (data.masVistos || []).map(emp => ({
-        id: emp.id,
-        nombre: emp.nombre,
-        categoria: emp.categoria || '',
-        visitas: emp.visitas,
-        iniciales: this.dashboardService.generarIniciales(emp.nombre)
-      }));
+      // Procesar emprendimientos menos vistos con categoría
+      this.emprendimientosMenosVistos = (data.menosVistos || []).map(emp => {
+        const idEmp = emp.idEmprendimiento || emp.id || 0;
+        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === idEmp);
+        
+        // Obtener la primera categoría (principal) del array de categorías
+        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
+          ? empDetallado.categorias[0].nombre
+          : (empDetallado?.nombreCategoria || emp.categoria || '');
+        
+        return {
+          id: emp.id || emp.idEmprendimiento || 0,
+          idEmprendimiento: idEmp,
+          nombreEmprendimiento: emp.nombreEmprendimiento || emp.nombre || '',
+          nombre: emp.nombreEmprendimiento || emp.nombre || '', // Para compatibilidad con el template
+          categoria: categoriaPrincipal,
+          vistas: emp.vistas || emp.visitas || 0,
+          visitas: emp.vistas || emp.visitas || 0, // Para compatibilidad con el template
+          fechaRegistro: emp.fechaRegistro || '',
+          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento || emp.nombre || '')
+        };
+      });
+
+      // Procesar top emprendimientos (más vistos) con categoría
+      this.topEmprendimientos = (data.masVistos || []).map(emp => {
+        const idEmp = emp.idEmprendimiento || emp.id || 0;
+        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === idEmp);
+        
+        // Obtener la primera categoría (principal) del array de categorías
+        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
+          ? empDetallado.categorias[0].nombre
+          : (empDetallado?.nombreCategoria || emp.categoria || '');
+        
+        return {
+          id: emp.id || emp.idEmprendimiento || 0,
+          idEmprendimiento: idEmp,
+          nombreEmprendimiento: emp.nombreEmprendimiento || emp.nombre || '',
+          nombre: emp.nombreEmprendimiento || emp.nombre || '', // Para compatibilidad con el template
+          categoria: categoriaPrincipal,
+          vistas: emp.vistas || emp.visitas || 0,
+          visitas: emp.vistas || emp.visitas || 0, // Para compatibilidad con el template
+          fechaRegistro: emp.fechaRegistro || '',
+          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento || emp.nombre || '')
+        };
+      });
 
       // Procesar mejor valorados (RankingGlobalDTO)
-      this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => ({
-        id: emp.idEmprendimiento,
-        nombre: emp.nombreEmprendimiento,
-        categoria: '',
-        calificacion: emp.promedioGlobal,
-        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
-      }));
+      this.emprendimientosMejorValorados = (data.mejorValorados || []).map(emp => {
+        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === emp.idEmprendimiento);
+        
+        // Obtener la primera categoría (principal) del array de categorías
+        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
+          ? empDetallado.categorias[0].nombre
+          : (empDetallado?.nombreCategoria || '');
+        
+        return {
+          id: emp.idEmprendimiento,
+          nombre: emp.nombreEmprendimiento,
+          categoria: categoriaPrincipal,
+          calificacion: emp.promedioGlobal,
+          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+        };
+      });
 
       // Procesar peor valorados (RankingGlobalDTO)
-      this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => ({
-        id: emp.idEmprendimiento,
-        nombre: emp.nombreEmprendimiento,
-        categoria: '',
-        calificacion: emp.promedioGlobal,
-        iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
-      }));
+      this.emprendimientosPeorValorados = (data.peorValorados || []).map(emp => {
+        const empDetallado = this.todosEmprendimientos.find((e: any) => e.idEmprendimiento === emp.idEmprendimiento);
+        
+        // Obtener la primera categoría (principal) del array de categorías
+        const categoriaPrincipal = empDetallado?.categorias && empDetallado.categorias.length > 0
+          ? empDetallado.categorias[0].nombre
+          : (empDetallado?.nombreCategoria || '');
+        
+        return {
+          id: emp.idEmprendimiento,
+          nombre: emp.nombreEmprendimiento,
+          categoria: categoriaPrincipal,
+          calificacion: emp.promedioGlobal,
+          iniciales: this.dashboardService.generarIniciales(emp.nombreEmprendimiento)
+        };
+      });
 
       // Procesar categorías ordenadas de mayor a menor
       this.categoriasOrdenadas = (data.categoriasMasVistas || [])
@@ -189,9 +241,6 @@ cargarDatos() {
             ejemplo: this.categoriasOrdenadas[0].categoria.descripcion || 'Categoría líder en visitas'
           }
         : null;
-
-      // Cargar todos los emprendimientos para el filtro
-      this.todosEmprendimientos = data.todosEmprendimientos || [];
 
       // Procesar preguntas de autoevaluación
       if (data.formularioAutoevaluacion && data.formularioAutoevaluacion.preguntas) {
@@ -270,9 +319,36 @@ cargarDatos() {
   // Métodos para datos mock (de ejemplo) - solo para presentar JAJA
   private getDatosMockMenosVistos(): EmprendimientoMenosVisto[] {
     return [
-      { id: 1, nombre: 'DigitalPulse', categoria: 'Educación', visitas: 23 },
-      { id: 2, nombre: 'Oro & Arte', categoria: 'Mascotas', visitas: 31 },
-      { id: 3, nombre: 'SmartHome', categoria: 'Hogar', visitas: 40 }
+      { 
+        id: 1, 
+        idEmprendimiento: 1,
+        nombreEmprendimiento: 'DigitalPulse',
+        nombre: 'DigitalPulse',
+        categoria: 'Educación', 
+        vistas: 23,
+        visitas: 23,
+        fechaRegistro: new Date().toISOString()
+      },
+      { 
+        id: 2, 
+        idEmprendimiento: 2,
+        nombreEmprendimiento: 'Oro & Arte',
+        nombre: 'Oro & Arte',
+        categoria: 'Mascotas', 
+        vistas: 31,
+        visitas: 31,
+        fechaRegistro: new Date().toISOString()
+      },
+      { 
+        id: 3, 
+        idEmprendimiento: 3,
+        nombreEmprendimiento: 'SmartHome',
+        nombre: 'SmartHome',
+        categoria: 'Hogar', 
+        vistas: 40,
+        visitas: 40,
+        fechaRegistro: new Date().toISOString()
+      }
     ];
   }
 
