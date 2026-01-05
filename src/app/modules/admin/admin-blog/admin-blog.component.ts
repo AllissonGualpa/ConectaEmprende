@@ -291,13 +291,13 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
           blog.estado === 'ARCHIVADO'
             ? 'Esta acción desarchivará el artículo y volverá a estar visible.'
             : 'Esta acción archivará el artículo. Podrás restaurarlo más tarde si lo deseas.',
-        type: 'info',
+        type: 'confirm',
       },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.loading = true; // Activar loading antes de la operación
+        this.loading = true;
         const userId = 1;
         this.blogService
           .toggleArchiveBlog(
@@ -307,7 +307,7 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
           )
           .pipe(
             finalize(() => {
-              this.loading = false; // Desactivar loading después de la operación
+              this.loading = false;
             })
           )
           .subscribe({
@@ -316,12 +316,11 @@ export class AdminBlogComponent implements OnInit, OnDestroy {
                 width: '420px',
                 data: {
                   subject: 'Blog',
-                  title: `Blog ${accion === 'archivar' ? 'archivado' : 'desarchivado'
-                    } exitosamente`,
+                  title: `Blog ${accion === 'archivar' ? 'archivado' : 'desarchivado'} exitosamente`,
                   type: 'success',
                 },
               });
-              this.loadBlogs(); // Recargar blogs después de la operación
+              this.loadBlogs();
             },
             error: (err: any) => {
               console.error(`Error al ${accion} blog:`, err);

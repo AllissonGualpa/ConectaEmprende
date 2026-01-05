@@ -4,10 +4,10 @@ import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 
 export interface ConfirmDialogData {
-  subject?: string; // e.g. 'Evento' — used to build default title
-  title?: string; // optional full title override
-  subtitle?: string; // optional subtitle text
-  type?: 'success' | 'error' | 'info' | 'warning'; // Agregado: tipo 'warning'
+  subject?: string;
+  title?: string;
+  subtitle?: string;
+  type?: 'success' | 'error' | 'info' | 'warning' | 'confirm';
 }
 
 @Component({
@@ -19,14 +19,14 @@ export interface ConfirmDialogData {
 export class MensajeConfirmacionComponent {
   public title: string;
   public subtitle: string;
-  public type: 'success' | 'error' | 'info' | 'warning'; // Agregado: tipo 'warning'
+  public type: 'success' | 'error' | 'info' | 'warning' | 'confirm';
 
   constructor(
     public dialogRef: MatDialogRef<MensajeConfirmacionComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {
     const subject = data?.subject || 'Elemento';
-    this.type = data?.type || 'success'; // Por defecto, 'success'
+    this.type = data?.type || 'success';
 
     if (data?.title) {
       this.title = data.title;
@@ -44,6 +44,9 @@ export class MensajeConfirmacionComponent {
         case 'warning':
           this.title = `Advertencia sobre ${subject}`;
           break;
+        case 'confirm':
+          this.title = `Confirmar acción`;
+          break;
       }
     }
 
@@ -51,6 +54,14 @@ export class MensajeConfirmacionComponent {
   }
 
   close() {
+    this.dialogRef.close(false);
+  }
+
+  confirm() {
     this.dialogRef.close(true);
+  }
+
+  cancel() {
+    this.dialogRef.close(false);
   }
 }
