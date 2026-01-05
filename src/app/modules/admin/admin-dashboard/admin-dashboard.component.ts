@@ -51,6 +51,16 @@ categoriasOrdenadas: CategoriaConVistas[] = [];
   // Guardar todas las preguntas del formulario
   todasLasPreguntas: any[] = [];
 
+  // Datos para el gráfico temporal
+  datosGraficoTemporal: { mes: string, cantidad: number, acumulado: number }[] = [];
+  puntosGrafico: { x: number, y: number, valor: number, label: string, labelCorto: string }[] = [];
+  pathLineaGrafico: string = '';
+  pathAreaGrafico: string = '';
+  anchoGrafico: number = 960;
+  maxEmprendimientos: number = 0;
+  totalEmprendimientos: number = 0;
+  ultimoMesCantidad: number = 0;
+
   // Filtros para preguntas
   filtroEmprendimiento: number | null = null;
   filtroFecha: string = '';
@@ -259,6 +269,9 @@ cargarDatos() {
       this.stats.emprendimientos = this.topEmprendimientos.length || this.stats.emprendimientos;
       this.stats.totalVisits = this.topEmprendimientos.reduce((sum, emp) => sum + (emp.visitas || 0), 0) || this.stats.totalVisits;
 
+      // Procesar datos temporales para el gráfico
+      this.procesarDatosTemporales();
+
       this.isLoading = false;
     },
     error: (error) => {
@@ -316,74 +329,7 @@ cargarDatos() {
       }
     });
   }
-  // Métodos para datos mock (de ejemplo) - solo para presentar JAJA
-  private getDatosMockMenosVistos(): EmprendimientoMenosVisto[] {
-    return [
-      { 
-        id: 1, 
-        idEmprendimiento: 1,
-        nombreEmprendimiento: 'DigitalPulse',
-        nombre: 'DigitalPulse',
-        categoria: 'Educación', 
-        vistas: 23,
-        visitas: 23,
-        fechaRegistro: new Date().toISOString()
-      },
-      { 
-        id: 2, 
-        idEmprendimiento: 2,
-        nombreEmprendimiento: 'Oro & Arte',
-        nombre: 'Oro & Arte',
-        categoria: 'Mascotas', 
-        vistas: 31,
-        visitas: 31,
-        fechaRegistro: new Date().toISOString()
-      },
-      { 
-        id: 3, 
-        idEmprendimiento: 3,
-        nombreEmprendimiento: 'SmartHome',
-        nombre: 'SmartHome',
-        categoria: 'Hogar', 
-        vistas: 40,
-        visitas: 40,
-        fechaRegistro: new Date().toISOString()
-      }
-    ];
-  }
-
-  private getDatosMockTop(): EmprendimientoTop[] {
-    return [
-      { id: 4, nombre: 'EcoVerde', categoria: 'Medio Ambiente', visitas: 150, calificacion: 4.9 },
-      { id: 5, nombre: 'ArtiFlex', categoria: 'Moda & Accesorios', visitas: 30, calificacion: 4.5 },
-      { id: 6, nombre: 'FoodHub', categoria: 'Alimentos y Bebidas', visitas: 20, calificacion: 4.5 }
-    ];
-  }
-
-  private getDatosMockMejorValorados(): EmprendimientoTop[] {
-    return [
-      { id: 4, nombre: 'EcoVerde', categoria: 'Sostenibilidad', calificacion: 4.9 },
-      { id: 7, nombre: 'TechPro', categoria: 'Tecnología y Software', calificacion: 4.8 },
-      { id: 8, nombre: 'FitLife', categoria: 'Salud y Bienestar', calificacion: 4.7 }
-    ];
-  }
-
-  private getDatosMockPeorValorados(): EmprendimientoTop[] {
-    return [
-      { id: 1, nombre: 'BookFlex', categoria: 'Educación y Formacion', calificacion: 2.1 },
-      { id: 9, nombre: 'QuickFix', categoria: 'Servicios Profesionales ', calificacion: 2.5 },
-      { id: 10, nombre: 'StyleMe', categoria: 'Moda & Accesorios', calificacion: 2.8 }
-    ];
-  }
-
-  private getDatosMockCategoria(): CategoriaMasVista {
-    return {
-      nombre: 'Moda & Accesorios',
-      visitas: 3420,
-      ejemplo: 'Categoría líder en visitas'
-    };
-  }
-
+ 
   private getDatosMockPreguntas(): PreguntaAutoevaluacion[] {
     return [
       { pregunta: '¿Qué crees que pudo haber causado esta experiencia negativa?', promedio: 3.8 },
@@ -404,11 +350,6 @@ cargarDatos() {
       }
     }
     
-    console.log('Filtros aplicados:', {
-      emprendimiento: emprendimientoId,
-      fecha: this.filtroFecha
-    });
-    
     if (this.todasLasPreguntas.length > 0) {
       // Limitar a las primeras 5 preguntas
       const preguntasLimitadas = this.todasLasPreguntas.slice(0, 5);
@@ -427,5 +368,156 @@ cargarDatos() {
       'bg-purple-600', 'bg-pink-600', 'bg-indigo-600'
     ];
     return colors[index % colors.length];
+  }
+
+  // Obtener el valor máximo de visitas de categorías para el gráfico
+  get maxVisitasCategoria(): number {
+    if (this.categoriasOrdenadas.length === 0) return 1;
+    return Math.max(...this.categoriasOrdenadas.map(c => c.vistas));
+  }
+
+  // Obtener el total de visitas de todas las categorías
+  get totalVisitasCategoria(): number {
+    return this.categoriasOrdenadas.reduce((sum, c) => sum + c.vistas, 0) || 1;
+  }
+
+  // Procesar datos temporales para el gráfico de línea
+  private procesarDatosTemporales() {
+    if (!this.todosEmprendimientos || this.todosEmprendimientos.length === 0) {
+      this.datosGraficoTemporal = [];
+      return;
+    }
+
+    // Agrupar emprendimientos por mes
+    const emprendimientosPorMes: { [key: string]: number } = {};
+    
+    this.todosEmprendimientos.forEach(emp => {
+      // Intentar obtener la fecha de diferentes campos posibles
+      const fechaPosible = emp.fechaRegistro || emp.fechaCreacion || emp.createdAt || emp.fecha || emp.fechaAlta;
+      
+      if (fechaPosible) {
+        try {
+          const fecha = new Date(fechaPosible);
+          
+          // Validar que la fecha sea válida
+          if (!isNaN(fecha.getTime())) {
+            const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+            emprendimientosPorMes[mesAnio] = (emprendimientosPorMes[mesAnio] || 0) + 1;
+          }
+        } catch (e) {
+          // Ignorar fechas inválidas
+        }
+      }
+    });
+
+    // Ordenar por fecha y calcular acumulado
+    const mesesOrdenados = Object.keys(emprendimientosPorMes).sort();
+    let acumulado = 0;
+    
+    this.datosGraficoTemporal = mesesOrdenados.map(mes => {
+      acumulado += emprendimientosPorMes[mes];
+      return {
+        mes,
+        cantidad: emprendimientosPorMes[mes],
+        acumulado
+      };
+    });
+
+    // Si no hay datos con fechas, usar el total de emprendimientos en el mes actual
+    if (this.datosGraficoTemporal.length === 0 && this.todosEmprendimientos.length > 0) {
+      const hoy = new Date();
+      const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+      this.datosGraficoTemporal = [{
+        mes: mesActual,
+        cantidad: this.todosEmprendimientos.length,
+        acumulado: this.todosEmprendimientos.length
+      }];
+    }
+
+    // Si hay pocos meses de datos (menos de 6), extender con los últimos 6 meses
+    if (this.datosGraficoTemporal.length > 0 && this.datosGraficoTemporal.length < 6) {
+      const hoy = new Date();
+      const ultimosMeses: { mes: string, cantidad: number, acumulado: number }[] = [];
+      
+      // Generar últimos 6 meses
+      for (let i = 5; i >= 0; i--) {
+        const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+        const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+        const cantidad = emprendimientosPorMes[mesAnio] || 0;
+        const acumuladoPrevio = ultimosMeses.length > 0 
+          ? ultimosMeses[ultimosMeses.length - 1].acumulado 
+          : 0;
+        ultimosMeses.push({ 
+          mes: mesAnio, 
+          cantidad, 
+          acumulado: acumuladoPrevio + cantidad 
+        });
+      }
+      
+      this.datosGraficoTemporal = ultimosMeses;
+    } else if (this.datosGraficoTemporal.length >= 6) {
+      // Limitar a los últimos 12 meses
+      this.datosGraficoTemporal = this.datosGraficoTemporal.slice(-12);
+    }
+
+    this.totalEmprendimientos = this.datosGraficoTemporal.length > 0 
+      ? this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1].acumulado 
+      : this.todosEmprendimientos.length;
+    
+    this.ultimoMesCantidad = this.datosGraficoTemporal.length > 0
+      ? this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1].cantidad
+      : 0;
+
+    // Generar puntos del gráfico
+    this.generarPuntosGrafico();
+  }
+
+  private generarPuntosGrafico() {
+    if (this.datosGraficoTemporal.length === 0) {
+      this.puntosGrafico = [];
+      this.pathLineaGrafico = '';
+      this.pathAreaGrafico = '';
+      return;
+    }
+
+    const margenIzq = 50;
+    const margenDer = 20;
+    const margenSup = 30;
+    const margenInf = 40;
+    const alturaGrafico = 240;
+    const anchoUtil = this.anchoGrafico - margenIzq - margenDer;
+    const alturaUtil = alturaGrafico - margenSup - margenInf;
+
+    this.maxEmprendimientos = Math.max(...this.datosGraficoTemporal.map(d => d.acumulado), 1);
+    const numPuntos = this.datosGraficoTemporal.length;
+    const espacioEntrePuntos = anchoUtil / Math.max(numPuntos - 1, 1);
+
+    // Generar puntos
+    this.puntosGrafico = this.datosGraficoTemporal.map((dato, index) => {
+      const x = margenIzq + (index * espacioEntrePuntos);
+      const y = alturaGrafico - margenInf - ((dato.acumulado / this.maxEmprendimientos) * alturaUtil);
+      
+      // Formatear etiqueta del mes
+      const [anio, mes] = dato.mes.split('-');
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const labelCorto = meses[parseInt(mes) - 1] || mes;
+      const label = `${labelCorto} ${anio}`;
+
+      return { x, y, valor: dato.acumulado, label, labelCorto };
+    });
+
+    // Generar path para la línea
+    this.pathLineaGrafico = this.puntosGrafico
+      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+      .join(' ');
+
+    // Generar path para el área
+    const puntosArea = [
+      `M ${this.puntosGrafico[0].x} ${alturaGrafico - margenInf}`,
+      ...this.puntosGrafico.map(p => `L ${p.x} ${p.y}`),
+      `L ${this.puntosGrafico[this.puntosGrafico.length - 1].x} ${alturaGrafico - margenInf}`,
+      'Z'
+    ];
+    this.pathAreaGrafico = puntosArea.join(' ');
   }
 }
