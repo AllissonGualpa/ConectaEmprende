@@ -55,6 +55,7 @@ export class AdminDashboardComponent implements OnInit {
   preguntasServicio: any[] = [];
   preguntasProducto: any[] = [];
   rankingPorPregunta: any = null;
+  tipoEvaluacionSeleccionado: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO' = 'EVALUACION_SERVICIO';
 
   // Datos para el gráfico temporal
   datosGraficoTemporal: { mes: string, cantidad: number, acumulado: number }[] = [];
@@ -313,12 +314,17 @@ export class AdminDashboardComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.rankingPorPregunta = response;
-          console.log('Ranking por pregunta:', response);
         },
         error: (error) => {
-          console.error('Error al obtener ranking:', error);
+          console.error('Error al obtener ranking por pregunta:', error);
         }
       });
+  }
+
+  // Cambiar tipo de evaluación
+  cambiarTipoEvaluacion(tipo: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO') {
+    this.tipoEvaluacionSeleccionado = tipo;
+    this.rankingPorPregunta = null; // Limpiar ranking al cambiar tipo
   }
 
   // Cargar preguntas de formularios
@@ -328,9 +334,8 @@ export class AdminDashboardComponent implements OnInit {
       .subscribe({
         next: (formulario) => {
           this.preguntasServicio = formulario.preguntas || [];
-          console.log('Preguntas servicio:', this.preguntasServicio);
         },
-        error: (error) => console.error('Error:', error)
+        error: (error) => console.error('Error al cargar preguntas de servicio:', error)
       });
 
     // Cargar preguntas de producto
@@ -338,9 +343,8 @@ export class AdminDashboardComponent implements OnInit {
       .subscribe({
         next: (formulario) => {
           this.preguntasProducto = formulario.preguntas || [];
-          console.log('Preguntas producto:', this.preguntasProducto);
         },
-        error: (error) => console.error('Error:', error)
+        error: (error) => console.error('Error al cargar preguntas de producto:', error)
       });
   }
 

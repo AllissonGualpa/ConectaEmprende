@@ -130,8 +130,12 @@ export class DashboardService {
       url += `&idTipoEmprendimiento=${idTipoEmprendimiento}`;
     }
 
+
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
-      catchError(err => throwError(() => err))
+      catchError(err => {
+        console.error('Error en getRankingPorPregunta:', err);
+        return throwError(() => err);
+      })
     );
   }
 
