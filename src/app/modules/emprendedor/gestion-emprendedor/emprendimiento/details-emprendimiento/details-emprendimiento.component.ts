@@ -17,7 +17,9 @@ import { EmprendimientoService } from '../../../../../core/services/emprendimien
 import { SharedGeneralService } from '../../../../../shared/general/shared-general.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { SolicitudesService } from '../../../../../core/services/solicitudes.service';
+import { MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
+import { MensajeConfirmacionComponent, ConfirmDialogData } from '../../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
 	selector: 'app-details-emprendimiento',
@@ -105,7 +107,9 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		private emprendimientoService: EmprendimientoService,
 		private sharedGeneralService: SharedGeneralService,
 		private solicitudesService: SolicitudesService,
-		private authService: AuthService 
+		private authService: AuthService,
+		private dialog: MatDialog  
+
 	) { }
 
 	ngOnInit(): void {
@@ -697,12 +701,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeLogo(): void {
+		if (this.soloLectura) return; 
 		this.logoFile = null;
 		this.logoPreview = null;
 		this.emprendimientoForm.patchValue({ logo: null });
 	}
 
 	onFotosProductosSelected(event: any): void {
+		if (this.soloLectura) return;
 		const files = Array.from(event.target.files) as File[];
 
 		if (this.fotosProductos.length + files.length > 2) {
@@ -725,12 +731,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeFotoProducto(index: number): void {
+		if (this.soloLectura) return
 		this.fotosProductos.splice(index, 1);
 		this.fotosProductosPreview.splice(index, 1);
 		this.emprendimientoForm.patchValue({ fotosProductos: this.fotosProductos.length > 0 ? this.fotosProductos : null });
 	}
 
 	onVideoSelected(event: any): void {
+		if (this.soloLectura) return
 		const file = event.target.files[0];
 		if (file && file.type.startsWith('video/')) {
 			this.videoFile = file;
@@ -746,12 +754,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeVideo(): void {
+		if (this.soloLectura) return
 		this.videoFile = null;
 		this.videoPreview = null;
 		this.emprendimientoForm.patchValue({ video: null });
 	}
 
 	onBannerSelected(event: any): void {
+		if (this.soloLectura) return
 		const file = event.target.files[0];
 		if (file && file.type.startsWith('image/')) {
 			this.bannerFile = file;
@@ -767,6 +777,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeBanner(): void {
+		if (this.soloLectura) return
 		this.bannerFile = null;
 		this.bannerPreview = null;
 		this.emprendimientoForm.patchValue({ banner: null });
@@ -810,6 +821,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	toggleCategoria(categoriaId: number): void {
+		if (this.soloLectura) return;
 		if (this.isCategoriaSelected(categoriaId)) {
 			this.categoriasSeleccionadas = this.categoriasSeleccionadas.filter(id => id !== categoriaId);
 		} else if (this.categoriasSeleccionadas.length < 2) {
@@ -819,6 +831,10 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	onCategoriaChange(categoriaId: number, event: any): void {
+		if (this.soloLectura) {  // ← AGREGAR ESTA LÍNEA
+			event.preventDefault();
+			return;
+		}
 		if (event.checked) {
 			if (this.categoriasSeleccionadas.length < 2) {
 				this.categoriasSeleccionadas.push(categoriaId);
@@ -1060,8 +1076,8 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 	private modificarYReenviarSolicitud(): void {
 		if (!this.solicitudId) {
-			alert('No se encontró el ID de la solicitud');
-			return;
+        this.mostrarMensaje('Error', 'No se encontró el ID de la solicitud', 'error');
+        return;
 		}
 
 		const datosActualizados = this.construirDatosFormulario();
@@ -1090,12 +1106,21 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		this.solicitudesService.guardarPropuesta(this.emprendimientoId, datosPropuestos).subscribe({
 			next: (response) => {
 				console.log('Propuesta guardada:', response);
-				alert('Propuesta de modificación guardada correctamente!');
-				this.emprendimientoEditado.emit();
+				this.mostrarMensaje(
+					'Propuesta guardada',
+					'Tu propuesta de modificación ha sido guardada correctamente',
+					'success'
+				).afterClosed().subscribe(() => {
+					this.emprendimientoEditado.emit();
+				});
 			},
 			error: (error) => {
 				console.error('Error al guardar propuesta:', error);
-				alert('Error al guardar la propuesta. Por favor, intenta nuevamente.');
+				this.mostrarMensaje(
+					'Error al guardar',
+					'Hubo un error al guardar la propuesta. Por favor, intenta nuevamente.',
+					'error'
+				);
 			}
 		});
 	}
@@ -1352,13 +1377,23 @@ export class DetailsEmprendimientoComponent implements OnInit {
 					this.solicitudesService.enviarParaAprobacion(emprendimientoId).subscribe({
 						next: (aprobacionResponse) => {
 							console.log('Enviado para aprobación:', aprobacionResponse);
-							alert('Emprendimiento creado y enviado para aprobación correctamente!');
-							this.emprendimientoCreado.emit();
+							this.mostrarMensaje(
+								'Emprendimiento creado',
+								'Tu emprendimiento ha sido creado y enviado para aprobación correctamente',
+								'success'
+							).afterClosed().subscribe(() => {
+								this.emprendimientoCreado.emit();
+							});
 						},
 						error: (error) => {
 							console.error('Error al enviar para aprobación:', error);
-							alert('Emprendimiento creado, pero hubo un error al enviar para aprobación.');
-							this.emprendimientoCreado.emit();
+							this.mostrarMensaje(
+								'Emprendimiento creado con observaciones',
+								'El emprendimiento fue creado, pero hubo un error al enviar para aprobación.',
+								'warning'
+							).afterClosed().subscribe(() => {
+								this.emprendimientoCreado.emit();
+							});
 						}
 					});
 				} else {
@@ -1375,5 +1410,16 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 	guardarBorrador(): void {
 		this.onSubmit('BORRADOR');
+	}
+
+	private mostrarMensaje(title: string, subtitle: string, type: 'success' | 'error' | 'info' | 'warning' | 'confirm') {
+		return this.dialog.open(MensajeConfirmacionComponent, {
+			width: '400px',
+			data: {
+				title: title,
+				subtitle: subtitle,
+				type: type
+			} as ConfirmDialogData
+		});
 	}
 }
