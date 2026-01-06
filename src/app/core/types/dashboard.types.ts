@@ -88,3 +88,15 @@ export interface RankingPreguntaDTO {
   pregunta: string;
   promedioPregunta: number;
 }
+
+export interface PageableInfo {
+  length: number;
+  size: number;
+  page: number;
+  lastPage: number;
+}
+
+export interface PageResponseDTO<T> {
+  content: T[];
+  pageable: PageableInfo;
+}
