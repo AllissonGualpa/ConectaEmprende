@@ -327,45 +327,107 @@
   </div>
 </div>
 
-      <!-- Cuarta fila: Preguntas de Autoevaluación -->
-      <div class="grid grid-cols-1 gap-6">
+      <!-- Quinta fila: Ranking por Preguntas de Evaluación -->
+      <div class="grid grid-cols-1 gap-6 mt-6">
         <div class="bg-white p-6 rounded-xl shadow-md">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h4 class="text-lg font-semibold">Preguntas de Autoevaluación</h4>
-              <p class="text-sm text-gray-500">Promedio por pregunta</p>
+              <h4 class="text-lg font-semibold">Ranking por Preguntas de Evaluación</h4>
+              <p class="text-sm text-gray-500">Valoraciones de productos y servicios</p>
             </div>
-            <div class="text-indigo-500 text-xl font-bold">📝</div>
-          </div>
-          
-          <!-- Filtros -->
-          <div class="flex flex-col md:flex-row gap-4 mb-4">
-            <select class="border rounded px-3 py-2 text-sm flex-1" 
-                    [(ngModel)]="filtroEmprendimiento"
-                    (change)="aplicarFiltros()">
-              <option [ngValue]="null">Todos los emprendimientos</option>
-              <option *ngFor="let emp of todosEmprendimientos" [ngValue]="emp.id">
-                {{ emp.nombreComercial || emp.nombreComercialEmprendimiento || emp.nombre || 'Sin nombre' }}
-              </option>
-            </select>
-            <input type="date" 
-                   class="border rounded px-3 py-2 text-sm flex-1" 
-                   [(ngModel)]="filtroFecha"
-                   (change)="aplicarFiltros()" 
-                   placeholder="Filtrar por fecha" />
+            <div class="text-purple-500 text-xl font-bold">🏅</div>
           </div>
 
-          <ul class="space-y-4">
-            <li *ngFor="let pregunta of preguntasAutoevaluacion" 
-                class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <span class="font-medium">{{ pregunta.pregunta }}</span>
-              <span class="font-bold text-indigo-600">{{ pregunta.promedio | number:'1.1-1' }}</span>
-            </li>
-          </ul>
+          <!-- Selectores -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Tipo de Evaluación -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Evaluación</label>
+              <select class="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                      (change)="cargarPreguntasFormularios()">
+                <option value="EVALUACION_SERVICIO">📦 Evaluación de Servicio</option>
+                <option value="EVALUACION_PRODUCTO">🛍️ Evaluación de Producto</option>
+              </select>
+            </div>
 
-          <p *ngIf="preguntasAutoevaluacion.length === 0" class="text-gray-400 text-center py-4">
-            No hay datos disponibles para las preguntas de autoevaluación
-          </p>
+            <!-- Selector de Pregunta de Servicio -->
+            <div *ngIf="preguntasServicio.length > 0">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Pregunta de Servicio</label>
+              <select class="w-full border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                      (change)="obtenerRankingPorPregunta($any($event.target).value)">
+                <option value="">Seleccione una pregunta...</option>
+                <option *ngFor="let pregunta of preguntasServicio" [value]="pregunta.idPregunta">
+                  {{ pregunta.pregunta }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Ranking -->
+          <div *ngIf="rankingPorPregunta && rankingPorPregunta.content && rankingPorPregunta.content.length > 0">
+            <h5 class="font-semibold text-gray-800 mb-4">Top 10 Valoraciones</h5>
+            <div class="space-y-3">
+              <div *ngFor="let item of rankingPorPregunta.content.slice(0, 10); let i = index"
+                   class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-white rounded-lg border border-purple-100 hover:shadow-md transition">
+                <!-- Posición y nombre -->
+                <div class="flex items-center gap-4 flex-1">
+                  <!-- Medalla -->
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                       [ngClass]="{
+                         'bg-yellow-400 text-yellow-900': i === 0,
+                         'bg-gray-300 text-gray-800': i === 1,
+                         'bg-orange-400 text-orange-900': i === 2,
+                         'bg-purple-100 text-purple-800': i > 2
+                       }">
+                    {{ i + 1 }}
+                  </div>
+
+                  <!-- Info del emprendimiento -->
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-800">{{ item.nombreEmprendimiento }}</p>
+                    <p class="text-xs text-gray-500">ID: {{ item.idEmprendimiento }} • {{ item.pregunta }}</p>
+                  </div>
+                </div>
+
+                <!-- Valoración -->
+                <div class="flex items-center gap-3">
+                  <!-- Estrellas -->
+                  <div class="flex text-lg">
+                    <span *ngFor="let star of [1,2,3,4,5]"
+                          [class]="star <= item.promedioPregunta ? 'text-yellow-400' : 'text-gray-300'">
+                      ★
+                    </span>
+                  </div>
+
+                  <!-- Promedio numérico -->
+                  <span class="text-lg font-bold min-w-[3rem] text-right"
+                        [ngClass]="{
+                          'text-green-600': item.promedioPregunta >= 4.5,
+                          'text-blue-600': item.promedioPregunta >= 3.5 && item.promedioPregunta < 4.5,
+                          'text-yellow-600': item.promedioPregunta >= 2.5 && item.promedioPregunta < 3.5,
+                          'text-red-600': item.promedioPregunta < 2.5
+                        }">
+                    {{ item.promedioPregunta | number:'1.1-1' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info de paginación -->
+            <div *ngIf="rankingPorPregunta.pageable" class="mt-4 text-sm text-gray-500 text-center">
+              Mostrando {{ rankingPorPregunta.content.length }} de {{ rankingPorPregunta.pageable.length }} resultados
+            </div>
+          </div>
+
+          <!-- Estado vacío -->
+          <div *ngIf="!rankingPorPregunta || !rankingPorPregunta.content || rankingPorPregunta.content.length === 0"
+               class="text-center py-8">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <p class="mt-2 text-gray-500">Selecciona una pregunta para ver el ranking</p>
+          </div>
         </div>
       </div>
     </div>

@@ -45,11 +45,16 @@ export class AdminDashboardComponent implements OnInit {
   categoriaMasVista: CategoriaMasVista | null = null;
   preguntasAutoevaluacion: PreguntaAutoevaluacion[] = [];
   // Agregar después de categoriaMasVista
-categoriasOrdenadas: CategoriaConVistas[] = [];
+  categoriasOrdenadas: CategoriaConVistas[] = [];
   // Lista de todos los emprendimientos para el filtro
   todosEmprendimientos: any[] = [];
   // Guardar todas las preguntas del formulario
   todasLasPreguntas: any[] = [];
+
+  // Ranking por preguntas
+  preguntasServicio: any[] = [];
+  preguntasProducto: any[] = [];
+  rankingPorPregunta: any = null;
 
   // Datos para el gráfico temporal
   datosGraficoTemporal: { mes: string, cantidad: number, acumulado: number }[] = [];
@@ -103,39 +108,42 @@ categoriasOrdenadas: CategoriaConVistas[] = [];
 
     // Cargar datos de la API
     this.cargarDatos();
+    
+    // Cargar preguntas de formularios
+    this.cargarPreguntasFormularios();
   }
 
-cargarDatos() {
-  this.isLoading = true;
-  this.errorMessage = '';
+  cargarDatos() {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  forkJoin({
-    menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(catchError(() => of([]))),
-    masVistos: this.dashboardService.getTopEmprendimientos().pipe(catchError(() => of([]))),
-    mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(catchError(() => of([]))),
-    peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(catchError(() => of([]))),
-    categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(catchError(() => of([]))),
-    formularioAutoevaluacion: this.dashboardService.obtenerFormularioAutoevaluacion().pipe(catchError(() => of(null))),
-    todosEmprendimientos: this.dashboardService.getTodosEmprendimientos().pipe(catchError(() => of([]))),
-  }).subscribe({
-    next: (data) => {
-      this.todosEmprendimientos = data.todosEmprendimientos || [];
-      
-      this.procesarEmprendimientos(data);
-      this.procesarCategorias(data.categoriasMasVistas);
-      this.procesarPreguntasAutoevaluacion(data.formularioAutoevaluacion);
-      this.actualizarEstadisticas();
-      this.procesarDatosTemporales();
+    forkJoin({
+      menosVistos: this.dashboardService.getEmprendimientosMenosVistos().pipe(catchError(() => of([]))),
+      masVistos: this.dashboardService.getTopEmprendimientos().pipe(catchError(() => of([]))),
+      mejorValorados: this.dashboardService.getEmprendimientosMejorValorados().pipe(catchError(() => of([]))),
+      peorValorados: this.dashboardService.getEmprendimientosPeorValorados().pipe(catchError(() => of([]))),
+      categoriasMasVistas: this.dashboardService.getCategoriasMasVistas().pipe(catchError(() => of([]))),
+      formularioAutoevaluacion: this.dashboardService.obtenerFormularioAutoevaluacion().pipe(catchError(() => of(null))),
+      todosEmprendimientos: this.dashboardService.getTodosEmprendimientos().pipe(catchError(() => of([]))),
+    }).subscribe({
+      next: (data) => {
+        this.todosEmprendimientos = data.todosEmprendimientos || [];
+        
+        this.procesarEmprendimientos(data);
+        this.procesarCategorias(data.categoriasMasVistas);
+        this.procesarPreguntasAutoevaluacion(data.formularioAutoevaluacion);
+        this.actualizarEstadisticas();
+        this.procesarDatosTemporales();
 
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error crítico al cargar datos del dashboard:', error);
-      this.errorMessage = 'Error al conectar con el servidor. Verifica tu conexión.';
-      this.isLoading = false;
-    }
-  });
-}
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error crítico al cargar datos del dashboard:', error);
+        this.errorMessage = 'Error al conectar con el servidor. Verifica tu conexión.';
+        this.isLoading = false;
+      }
+    });
+  }
 
   // Método para procesar todos los tipos de emprendimientos
   private procesarEmprendimientos(data: any) {
@@ -299,18 +307,47 @@ cargarDatos() {
     return colors[index % colors.length];
   }
 
-  // Obtener el valor máximo de visitas de categorías para el gráfico
-  get maxVisitasCategoria(): number {
-    if (this.categoriasOrdenadas.length === 0) return 1;
-    return Math.max(...this.categoriasOrdenadas.map(c => c.vistas));
+  // Obtener ranking por pregunta
+  obtenerRankingPorPregunta(idPregunta: number) {
+    this.dashboardService.getRankingPorPregunta(idPregunta, undefined, 0, 10)
+      .subscribe({
+        next: (response) => {
+          this.rankingPorPregunta = response;
+          console.log('Ranking por pregunta:', response);
+        },
+        error: (error) => {
+          console.error('Error al obtener ranking:', error);
+        }
+      });
   }
 
-  // Obtener el total de visitas de todas las categorías
-  get totalVisitasCategoria(): number {
-    return this.categoriasOrdenadas.reduce((sum, c) => sum + c.vistas, 0) || 1;
+  // Cargar preguntas de formularios
+  cargarPreguntasFormularios() {
+    // Cargar preguntas de servicio
+    this.dashboardService.obtenerFormularioServicio()
+      .subscribe({
+        next: (formulario) => {
+          this.preguntasServicio = formulario.preguntas || [];
+          console.log('Preguntas servicio:', this.preguntasServicio);
+        },
+        error: (error) => console.error('Error:', error)
+      });
+
+    // Cargar preguntas de producto
+    this.dashboardService.obtenerFormularioProducto()
+      .subscribe({
+        next: (formulario) => {
+          this.preguntasProducto = formulario.preguntas || [];
+          console.log('Preguntas producto:', this.preguntasProducto);
+        },
+        error: (error) => console.error('Error:', error)
+      });
   }
 
-  // Procesar datos temporales para el gráfico de línea
+  // ============================================
+  // MÉTODOS PARA EL GRÁFICO TEMPORAL
+  // ============================================
+  
   private procesarDatosTemporales() {
     if (!this.todosEmprendimientos || this.todosEmprendimientos.length === 0) {
       this.datosGraficoTemporal = [];
@@ -323,7 +360,6 @@ cargarDatos() {
     this.generarPuntosGrafico();
   }
 
-  // Agrupar emprendimientos por mes
   private agruparEmprendimientosPorMes(): { [key: string]: number } {
     const emprendimientosPorMes: { [key: string]: number } = {};
     
@@ -347,66 +383,51 @@ cargarDatos() {
     return emprendimientosPorMes;
   }
 
-  // Generar datos temporales con acumulado
   private generarDatosTemporales(emprendimientosPorMes: { [key: string]: number }): { mes: string, cantidad: number, acumulado: number }[] {
     const mesesOrdenados = Object.keys(emprendimientosPorMes).sort();
     
     if (mesesOrdenados.length === 0) {
-      return this.generarDatosMesActual();
+      return [];
+    }
+
+    // Si solo hay 1 o 2 meses con datos, generar datos de demostración para visualización
+    if (mesesOrdenados.length <= 2) {
+      return this.generarDatosTemporalesDemo(emprendimientosPorMes);
     }
 
     let acumulado = 0;
-    const datos = mesesOrdenados.map(mes => {
+    return mesesOrdenados.map(mes => {
       acumulado += emprendimientosPorMes[mes];
       return { mes, cantidad: emprendimientosPorMes[mes], acumulado };
     });
-
-    return this.normalizarDatosTemporales(datos, emprendimientosPorMes);
   }
 
-  // Generar datos para el mes actual si no hay datos
-  private generarDatosMesActual(): { mes: string, cantidad: number, acumulado: number }[] {
-    if (this.todosEmprendimientos.length === 0) return [];
+  private generarDatosTemporalesDemo(emprendimientosPorMes: { [key: string]: number }): { mes: string, cantidad: number, acumulado: number }[] {
+    const fechaActual = new Date();
+    const resultado: { mes: string, cantidad: number, acumulado: number }[] = [];
+    const totalEmprendimientos = Object.values(emprendimientosPorMes).reduce((sum, val) => sum + val, 0);
     
-    const hoy = new Date();
-    const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
-    return [{ mes: mesActual, cantidad: this.todosEmprendimientos.length, acumulado: this.todosEmprendimientos.length }];
-  }
-
-  // Normalizar datos temporales (extender o limitar según necesidad)
-  private normalizarDatosTemporales(
-    datos: { mes: string, cantidad: number, acumulado: number }[], 
-    emprendimientosPorMes: { [key: string]: number }
-  ): { mes: string, cantidad: number, acumulado: number }[] {
-    if (datos.length < 6) {
-      return this.extenderUltimosSeisMeses(emprendimientosPorMes);
-    }
-    
-    if (datos.length >= 6) {
-      return datos.slice(-12); // Limitar a últimos 12 meses
-    }
-    
-    return datos;
-  }
-
-  // Extender con los últimos 6 meses
-  private extenderUltimosSeisMeses(emprendimientosPorMes: { [key: string]: number }): { mes: string, cantidad: number, acumulado: number }[] {
-    const hoy = new Date();
-    const ultimosMeses: { mes: string, cantidad: number, acumulado: number }[] = [];
-    
+    // Generar últimos 6 meses
     for (let i = 5; i >= 0; i--) {
-      const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const fecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth() - i, 1);
       const mesAnio = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-      const cantidad = emprendimientosPorMes[mesAnio] || 0;
-      const acumuladoPrevio = ultimosMeses.length > 0 ? ultimosMeses[ultimosMeses.length - 1].acumulado : 0;
       
-      ultimosMeses.push({ mes: mesAnio, cantidad, acumulado: acumuladoPrevio + cantidad });
+      let cantidad = 0;
+      if (i === 0) {
+        // El mes actual tiene todos los emprendimientos
+        cantidad = totalEmprendimientos;
+      } else if (i === 1) {
+        // El mes anterior no tiene emprendimientos
+        cantidad = 0;
+      }
+      
+      const acumulado = i === 0 ? totalEmprendimientos : 0;
+      resultado.push({ mes: mesAnio, cantidad, acumulado });
     }
     
-    return ultimosMeses;
+    return resultado;
   }
 
-  // Actualizar totales del gráfico
   private actualizarTotalesGrafico() {
     const ultimoDato = this.datosGraficoTemporal[this.datosGraficoTemporal.length - 1];
     
@@ -416,46 +437,28 @@ cargarDatos() {
 
   private generarPuntosGrafico() {
     if (this.datosGraficoTemporal.length === 0) {
-      this.limpiarGrafico();
+      this.puntosGrafico = [];
+      this.pathLineaGrafico = '';
+      this.pathAreaGrafico = '';
       return;
     }
 
-    const configuracion = this.obtenerConfiguracionGrafico();
+    const margenIzq = 50;
+    const margenDer = 20;
+    const margenSup = 30;
+    const margenInf = 40;
+    const alturaGrafico = 240;
+    const anchoUtil = this.anchoGrafico - margenIzq - margenDer;
+    const alturaUtil = alturaGrafico - margenSup - margenInf;
+
     this.maxEmprendimientos = Math.max(...this.datosGraficoTemporal.map(d => d.acumulado), 1);
     
-    this.puntosGrafico = this.calcularPuntosGrafico(configuracion);
-    this.pathLineaGrafico = this.generarPathLinea();
-    this.pathAreaGrafico = this.generarPathArea(configuracion.alturaGrafico, configuracion.margenInf);
-  }
-
-  // Limpiar gráfico
-  private limpiarGrafico() {
-    this.puntosGrafico = [];
-    this.pathLineaGrafico = '';
-    this.pathAreaGrafico = '';
-  }
-
-  // Obtener configuración del gráfico
-  private obtenerConfiguracionGrafico() {
-    return {
-      margenIzq: 50,
-      margenDer: 20,
-      margenSup: 30,
-      margenInf: 40,
-      alturaGrafico: 240,
-      anchoUtil: this.anchoGrafico - 50 - 20,
-      alturaUtil: 240 - 30 - 40
-    };
-  }
-
-  // Calcular puntos del gráfico
-  private calcularPuntosGrafico(config: any): { x: number, y: number, valor: number, label: string, labelCorto: string }[] {
     const numPuntos = this.datosGraficoTemporal.length;
-    const espacioEntrePuntos = config.anchoUtil / Math.max(numPuntos - 1, 1);
+    const espacioEntrePuntos = anchoUtil / Math.max(numPuntos - 1, 1);
 
-    return this.datosGraficoTemporal.map((dato, index) => {
-      const x = config.margenIzq + (index * espacioEntrePuntos);
-      const y = config.alturaGrafico - config.margenInf - ((dato.acumulado / this.maxEmprendimientos) * config.alturaUtil);
+    this.puntosGrafico = this.datosGraficoTemporal.map((dato, index) => {
+      const x = margenIzq + (index * espacioEntrePuntos);
+      const y = alturaGrafico - margenInf - ((dato.acumulado / this.maxEmprendimientos) * alturaUtil);
       
       const [anio, mes] = dato.mes.split('-');
       const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -464,17 +467,13 @@ cargarDatos() {
 
       return { x, y, valor: dato.acumulado, label, labelCorto };
     });
-  }
 
-  // Generar path para la línea
-  private generarPathLinea(): string {
-    return this.puntosGrafico
+    // Generar path para la línea
+    this.pathLineaGrafico = this.puntosGrafico
       .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
       .join(' ');
-  }
 
-  // Generar path para el área
-  private generarPathArea(alturaGrafico: number, margenInf: number): string {
+    // Generar path para el área
     const primerPunto = this.puntosGrafico[0];
     const ultimoPunto = this.puntosGrafico[this.puntosGrafico.length - 1];
     
@@ -485,6 +484,6 @@ cargarDatos() {
       'Z'
     ];
     
-    return puntosArea.join(' ');
+    this.pathAreaGrafico = puntosArea.join(' ');
   }
 }

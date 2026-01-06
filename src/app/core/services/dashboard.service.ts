@@ -146,6 +146,22 @@ export class DashboardService {
     );
   }
 
+  obtenerFormularioServicio(): Observable<any> {
+    const url = `${this.baseUrl}/v1/formularios/tipo/EVALUACION_SERVICIO`;
+    
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      catchError(err => throwError(() => err))
+    );
+  }
+
+  obtenerFormularioProducto(): Observable<any> {
+    const url = `${this.baseUrl}/v1/formularios/tipo/EVALUACION_PRODUCTO`;
+    
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      catchError(err => throwError(() => err))
+    );
+  }
+
   // ============================
   // TODOS LOS EMPRENDIMIENTOS
   // ============================
