@@ -74,10 +74,10 @@ export class DashboardService {
   }
 
   // ============================
-  // MEJOR VALORADOS (ASC)
+  // MEJOR VALORADOS (DESC - de mayor a menor)
   // ============================
   getEmprendimientosMejorValorados(): Observable<RankingGlobalDTO[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/asc`;
+    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/desc`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<RankingGlobalDTO>(res)),
@@ -86,10 +86,10 @@ export class DashboardService {
   }
 
   // ============================
-  // PEOR VALORADOS (DESC)
+  // PEOR VALORADOS (ASC - de menor a mayor)
   // ============================
   getEmprendimientosPeorValorados(): Observable<RankingGlobalDTO[]> {
-    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/desc`;
+    const url = `${this.baseUrl}/v1/metricas-generales/valoracion/asc`;
 
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(res => this.normalizarArray<RankingGlobalDTO>(res)),
