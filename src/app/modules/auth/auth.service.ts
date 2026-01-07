@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { TipoEmprendimientoResponse } from './auth.types';
 
 // Interfaz usada en register.component.ts
 export interface RegisterData {
@@ -64,7 +65,7 @@ export class AuthService {
     return isPlatformBrowser(this.platformId);
   }
 
-    // Verifica si el token JWT ha expirado
+  // Verifica si el token JWT ha expirado
   isTokenExpired(): boolean {
     const token = this.getToken();
     if (!token) return true;
@@ -188,4 +189,19 @@ export class AuthService {
     );
   }
 
+  // Obtener tipos de emprendimiento desde el backend
+  getTiposEmprendimiento(): Observable<TipoEmprendimientoResponse[]> {
+    // TODO: REMOVER ESTE TOKEN CUANDO EL ENDPOINT SEA PÚBLICO
+    const TEMP_TOKEN = 'eyJhbGciOiJIUzUxMiJ9.eyJyb2wiOlt7ImF1dGhvcml0eSI6IlJPTEVfRU1QUkVOREVET1IifV0sInVzZXJuYW1lIjoiY2FybG9zcm9tYW5AZ21haWwuY29tIiwic3ViIjoiY2FybG9zcm9tYW5AZ21haWwuY29tIiwiaWF0IjoxNzY3NzQxMTQ5LCJleHAiOjE3Njc3NTkxNDl9.Y_YQVdiZx_ZhIaIjtkwVAGIFtdMHBEUhRMnocAFckvTOJU6b_nb17tBc4QL_6hMBJU2ZOuKgj2Ezgz2ibg8skg'; // ⚠️ Reemplaza con tu token real
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${TEMP_TOKEN}`
+    });
+
+    return this.http.get<TipoEmprendimientoResponse[]>(
+      `${environment.api_url}/v1/tipos-emprendimiento`,
+      { headers }
+    );
+  }
 }
