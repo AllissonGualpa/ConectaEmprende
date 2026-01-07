@@ -191,14 +191,7 @@ export class AuthService {
 
   // Obtener tipos de emprendimiento desde el backend
   getTiposEmprendimiento(): Observable<TipoEmprendimientoResponse[]> {
-    // TODO: REMOVER ESTE TOKEN CUANDO EL ENDPOINT SEA PÚBLICO
-    const TEMP_TOKEN = 'eyJhbGciOiJIUzUxMiJ9.eyJyb2wiOlt7ImF1dGhvcml0eSI6IlJPTEVfRU1QUkVOREVET1IifV0sInVzZXJuYW1lIjoiY2FybG9zcm9tYW5AZ21haWwuY29tIiwic3ViIjoiY2FybG9zcm9tYW5AZ21haWwuY29tIiwiaWF0IjoxNzY3NzQxMTQ5LCJleHAiOjE3Njc3NTkxNDl9.Y_YQVdiZx_ZhIaIjtkwVAGIFtdMHBEUhRMnocAFckvTOJU6b_nb17tBc4QL_6hMBJU2ZOuKgj2Ezgz2ibg8skg'; // ⚠️ Reemplaza con tu token real
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${TEMP_TOKEN}`
-    });
-
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.get<TipoEmprendimientoResponse[]>(
       `${environment.api_url}/v1/tipos-emprendimiento`,
       { headers }
