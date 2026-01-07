@@ -62,7 +62,7 @@ export class EmprendimientoDetailComponent implements OnInit {
 
         // Generar QR solo para emprendimientos (no startups)
         if (!this.esStartup) {
-          const host = 'http://localhost:8080'; // Cambio aquí
+          const host = 'http://localhost:4000'; // Cambio aquí
           const evaluacionUrl = `${host}/valoracion/${id}`;
 
           this.qrCodeUrl =

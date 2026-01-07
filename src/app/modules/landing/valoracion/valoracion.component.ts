@@ -203,6 +203,10 @@ export class ValoracionComponent implements OnInit, OnDestroy {
                     // setTimeout(() => {
                     //     this.router.navigate(['/']);
                     // }, 3000);
+
+                    setTimeout(() => {
+                        this.router.navigate(['/emprendimientos', this.idEmprendimiento]);
+                    }, 2000);
                 },
                 error: (err) => {
                     console.error('Error al enviar valoración:', err);
