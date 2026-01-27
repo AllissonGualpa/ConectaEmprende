@@ -6,14 +6,19 @@ import { Injectable } from '@angular/core';
 export class EnvironmentService {
   
   getBaseUrl(): string {
-    // Detectar si estamos en producción (Render) o desarrollo
+    if (typeof window === 'undefined') {
+      return 'http://localhost:4000';
+    }
+
     const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const port = window.location.port;
     
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:4000';
+      return `${protocol}//${hostname}${port ? ':' + port : ''}`;
     } else {
       // URL de producción en Render
-      return 'https://conectaemprende.onrender.com';
+      return `${protocol}//${hostname}`;
     }
   }
 }

@@ -4,11 +4,21 @@
 		<!-- Loading State -->
 		<div *ngIf="cargando" class="flex justify-center items-center py-12">
 			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+			<p class="ml-4 text-gray-600">Cargando valoración...</p>
 		</div>
 
 		<!-- Error State -->
-		<div *ngIf="error && !cargando" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-			<p class="text-red-800 text-sm">{{ error }}</p>
+		<div *ngIf="error && !cargando" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+			<div class="text-center">
+				<svg class="w-12 h-12 text-red-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+				<h3 class="text-lg font-semibold text-red-800 mb-2">Error al cargar</h3>
+				<p class="text-sm text-red-700 mb-4">{{ error }}</p>
+				<a href="/emprendimientos" class="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
+					Volver a emprendimientos
+				</a>
+			</div>
 		</div>
 
 		<!-- Success State -->
@@ -25,9 +35,11 @@
 		<!-- Form State -->
 		<div *ngIf="formularioData && !cargando && !enviado" class="bg-white rounded-lg shadow-sm">
 
-			<!-- Header -->
-			<div class="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-				<h1 class="text-lg sm:text-xl font-semibold text-gray-900">{{ formularioData.nombre }}</h1>
+			<!-- Header con nombre del emprendimiento -->
+			<div class="border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-r from-blue-50 to-orange-50">
+				<p class="text-xs sm:text-sm text-gray-600 mb-1">Valoración para:</p>
+				<h2 class="text-lg sm:text-xl font-bold text-[#276BC7] mb-2">{{ nombreEmprendimiento }}</h2>
+				<h3 class="text-base sm:text-lg font-semibold text-gray-800">{{ formularioData.nombre }}</h3>
 			</div>
 
 			<form [formGroup]="valoracionForm" (ngSubmit)="enviarValoracion()" class="p-4 sm:p-6">

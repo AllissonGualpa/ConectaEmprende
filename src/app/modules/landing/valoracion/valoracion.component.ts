@@ -43,22 +43,26 @@ export class ValoracionComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // Obtener ID de emprendimiento de los parámetros
-        this.route.params
-            .pipe(
-                takeUntil(this._unsubscribeAll),
-                switchMap(params => {
-                    this.idEmprendimiento = +params['id'];
+        const id = this.route.snapshot.paramMap.get('id');
+        
+        console.log('ID recibido en valoración:', id);
+        console.log('URL actual:', window.location.href);
 
-                    if (!this.idEmprendimiento) {
-                        throw new Error('ID de emprendimiento no válido');
-                    }
+        if (!id || isNaN(+id)) {
+            this.error = 'ID de emprendimiento no válido';
+            this.cargando = false;
+            console.error('ID inválido:', id);
+            return;
+        }
 
-                    // Primero obtener los datos del emprendimiento para saber su tipo
-                    return this.emprendimientoService.obtenerEmprendimientoPublico(this.idEmprendimiento);
-                })
-            )
+        this.idEmprendimiento = +id;
+
+        // Cargar información del emprendimiento
+        this.emprendimientoService.obtenerEmprendimientoPublico(this.idEmprendimiento)
+            .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (emprendimiento) => {
+                    console.log('Emprendimiento cargado:', emprendimiento);
                     this.nombreEmprendimiento = emprendimiento.nombreComercial || '';
                     
                     // Determinar el tipo de formulario basado en el tipo de emprendimiento
@@ -81,9 +85,9 @@ export class ValoracionComponent implements OnInit, OnDestroy {
                     this.cargarFormulario();
                 },
                 error: (err) => {
-                    this.error = 'Error al cargar información del emprendimiento';
+                    console.error('Error al cargar emprendimiento:', err);
+                    this.error = 'No se pudo cargar la información del emprendimiento';
                     this.cargando = false;
-                    console.error('Error:', err);
                 }
             });
     }
