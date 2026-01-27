@@ -4,13 +4,14 @@
   <main class="flex-1 p-8">
     <!-- Overlay de loading centrado sobre el contenido principal -->
     <div *ngIf="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm">
-      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <svg class="animate-spin h-10 w-10 text-orange-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+        viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
       </svg>
       <span class="text-gray-500 text-sm">Cargando datos de edición...</span>
     </div>
-    
+
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-[#ED6C1C]">
         {{ mode === 'create' ? 'Crear Nuevo Blog' : 'Editar Blog' }}
@@ -115,8 +116,7 @@
               <i class="fa-solid fa-cloud-arrow-up text-4xl mb-4"></i>
               <p class="mb-2">Drag your file(s) or browse</p>
               <p class="text-sm text-gray-400">Max 5 MB files are allowed</p>
-              <button
-                (click)="fileInput.click()"
+              <button (click)="fileInput.click()"
                 class="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg">
                 Seleccionar archivo
               </button>
@@ -139,16 +139,14 @@
         <!-- Botones al final - TRES BOTONES -->
         <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
           <!-- Botón Cancelar -->
-          <button
-            (click)="cancelar()"
+          <button (click)="cancelar()"
             class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200">
             <i class="fa-solid fa-times"></i>
             Cancelar
           </button>
 
           <!-- Botón Guardar como borrador -->
-          <button
-            (click)="guardarComoBorrador()"
+          <button *ngIf="mode === 'create' || blog.estado === 'BORRADOR'" (click)="guardarComoBorrador()"
             [disabled]="guardando"
             class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 disabled:bg-yellow-300 disabled:cursor-not-allowed">
             <i class="fa-solid" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-save'"></i>
@@ -156,9 +154,7 @@
           </button>
 
           <!-- Botón Publicar -->
-          <button
-            (click)="publicar()"
-            [disabled]="guardando"
+          <button (click)="publicar()" [disabled]="guardando"
             class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg shadow flex items-center gap-2 transition-colors duration-200 disabled:bg-orange-300 disabled:cursor-not-allowed">
             <i class="fa-solid" [ngClass]="guardando ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
             {{ guardando ? 'Publicando...' : 'Publicar' }}

@@ -4,9 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { NavbarAdminComponent } from '../../../layout/navbar-admin/navbar-admin.component';
-import { BlogService } from '../blog.service';
-import { Tag } from '../blog.types';
-// NUEVO: imports para dialog
+import { BlogService } from '../../../core/services/blog.service';
+import { Tag } from '../../../core/types/blog.types';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
@@ -27,7 +26,6 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   quill!: any;
   isBrowser = false;
 
-  // modo del formulario: 'create' o 'edit'
   mode: 'create' | 'edit' = 'create';
   blogId: number | null = null;
 
@@ -50,8 +48,9 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   guardando = false;
   loading = false;
 
-  // Flag: indica si el contenido del blog ya fue cargado desde el backend
+  // Flag mejorado para controlar la carga de contenido
   private contentLoaded = false;
+  private quillInitialized = false;
 
   constructor(
     private router: Router,
@@ -78,56 +77,103 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
 
   async ngAfterViewInit() {
     if (this.isBrowser) {
-      await this.inicializarQuill();
+      // Esperar a que el DOM esté completamente renderizado
+      setTimeout(() => {
+        this.inicializarQuill();
+      }, 300);
     }
   }
 
   async inicializarQuill() {
-    const Quill = (await import('quill')).default;
-    const editorElement = document.getElementById('quillEditor');
-    if (!editorElement) {
-      console.error('No se encontró el contenedor #quillEditor');
+    try {
+      const Quill = (await import('quill')).default;
+      
+      // Esperar a que el elemento esté disponible
+      const maxAttempts = 10;
+      let attempts = 0;
+      
+      const waitForElement = () => {
+        return new Promise<HTMLElement>((resolve, reject) => {
+          const checkElement = () => {
+            const editorElement = document.getElementById('quillEditor');
+            if (editorElement) {
+              resolve(editorElement);
+            } else if (attempts < maxAttempts) {
+              attempts++;
+              setTimeout(checkElement, 200);
+            } else {
+              reject(new Error('Elemento #quillEditor no encontrado después de varios intentos'));
+            }
+          };
+          checkElement();
+        });
+      };
+
+      const editorElement = await waitForElement();
+      
+      this.quill = new Quill(editorElement, {
+        theme: 'snow',
+        placeholder: 'Escribe el contenido del blog aquí...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            [{ header: [1, 2, 3, false] }],
+            ['clean']
+          ]
+        }
+      });
+
+      console.log('Quill inicializado correctamente');
+      this.quillInitialized = true;
+
+      // Si ya se cargó contenido antes de que Quill estuviera listo, sincronizar ahora
+      if (this.contentLoaded && this.blog.contenido) {
+        console.log('Contenido ya cargado, sincronizando inmediatamente');
+        this.syncQuillContent();
+      }
+
+      this.quill.on('text-change', () => {
+        this.blog.contenido = this.quill.root.innerHTML;
+      });
+      
+    } catch (error) {
+      console.error('Error al inicializar Quill:', error);
+    }
+  }
+
+  /** Sincroniza el contenido del modelo con el editor */
+  private syncQuillContent(): void {
+    if (!this.quill) {
+      console.warn('Quill no inicializado todavía');
       return;
     }
 
-    this.quill = new Quill(editorElement, {
-      theme: 'snow',
-      placeholder: 'Escribe el contenido del blog aquí...',
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline'],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          ['link', 'image'],
-          [{ header: [1, 2, 3, false] }],
-          ['clean']
-        ]
-      }
-    });
+    if (!this.blog.contenido || !this.blog.contenido.trim()) {
+      console.warn('No hay contenido para cargar en Quill');
+      return;
+    }
 
-    // Si ya se cargó contenido (modo edición), sincronizar ahora
-    this.syncQuillContent();
+    console.log('=== CARGANDO CONTENIDO EN QUILL ===');
+    console.log(
+      'Preview contenido:',
+      this.blog.contenido.substring(0, 150)
+    );
 
-    this.quill.on('text-change', () => {
-      // Solo actualizar el modelo desde Quill (fuente de verdad = editor)
-      this.blog.contenido = this.quill.root.innerHTML;
-    });
-  }
-
-  /** Sincroniza el contenido del modelo con el editor, si ambos están listos */
-  private syncQuillContent() {
-    if (!this.quill) return;
-    if (!this.contentLoaded && !this.blog.contenido) return;
-
-    // Limpiar primero para evitar contenido residual desordenado
-    this.quill.setText('');
-    // Asignar el HTML del contenido ya cargado
-    this.quill.root.innerHTML = this.blog.contenido || '';
+    // Forzar carga de HTML en el editor
+    this.quill.clipboard.dangerouslyPasteHTML(
+      this.blog.contenido,
+      'silent'
+    );
   }
 
   private cargarArticuloParaEditar(id: number) {
     this.loading = true;
     this.blogService.getArticleById(id).subscribe({
       next: (data) => {
+        console.log('Artículo cargado:', data);
+        
         this.blog.titulo = data.titulo;
         this.blog.resumen = data.descripcionCorta || data.resumen || '';
         this.blog.contenido = data.contenido || '';
@@ -135,10 +181,13 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
         this.blog.urlImagen = data.urlImagen || null;
         this.blog.estado = data.estado || 'BORRADOR';
 
+        this.contentLoaded = true;
         this.loading = false;
 
-        this.syncQuillContent();
-        this.contentLoaded = true;
+        // Intentar sincronizar si Quill ya está listo
+        if (this.quillInitialized) {
+          this.syncQuillContent();
+        }
       },
       error: (err) => {
         console.error('Error al cargar el artículo para editar:', err);
@@ -262,7 +311,6 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     }
 
     this.blog.imagenDestacada = file;
-    // al seleccionar una nueva imagen, limpiamos la url previa (si venía del backend)
     this.blog.urlImagen = null;
   }
 
@@ -271,7 +319,6 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
     this.blog.urlImagen = null;
   }
 
-  // Nuevos métodos para los tres botones
   publicar() {
     if (!this.validarBlog()) return;
 
@@ -336,7 +383,25 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   }
 
   private crearArticulo(estado: string) {
-    this.blogService.createBlog(this.blog, estado).subscribe({
+    const formData = new FormData();
+
+    formData.append('titulo', this.blog.titulo);
+    formData.append('descripcionCorta', this.blog.resumen);
+    formData.append('contenido', this.blog.contenido);
+    formData.append('estado', estado);
+
+    if (this.blog.imagenDestacada instanceof File) {
+      formData.append('imagen', this.blog.imagenDestacada);
+    }
+
+    const idsTags = this.blog.tags.map((t: Tag) => t.idTag);
+    idsTags.forEach((id: number) => {
+      formData.append('idsTags', id.toString());
+    });
+
+    const idUsuario = Number(localStorage.getItem('idUsuario') || '1');
+
+    this.blogService.createBlog(formData, idUsuario).subscribe({
       next: () => {
         const mensaje = estado === 'PUBLICADO'
           ? 'El artículo se publicó correctamente.'
@@ -355,11 +420,22 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error('Error al crear el artículo:', err);
+
+        let errorMessage = 'No se pudo guardar el artículo. Revisa la información e inténtalo nuevamente.';
+
+        if (err.status === 400) {
+          errorMessage = 'Datos inválidos. Verifica que todos los campos estén correctos.';
+        } else if (err.status === 401 || err.status === 403) {
+          errorMessage = 'No tienes permisos para crear artículos. Por favor, inicia sesión nuevamente.';
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
+        }
+
         this.dialog.open(MensajeConfirmacionComponent, {
           data: {
             type: 'error',
-            subject: 'Blog',
-            subtitle: 'No se pudo guardar el artículo. Revisa la información e inténtalo nuevamente.'
+            subject: 'Error al crear blog',
+            subtitle: errorMessage
           }
         });
         this.guardando = false;
@@ -429,20 +505,16 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
   }
 
   private validarBlog(): boolean {
-
-    // TÍTULO
     if (!this.blog.titulo || !this.blog.titulo.trim()) {
       this.mostrarError('Falta el título', 'Escribe un título para el blog.');
       return false;
     }
 
-    // RESUMEN
     if (!this.blog.resumen || !this.blog.resumen.trim()) {
       this.mostrarError('Falta el resumen', 'Agrega un resumen corto del artículo.');
       return false;
     }
 
-    // CONTENIDO (limpiar HTML vacío de Quill)
     const contenidoPlano = this.blog.contenido
       ?.replace(/<(.|\n)*?>/g, '')
       .replace(/&nbsp;/g, '')
@@ -456,7 +528,6 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // TAGS
     if (!this.blog.tags || this.blog.tags.length === 0) {
       this.mostrarError(
         'Sin tags',
@@ -465,9 +536,7 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       return false;
     }
 
-    // IMAGEN
-    const noTieneImagen =
-      !this.blog.imagenDestacada && !this.blog.urlImagen;
+    const noTieneImagen = !this.blog.imagenDestacada && !this.blog.urlImagen;
 
     if (this.mode === 'create' && noTieneImagen) {
       this.mostrarError(
@@ -497,5 +566,4 @@ export class BlogCreateComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
 }

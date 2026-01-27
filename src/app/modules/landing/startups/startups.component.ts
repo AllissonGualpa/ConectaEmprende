@@ -100,11 +100,6 @@ export class StartupsComponent implements OnInit {
           (c) => `${c.nombreCiudad} (${c.provincia?.nombre || 'Sin provincia'})`
         ),
       },
-      {
-        key: 'type',
-        label: 'Tipo',
-        options: ['Producto', 'Servicio'],
-      },
     ];
   }
 

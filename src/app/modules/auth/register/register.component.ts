@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component } from '@angular/core'; 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { LocationService, ProvinciaDto, CiudadDto } from '../../../core/services/location.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MensajeConfirmacionComponent } from '../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
+import { TipoEmprendimiento } from '../auth.types';
 
 export const MY_DATE_FORMATS = {
   parse: { dateInput: 'DD/MM/YYYY' },
@@ -68,12 +69,8 @@ export class RegisterComponent {
   provincias: ProvinciaDto[] = [];
   ciudadesFiltradas: { id: number; nombre: string }[] = [];
 
-  // Tipos de emprendimiento según Supabase
-  tiposEmprendimiento = [
-    { id: 1, nombre: 'Startup', value: 'Startup' },
-    { id: 2, nombre: 'Emprendimiento - Servicio', value: 'Servicio' },
-    { id: 4, nombre: 'Emprendimiento - Producto', value: 'Producto' },
-  ];
+  // Tipos de emprendimiento - ahora se cargan dinámicamente
+  tiposEmprendimiento: TipoEmprendimiento[] = [];
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -124,9 +121,30 @@ export class RegisterComponent {
       next: (provincias) => {
         this.provincias = provincias;
       },
-      error: () => {
-        // Manejo simple de error, puedes mejorarlo (snackbar, etc.)
+      error: (error) => {
+        console.error('Error al cargar provincias:', error);
         this.provincias = [];
+      }
+    });
+
+    // Cargar tipos de emprendimiento desde la API
+    this.authService.getTiposEmprendimiento().subscribe({
+      next: (tipos) => {
+        this.tiposEmprendimiento = tipos;
+      },
+      error: (error) => {
+        console.error('Error al cargar tipos de emprendimiento:', error);
+        this.tiposEmprendimiento = [];
+        // Opcional: Mostrar mensaje al usuario
+        this.dialog.open(MensajeConfirmacionComponent, {
+          width: '420px',
+          data: {
+            subject: 'Advertencia',
+            title: 'Error al cargar tipos de emprendimiento',
+            subtitle: 'No se pudieron cargar los tipos de emprendimiento. Por favor, intente más tarde.',
+            type: 'warning',
+          },
+        });
       }
     });
 
@@ -202,7 +220,8 @@ export class RegisterComponent {
           }));
           this.thirdFormGroup.get('ciudad')?.setValue('');
         },
-        error: () => {
+        error: (error) => {
+          console.error('Error al cargar ciudades:', error);
           this.ciudadesFiltradas = [];
           this.thirdFormGroup.get('ciudad')?.setValue('');
         },
@@ -225,6 +244,16 @@ export class RegisterComponent {
     return date.toISOString();
   }
 
+  // Método helper para mostrar el nombre del tipo de emprendimiento
+  getNombreTipoEmprendimiento(tipo: TipoEmprendimiento): string {
+    // Si tipo y subTipo son iguales, mostrar solo uno (ej: "Startup")
+    if (tipo.tipo === tipo.subTipo) {
+      return tipo.tipo;
+    }
+    // Si son diferentes, mostrar tipo - subTipo (ej: "Emprendimiento - Servicio")
+    return `${tipo.tipo} - ${tipo.subTipo}`;
+  }
+
   guardar() {
     if (this.firstFormGroup.valid && this.secondFormGroup.valid && this.thirdFormGroup.valid) {
       this.isLoading = true;
@@ -234,6 +263,9 @@ export class RegisterComponent {
       const thirdForm = this.thirdFormGroup.value;
 
       const idRolEmprendedor = 2;
+
+      // Buscar el tipo de emprendimiento seleccionado
+      const tipoSeleccionado = this.tiposEmprendimiento.find(t => t.id === thirdForm.tipoEmprendimiento);
 
       const registerData: RegisterData = {
         nombre: firstForm.nombre,
@@ -262,7 +294,7 @@ export class RegisterComponent {
           ciudad: thirdForm.ciudad,
           provinia: thirdForm.provincia,
           estadoEmpredimiento: thirdForm.estadoEmprendimiento,
-          tipoEmprendimiento: this.tiposEmprendimiento.find(t => t.id === thirdForm.tipoEmprendimiento)?.nombre || '',
+          tipoEmprendimiento: tipoSeleccionado?.subTipo || '',
           tipoEmprendimientoId: thirdForm.tipoEmprendimiento,
           datosPublicos: thirdForm.datosPublicos
         }
@@ -302,7 +334,6 @@ export class RegisterComponent {
       this.markFormGroupTouched(this.secondFormGroup);
       this.markFormGroupTouched(this.thirdFormGroup);
 
-      // Usa el nuevo tipo visual 'warning' del MensajeConfirmacionComponent
       this.dialog.open(MensajeConfirmacionComponent, {
         width: '420px',
         data: {

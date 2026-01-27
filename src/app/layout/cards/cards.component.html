@@ -76,7 +76,7 @@
       <div class="mt-4 flex flex-col flex-1" [class.h-full]="fixedHeightCards">
         <!-- Categoría y estado -->
         <div class="flex items-center gap-2 mb-2 flex-wrap" 
-             [class.min-h-[28px]]="fixedHeightCards">
+             [class.min-h-[56px]]="fixedHeightCards">
           <span
             class="inline-block px-3 py-1 rounded-full text-xs font-medium"
             style="background-color:#FFF4C8; color:#C0A537"
@@ -97,7 +97,7 @@
 
         <!-- Título -->
         <h3 class="text-lg font-semibold text-gray-900 mb-2"
-            [class.min-h-[56px]]="fixedHeightCards"
+            [class.min-h-[50px]]="fixedHeightCards"
             [class.line-clamp-2]="fixedHeightCards">
           {{ item.title }}
         </h3>
@@ -105,7 +105,7 @@
         <!-- Descripción -->
         <p class="text-sm text-gray-600 leading-relaxed mb-4"
            [class.line-clamp-3]="fixedHeightCards"
-           [class.min-h-[60px]]="fixedHeightCards"
+           [class.min-h-[63px]]="fixedHeightCards"
            [class.flex-grow]="fixedHeightCards">
           {{
             item.description ||

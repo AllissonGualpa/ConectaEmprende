@@ -57,36 +57,7 @@ export class SeccionMensajeriaComponent implements OnInit {
         this.totalPages = resp?.pageable.lastPage + 1 || 1;
         this.page = resp?.pageable.page ?? pageIndex;
         this.loading = false;
-        
-        // --- NOTIFICACIÓN SIMULADA (MENSAJE QUEMADO PARA DEMO) ---
-        //borrar desp
-        const yaExiste = this.notificaciones.some(n => n.id === 9999);
-        if (!yaExiste) {
-          this.notificaciones = [
-            {
-              id: 9999,
-              nombreEmprendimiento: 'HealthLoop App',
-              mensaje: 'Tu emprendimiento ha recibido una baja valoración. Debes realizar una autoevaluación.',
-              fechaCreacion: new Date().toISOString(),
-              leida: false,
-              tipoNombre: 'Alerta',
-              titulo: 'Autoevaluación requerida',
-              enlace: '',
-              fechaLectura: null,
-              prioridad: null,
-              icono: null,
-              color: null,
-              metadata: null,
-              emprendimientoId: 0,
-              solicitudId: null,
-              motivo: null,
-              observaciones: null
-            },
-            ...this.notificaciones
-          ];
-          this.totalElements++;
-        }
-        // --- FIN MENSAJE QUEMADO ---
+  
       },
       error: (err) => {
         console.error('Error al cargar notificaciones paginadas:', err);
@@ -125,24 +96,8 @@ export class SeccionMensajeriaComponent implements OnInit {
   }
 
   abrirNotificacion(notificacion: Notificacion): void {
-    // --- LÓGICA PARA MENSAJE QUEMADO (DEMO) ---
-    // Puedes borrar este if después de la presentación
-    if (notificacion.id === 9999) {
-      // Abrir el modal de detalle con mensaje especial
-      this.dialog.open(DetailsMensajeriaComponent, {
-        width: '700px',
-        maxWidth: '95vw',
-        maxHeight: '90vh',
-        data: {
-          notificacionId: 9999,
-          mensajeEspecial: true
-        },
-        panelClass: 'custom-dialog-container'
-      });
-      return;
-    }
-    // --- FIN MENSAJE QUEMADO ---
-  if (notificacion.tipoNombre === 'Autoevaluación Requerida' || 
+    
+    if (notificacion.tipoNombre === 'Autoevaluación Requerida' || 
       notificacion.titulo === 'Autoevaluación requerida') {
     
         const idRespuestaValoracion = notificacion.enlace;

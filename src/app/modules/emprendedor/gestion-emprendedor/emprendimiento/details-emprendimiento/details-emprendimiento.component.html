@@ -15,6 +15,24 @@
 			</p>
 		</div>
 
+		<div *ngIf="observaciones && observaciones.trim() !== ''" 
+			class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded shadow-sm">
+			<div class="flex items-start">
+				<mat-icon class="text-yellow-600 mr-3 mt-1">warning</mat-icon>
+				<div class="flex-1">
+					<h3 class="text-lg font-semibold text-yellow-800 mb-2">
+						Observaciones de la Revisión
+					</h3>
+					<p class="text-yellow-700 whitespace-pre-line">
+						{{ observaciones }}
+					</p>
+					<p class="text-sm text-yellow-600 mt-3 italic">
+						Por favor, revisa y corrige estos puntos antes de reenviar tu solicitud.
+					</p>
+				</div>
+			</div>
+		</div>
+
 		<!-- SECCIÓN 1: Información del representante -->
 		<div *ngIf="currentStep === 1">
 			<h2 class="text-2xl font-bold text-orange-500 mb-6 text-center">
@@ -283,34 +301,12 @@
 							[class.bg-orange-50]="isCategoriaSelected(categoria.id)"
 							(click)="toggleCategoria(categoria.id)">
 							<mat-checkbox [checked]="isCategoriaSelected(categoria.id)"
-								[disabled]="!isCategoriaSelected(categoria.id) && categoriasSeleccionadas.length >= 2"
+							[disabled]="soloLectura || (!isCategoriaSelected(categoria.id) && categoriasSeleccionadas.length >= 2)"
 								(change)="onCategoriaChange(categoria.id, $event)" (click)="$event.stopPropagation()"
 								class="mr-3">
 							</mat-checkbox>
 							<span class="text-gray-800">{{ categoria.nombre }}</span>
 						</div>
-
-						<!-- Opción "Otro" -->
-						<div class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-							[class.border-orange-500]="showOtraCategoria" [class.bg-orange-50]="showOtraCategoria"
-							(click)="toggleOtraCategoria()">
-							<mat-checkbox [checked]="showOtraCategoria"
-								[disabled]="!showOtraCategoria && categoriasSeleccionadas.length >= 2"
-								(change)="onOtraCategoriaChange($event)" (click)="$event.stopPropagation()" class="mr-3">
-							</mat-checkbox>
-							<span class="text-gray-800">Otro</span>
-						</div>
-					</div>
-
-					<!-- Campo de texto para "Otro" -->
-					<div *ngIf="showOtraCategoria" class="mt-4">
-						<mat-form-field appearance="outline" class="w-full">
-							<mat-label>Especifica la categoría</mat-label>
-							<input matInput formControlName="otraCategoria" placeholder="Ingrese la categoría">
-							<mat-error *ngIf="emprendimientoForm.get('otraCategoria')?.hasError('required')">
-								Debe especificar la categoría
-							</mat-error>
-						</mat-form-field>
 					</div>
 
 					<mat-error
@@ -570,14 +566,13 @@
 							(formato JPG o PNG, fondo blanco o transparente).
 						</p>
 
-						<div
-							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px] flex flex-col items-center justify-center">
+						<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px] flex flex-col items-center justify-center">
 							<div *ngIf="!logoPreview" class="text-center">
-								<label class="cursor-pointer">
-									<input type="file" accept="image/jpeg,image/png" (change)="onLogoSelected($event)"
-										class="hidden">
-									<span
-										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+								<label class="cursor-pointer" [class.pointer-events-none]="soloLectura">
+									<input type="file" accept="image/jpeg,image/png" [disabled]="soloLectura" (change)="onLogoSelected($event)" class="hidden">
+									<span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block"
+										[class.opacity-50]="soloLectura"
+										[class.cursor-not-allowed]="soloLectura">
 										Seleccionar logo
 									</span>
 								</label>
@@ -585,7 +580,8 @@
 
 							<div *ngIf="logoPreview" class="relative">
 								<img [src]="logoPreview" alt="Logo preview" class="max-w-full max-h-48 rounded-lg">
-								<button type="button" (click)="removeLogo()"
+								<!-- ⬇️ OCULTAR BOTÓN X EN SOLO LECTURA -->
+								<button *ngIf="!soloLectura" type="button" (click)="removeLogo()"
 									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
 									<mat-icon class="text-sm">close</mat-icon>
 								</button>
@@ -603,13 +599,12 @@
 						</p>
 
 						<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[250px]">
-							<div *ngIf="fotosProductosPreview.length === 0"
-								class="text-center h-full flex flex-col items-center justify-center">
-								<label class="cursor-pointer">
-									<input type="file" accept="image/*" multiple (change)="onFotosProductosSelected($event)"
-										class="hidden">
-									<span
-										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+							<div *ngIf="fotosProductosPreview.length === 0" class="text-center h-full flex flex-col items-center justify-center">
+								<label class="cursor-pointer" [class.pointer-events-none]="soloLectura">
+									<input type="file" accept="image/*" [disabled]="soloLectura" multiple (change)="onFotosProductosSelected($event)" class="hidden">
+									<span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block"
+										[class.opacity-50]="soloLectura"
+										[class.cursor-not-allowed]="soloLectura">
 										Seleccionar fotos (máx. 2)
 									</span>
 								</label>
@@ -618,18 +613,18 @@
 							<div *ngIf="fotosProductosPreview.length > 0" class="grid grid-cols-2 gap-4">
 								<div *ngFor="let preview of fotosProductosPreview; let i = index" class="relative">
 									<img [src]="preview" alt="Foto producto" class="w-full h-32 object-cover rounded-lg">
-									<button type="button" (click)="removeFotoProducto(i)"
+									<!-- ⬇️ OCULTAR BOTÓN X EN SOLO LECTURA -->
+									<button *ngIf="!soloLectura" type="button" (click)="removeFotoProducto(i)"
 										class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 text-xs">
 										<mat-icon class="text-sm">close</mat-icon>
 									</button>
 								</div>
 
-								<!-- Botón para agregar más fotos si no hay 2 -->
-								<div *ngIf="fotosProductosPreview.length < 2"
+								<!-- ⬇️ OCULTAR BOTÓN AGREGAR EN SOLO LECTURA -->
+								<div *ngIf="fotosProductosPreview.length < 2 && !soloLectura"
 									class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
 									<label class="cursor-pointer text-center p-4">
-										<input type="file" accept="image/*" (change)="onFotosProductosSelected($event)"
-											class="hidden">
+										<input type="file" accept="image/*" (change)="onFotosProductosSelected($event)" class="hidden">
 										<mat-icon class="text-gray-400 text-4xl">add_photo_alternate</mat-icon>
 										<p class="text-xs text-gray-500 mt-2">Agregar foto</p>
 									</label>
@@ -649,13 +644,13 @@
 							(máx. 1 minuto)
 						</p>
 
-						<div
-							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+						<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
 							<div *ngIf="!videoPreview" class="text-center">
-								<label class="cursor-pointer">
-									<input type="file" accept="video/*" (change)="onVideoSelected($event)" class="hidden">
-									<span
-										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+								<label class="cursor-pointer" [class.pointer-events-none]="soloLectura">
+									<input type="file" accept="video/*" [disabled]="soloLectura" (change)="onVideoSelected($event)" class="hidden">
+									<span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block"
+										[class.opacity-50]="soloLectura"
+										[class.cursor-not-allowed]="soloLectura">
 										Seleccionar video (opcional)
 									</span>
 								</label>
@@ -663,7 +658,8 @@
 
 							<div *ngIf="videoPreview" class="relative w-full">
 								<video [src]="videoPreview" controls class="w-full max-h-48 rounded-lg"></video>
-								<button type="button" (click)="removeVideo()"
+								<!-- ⬇️ OCULTAR BOTÓN X EN SOLO LECTURA -->
+								<button *ngIf="!soloLectura" type="button" (click)="removeVideo()"
 									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
 									<mat-icon class="text-sm">close</mat-icon>
 								</button>
@@ -680,22 +676,22 @@
 							(estilo banner)
 						</p>
 
-						<div
-							class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
+						<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 min-h-[200px] flex flex-col items-center justify-center">
 							<div *ngIf="!bannerPreview" class="text-center">
-								<label class="cursor-pointer">
-									<input type="file" accept="image/*" (change)="onBannerSelected($event)" class="hidden">
-									<span
-										class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block">
+								<label class="cursor-pointer" [class.pointer-events-none]="soloLectura">
+									<input type="file" accept="image/*" [disabled]="soloLectura" (change)="onBannerSelected($event)" class="hidden">
+									<span class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 inline-block"
+										[class.opacity-50]="soloLectura"
+										[class.cursor-not-allowed]="soloLectura">
 										Seleccionar banner (opcional)
 									</span>
 								</label>
 							</div>
 
 							<div *ngIf="bannerPreview" class="relative w-full">
-								<img [src]="bannerPreview" alt="Banner preview"
-									class="w-full max-h-32 object-cover rounded-lg">
-								<button type="button" (click)="removeBanner()"
+								<img [src]="bannerPreview" alt="Banner preview" class="w-full max-h-32 object-cover rounded-lg">
+								<!-- ⬇️ OCULTAR BOTÓN X EN SOLO LECTURA -->
+								<button *ngIf="!soloLectura" type="button" (click)="removeBanner()"
 									class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600">
 									<mat-icon class="text-sm">close</mat-icon>
 								</button>
@@ -839,14 +835,37 @@
 				</div>
 
 				<div class="flex justify-center gap-4 mt-8">
-					<button mat-raised-button type="button" (click)="atras()"
-						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-						Atrás
+					<button mat-raised-button (click)="atras()" type="button">
+						<mat-icon>arrow_back</mat-icon> Atrás
 					</button>
-					<button mat-raised-button type="button" (click)="siguiente()" *ngIf="esCreacion"
-						class="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2 rounded-md text-lg font-semibold">
-						Enviar
-					</button>
+
+					<!-- Botones para CREAR -->
+					<div *ngIf="esCreacion" class="submit-buttons">
+						<button mat-raised-button color="primary" (click)="siguiente()" type="button">
+							Enviar para Aprobación
+						</button>
+					</div>
+
+					<!-- Botones para EDITAR -->
+					<div *ngIf="esEdicionEmprendedor" class="submit-buttons">
+						<button 
+							*ngIf="debeUsarModificarYReenviar" 
+							mat-raised-button 
+							color="primary" 
+							(click)="siguiente()" 
+							type="button">
+							Modificar y Reenviar
+						</button>
+						
+						<button 
+							*ngIf="debeUsarGuardarPropuesta" 
+							mat-raised-button 
+							color="primary" 
+							(click)="siguiente()" 
+							type="button">
+							Encviar Propuesta de Modificación
+						</button>
+					</div>
 				</div>
 			</form>
 		</div>

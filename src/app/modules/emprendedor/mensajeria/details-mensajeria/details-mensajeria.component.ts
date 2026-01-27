@@ -2,55 +2,34 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterModule, Router } from '@angular/router';//borrar desp-->
 import { Notificacion } from '../../../../core/types/notificacion.types';
 import { NotificacionesService } from '../../../../core/services/notification.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
 	selector: 'app-details-mensajeria',
 	standalone: true,
-	imports: [CommonModule, MatDialogModule, MatIconModule, RouterModule],
+	imports: [CommonModule, MatDialogModule, MatIconModule],
 	templateUrl: './details-mensajeria.component.html',
 })
 export class DetailsMensajeriaComponent implements OnInit {
 	notificacion: Notificacion | null = null;
 	loading = false;
 	error = false;
-	mensajeEspecial = false; //borrar desp-->
+	private usuarioId: number | null = null;
 
 	constructor(
 		@Inject(MAT_DIALOG_DATA) public data: { notificacionId: number, mensajeEspecial?: boolean },
 		private dialogRef: MatDialogRef<DetailsMensajeriaComponent>,
 		private notificacionesService: NotificacionesService,
-		private router: Router //borrar desp-->
+		private authService: AuthService
 	) { }
 
 	ngOnInit(): void {
-		//borrar desp
-		if (this.data?.mensajeEspecial) {
-			this.mensajeEspecial = true;
-			this.notificacion = {
-				id: 9999,
-				nombreEmprendimiento: 'HealthLoop App',
-				mensaje: 'Tu emprendimiento ha recibido una baja valoración.',
-				titulo: 'Autoevaluación requerida',
-				fechaCreacion: new Date().toISOString(),
-				leida: false,
-				tipoNombre: 'Alerta',
-				enlace: '',
-				fechaLectura: null,
-				prioridad: null,
-				icono: null,
-				color: null,
-				metadata: null,
-				emprendimientoId: 0,
-				solicitudId: null,
-				motivo: null,
-				observaciones: null
-			};
-			this.loading = false;
-			return;
-		}//borrar desp
+		// Obtener el ID del usuario del perfil
+		const perfil = this.authService.getPerfilLocal();
+		this.usuarioId = perfil?.id || null;
+		
 		if (this.data?.notificacionId) {
 			this.cargarNotificacion(this.data.notificacionId);
 		} else {
@@ -64,6 +43,10 @@ export class DetailsMensajeriaComponent implements OnInit {
 			next: (notif) => {
 				this.notificacion = notif;
 				this.loading = false;
+				// Marcar como leída si no lo está y tenemos el usuarioId
+				if (!notif.leida && this.usuarioId) {
+					this.marcarComoLeida(this.usuarioId, id);
+				}
 			},
 			error: () => {
 				this.error = true;
@@ -72,19 +55,29 @@ export class DetailsMensajeriaComponent implements OnInit {
 		});
 	}
 
-	cerrar(): void {
-		this.dialogRef.close({ marcarComoLeida: true });
+	marcarComoLeida(usuarioId: number, notificacionId: number): void {
+		this.notificacionesService.marcarComoLeida(usuarioId, notificacionId).subscribe({
+			next: () => {
+				// Actualizar el estado local
+				if (this.notificacion) {
+					this.notificacion.leida = true;
+					this.notificacion.fechaLectura = new Date().toISOString();
+				}
+			},
+			error: (err) => {
+				console.error('Error al marcar como leída:', err);
+			}
+		});
 	}
-	//borrar desp
 
-	irAAutoevaluacion(): void {
-		this.dialogRef.close();
-		setTimeout(() => {
-			// Puedes cambiar el ID aquí si tienes el id del emprendimiento real
-			this.router.navigate(['/autoevaluacion', 1]);
-		}, 200);
+	cerrar(): void {
+		// Indicar si la notificación fue marcada como leída para actualizar la lista
+		this.dialogRef.close({ 
+			marcarComoLeida: this.notificacion?.leida || false,
+			notificacionId: this.data.notificacionId 
+		});
 	}
-	//borrar desp
+	
 	formatFecha(fecha: string | null): string {
 		if (!fecha) return 'Sin fecha';
 		return new Date(fecha).toLocaleDateString('es-ES', {

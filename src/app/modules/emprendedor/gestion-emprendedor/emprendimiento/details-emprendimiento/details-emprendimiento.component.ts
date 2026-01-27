@@ -17,7 +17,9 @@ import { EmprendimientoService } from '../../../../../core/services/emprendimien
 import { SharedGeneralService } from '../../../../../shared/general/shared-general.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { SolicitudesService } from '../../../../../core/services/solicitudes.service';
+import { MatDialog } from '@angular/material/dialog';
 import { forkJoin } from 'rxjs';
+import { MensajeConfirmacionComponent, ConfirmDialogData } from '../../../../shared/components/mensaje-confirmacion/mensaje-confirmacion.component';
 
 @Component({
 	selector: 'app-details-emprendimiento',
@@ -54,10 +56,15 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	showOtraCategoria = false;
 	currentStep = 1;
 
-	// 🔥 NUEVO: Estados de carga
 	cargandoDatos = false;
 	datosBasicosCargados = false;
 	datosEmprendimientoCargados = false;
+	estadoSolicitud?: string;
+	estadoEmprendimiento?: string;
+	multimediaOriginal: any[] = [];
+	observaciones: string | null = null;
+
+
 
 	// Datos para sección 2
 	tiposEmprendimiento: TipoEmprendimiento[] = [];
@@ -100,7 +107,9 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		private emprendimientoService: EmprendimientoService,
 		private sharedGeneralService: SharedGeneralService,
 		private solicitudesService: SolicitudesService,
-		private authService: AuthService 
+		private authService: AuthService,
+		private dialog: MatDialog  
+
 	) { }
 
 	ngOnInit(): void {
@@ -109,7 +118,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		this.cargarDatosIniciales();
 	}
 
-	// 🔥 NUEVO: Método unificado para cargar todos los datos
 	private cargarDatosIniciales(): void {
 		this.cargandoDatos = true;
 
@@ -149,7 +157,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		});
 	}
 
-	// 🔥 Agregar controles dinámicos después de cargar datos
 	private agregarControlesDinamicos(): void {
 		// Participación comunidad
 		this.opcionesParticipacionComunidad.forEach(opcion => {
@@ -186,6 +193,17 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		}
 	}
 
+	get debeUsarModificarYReenviar(): boolean {
+    // Emprendimiento NO publicado con solicitud EN_REVISION
+		return this.estadoEmprendimiento !== 'PUBLICADO' && 
+			this.estadoSolicitud === 'EN_REVISION';
+	}
+
+	get debeUsarGuardarPropuesta(): boolean {
+		// Emprendimiento PUBLICADO (con o sin solicitud EN_REVISION)
+		return this.estadoEmprendimiento === 'PUBLICADO';
+	}
+
 	private cargarEmprendimientoEmprendedor(): void {
 		if (!this.emprendimientoId) {
 			console.error('No se proporcionó emprendimientoId');
@@ -196,6 +214,12 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		this.solicitudesService.obtenerMiVistaSolicitud(this.emprendimientoId).subscribe({
 			next: (response) => {
 				console.log('Mi vista emprendedor:', response);
+
+				    this.estadoSolicitud = response.estadoSolicitud;
+					this.estadoEmprendimiento = response.estadoEmprendimiento;
+					this.solicitudId = response.solicitudId;
+					this.observaciones = response.observaciones;
+
 				
 				const datosAMostrar = response.tieneSolicitudActiva 
 					? response.datosPropuestos 
@@ -249,7 +273,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		});
 	}
 
-	// 🔥 GETTER para saber si está todo listo
 	get datosCompletamenteCargados(): boolean {
 		return this.datosBasicosCargados && this.datosEmprendimientoCargados;
 	}
@@ -340,6 +363,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		}
 
 		if (data.multimedia && data.multimedia.length > 0) {
+			this.multimediaOriginal = [...data.multimedia]; // Guardar original
 			this.cargarMultimediaExistente(data.multimedia);
 		}
 
@@ -367,18 +391,19 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 	private cargarMultimediaExistente(multimedia: any[]): void {
 		multimedia.forEach(media => {
-			const nombreLower = media.nombreActivo?.toLowerCase() || '';
+			const nombreUpper = media.nombreActivo?.toUpperCase() || '';
 			
-			if (nombreLower.includes('logo') || multimedia.indexOf(media) === 0) {
+			// Buscar por los nombres estandarizados
+			if (nombreUpper.includes('LOGO')) {
 				this.logoPreview = media.urlArchivo;
 				this.logoSeleccionado = true;
-			} else if (nombreLower.includes('banner')) {
+			} else if (nombreUpper.includes('BANNER')) {
 				this.bannerPreview = media.urlArchivo;
 				this.bannerSeleccionado = true;
-			} else if (nombreLower.includes('video') || media.urlArchivo?.includes('.mp4')) {
+			} else if (nombreUpper.includes('VIDEO')) {
 				this.videoPreview = media.urlArchivo;
-				this.videoSeleccionado = true; 
-			} else {
+				this.videoSeleccionado = true;
+			} else if (nombreUpper.includes('FOTO_PRODUCTO')) {
 				this.fotosProductosPreview.push(media.urlArchivo);
 				this.fotosProductosSeleccionadas = true;
 			}
@@ -411,6 +436,132 @@ export class DetailsEmprendimientoComponent implements OnInit {
 			bannerControl?.clearValidators();
 			bannerControl?.updateValueAndValidity();
 		}
+	}
+
+
+	private construirMultimediaParaEnvio(): any[] {
+		const multimedia: any[] = [];
+
+		// Función helper para obtener extensión
+		const getExtension = (filename: string): string => {
+			return filename.substring(filename.lastIndexOf('.'));
+		};
+
+		// ============================================
+		// 1. LOGO
+		// ============================================
+		if (this.logoPreview) {
+			if (this.logoFile) {
+				// Logo NUEVO - usar nombre estandarizado
+				const extension = getExtension(this.logoFile.name);
+				multimedia.push({
+					id: 0,
+					nombreActivo: `LOGO${extension}`,
+					urlArchivo: this.logoPreview
+				});
+			} else {
+				// Logo EXISTENTE - mantener el que ya está
+				const logoOriginal = this.multimediaOriginal.find(m => 
+					m.nombreActivo?.toUpperCase().includes('LOGO')
+				);
+				if (logoOriginal) {
+					multimedia.push({
+						id: logoOriginal.id,
+						nombreActivo: logoOriginal.nombreActivo,
+						urlArchivo: logoOriginal.urlArchivo
+					});
+				}
+			}
+		}
+
+		// ============================================
+		// 2. FOTOS DE PRODUCTOS
+		// ============================================
+		let contadorFotos = 1;
+		
+		// Primero las fotos EXISTENTES
+		this.fotosProductosPreview.forEach((preview) => {
+			// Si no empieza con 'data:', es una URL existente
+			if (!preview.startsWith('data:')) {
+				const fotoOriginal = this.multimediaOriginal.find(m => m.urlArchivo === preview);
+				if (fotoOriginal) {
+					multimedia.push({
+						id: fotoOriginal.id,
+						nombreActivo: fotoOriginal.nombreActivo,
+						urlArchivo: fotoOriginal.urlArchivo
+					});
+					contadorFotos++;
+				}
+			}
+		});
+		
+		// Luego las fotos NUEVAS
+		this.fotosProductos.forEach((file) => {
+			const extension = getExtension(file.name);
+			multimedia.push({
+				id: 0,
+				nombreActivo: `FOTO_PRODUCTO_${contadorFotos}${extension}`,
+				urlArchivo: this.fotosProductosPreview[this.fotosProductosPreview.length - this.fotosProductos.length + this.fotosProductos.indexOf(file)]
+			});
+			contadorFotos++;
+		});
+
+		// ============================================
+		// 3. VIDEO
+		// ============================================
+		if (this.videoPreview) {
+			if (this.videoFile) {
+				// Video NUEVO
+				const extension = getExtension(this.videoFile.name);
+				multimedia.push({
+					id: 0,
+					nombreActivo: `VIDEO${extension}`,
+					urlArchivo: this.videoPreview
+				});
+			} else {
+				// Video EXISTENTE
+				const videoOriginal = this.multimediaOriginal.find(m => 
+					m.nombreActivo?.toUpperCase().includes('VIDEO') || 
+					m.urlArchivo?.includes('.mp4')
+				);
+				if (videoOriginal) {
+					multimedia.push({
+						id: videoOriginal.id,
+						nombreActivo: videoOriginal.nombreActivo,
+						urlArchivo: videoOriginal.urlArchivo
+					});
+				}
+			}
+		}
+
+		// ============================================
+		// 4. BANNER
+		// ============================================
+		if (this.bannerPreview) {
+			if (this.bannerFile) {
+				// Banner NUEVO
+				const extension = getExtension(this.bannerFile.name);
+				multimedia.push({
+					id: 0,
+					nombreActivo: `BANNER${extension}`,
+					urlArchivo: this.bannerPreview
+				});
+			} else {
+				// Banner EXISTENTE
+				const bannerOriginal = this.multimediaOriginal.find(m => 
+					m.nombreActivo?.toUpperCase().includes('BANNER')
+				);
+				if (bannerOriginal) {
+					multimedia.push({
+						id: bannerOriginal.id,
+						nombreActivo: bannerOriginal.nombreActivo,
+						urlArchivo: bannerOriginal.urlArchivo
+					});
+				}
+			}
+		}
+
+		return multimedia;
 	}
 
 	initForm(): void {
@@ -534,9 +685,6 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		return this.modo === 'revisar-admin' && this.datosOriginales != null;
 	}
 
-	// Resto de métodos (onLogoSelected, siguiente, atras, onSubmit, etc.) permanecen igual...
-	// [CONTINÚA CON TUS MÉTODOS EXISTENTES]
-
 	onLogoSelected(event: any): void {
 		const file = event.target.files[0];
 		if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
@@ -553,12 +701,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeLogo(): void {
+		if (this.soloLectura) return; 
 		this.logoFile = null;
 		this.logoPreview = null;
 		this.emprendimientoForm.patchValue({ logo: null });
 	}
 
 	onFotosProductosSelected(event: any): void {
+		if (this.soloLectura) return;
 		const files = Array.from(event.target.files) as File[];
 
 		if (this.fotosProductos.length + files.length > 2) {
@@ -581,12 +731,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeFotoProducto(index: number): void {
+		if (this.soloLectura) return
 		this.fotosProductos.splice(index, 1);
 		this.fotosProductosPreview.splice(index, 1);
 		this.emprendimientoForm.patchValue({ fotosProductos: this.fotosProductos.length > 0 ? this.fotosProductos : null });
 	}
 
 	onVideoSelected(event: any): void {
+		if (this.soloLectura) return
 		const file = event.target.files[0];
 		if (file && file.type.startsWith('video/')) {
 			this.videoFile = file;
@@ -602,12 +754,14 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeVideo(): void {
+		if (this.soloLectura) return
 		this.videoFile = null;
 		this.videoPreview = null;
 		this.emprendimientoForm.patchValue({ video: null });
 	}
 
 	onBannerSelected(event: any): void {
+		if (this.soloLectura) return
 		const file = event.target.files[0];
 		if (file && file.type.startsWith('image/')) {
 			this.bannerFile = file;
@@ -623,6 +777,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	removeBanner(): void {
+		if (this.soloLectura) return
 		this.bannerFile = null;
 		this.bannerPreview = null;
 		this.emprendimientoForm.patchValue({ banner: null });
@@ -666,6 +821,7 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	toggleCategoria(categoriaId: number): void {
+		if (this.soloLectura) return;
 		if (this.isCategoriaSelected(categoriaId)) {
 			this.categoriasSeleccionadas = this.categoriasSeleccionadas.filter(id => id !== categoriaId);
 		} else if (this.categoriasSeleccionadas.length < 2) {
@@ -675,6 +831,10 @@ export class DetailsEmprendimientoComponent implements OnInit {
 	}
 
 	onCategoriaChange(categoriaId: number, event: any): void {
+		if (this.soloLectura) {  // ← AGREGAR ESTA LÍNEA
+			event.preventDefault();
+			return;
+		}
 		if (event.checked) {
 			if (this.categoriasSeleccionadas.length < 2) {
 				this.categoriasSeleccionadas.push(categoriaId);
@@ -901,19 +1061,140 @@ export class DetailsEmprendimientoComponent implements OnInit {
 					seccion8Valid = false;
 				}
 			});
-
 			if (seccion8Valid) {
-				this.onSubmit();
-			} else {
-				alert('Debes aceptar todas las declaraciones obligatorias');
+				if (this.debeUsarModificarYReenviar) {
+					this.modificarYReenviarSolicitud();
+				} else if (this.debeUsarGuardarPropuesta) {
+					this.guardarPropuestaModificacion();
+				} else {
+					// Flujo normal de creación
+					this.onSubmit();
+				}
 			}
 		}
+	}
+
+	private modificarYReenviarSolicitud(): void {
+		if (!this.solicitudId) {
+        this.mostrarMensaje('Error', 'No se encontró el ID de la solicitud', 'error');
+        return;
+		}
+
+		const datosActualizados = this.construirDatosFormulario();
+		
+		this.solicitudesService.modificarYReenviar(this.solicitudId, datosActualizados).subscribe({
+			next: (response) => {
+				console.log('Solicitud modificada y reenviada:', response);
+				alert('Solicitud modificada y reenviada correctamente!');
+				this.emprendimientoEditado.emit();
+			},
+			error: (error) => {
+				console.error('Error al modificar y reenviar:', error);
+				alert('Error al modificar la solicitud. Por favor, intenta nuevamente.');
+			}
+		});
+	}
+
+	private guardarPropuestaModificacion(): void {
+		if (!this.emprendimientoId) {
+			alert('No se encontró el ID del emprendimiento');
+			return;
+		}
+
+		const datosPropuestos = this.construirDatosFormulario();
+		
+		this.solicitudesService.guardarPropuesta(this.emprendimientoId, datosPropuestos).subscribe({
+			next: (response) => {
+				console.log('Propuesta guardada:', response);
+				this.mostrarMensaje(
+					'Propuesta guardada',
+					'Tu propuesta de modificación ha sido guardada correctamente',
+					'success'
+				).afterClosed().subscribe(() => {
+					this.emprendimientoEditado.emit();
+				});
+			},
+			error: (error) => {
+				console.error('Error al guardar propuesta:', error);
+				this.mostrarMensaje(
+					'Error al guardar',
+					'Hubo un error al guardar la propuesta. Por favor, intenta nuevamente.',
+					'error'
+				);
+			}
+		});
 	}
 
 	atras(): void {
 		if (this.currentStep > 1) {
 			this.currentStep--;
 		}
+	}
+
+	private construirDatosFormulario(): any {
+		const formValues = this.emprendimientoForm.value;
+		const year = formValues.anoCreacion;
+
+		return {
+			nombreComercial: formValues.nombreComercial,
+			anioCreacion: `${year}-01-01T00:00:00`,
+			activoEmprendimiento: formValues.emprendimientoActivo === 'SI',
+			aceptaDatosPublicos: formValues.aceptaMostrarDatos === 'SI',
+			tipoEmprendimientoId: formValues.tipoEmprendimiento,
+			tipoPersonaJuridicaId: formValues.personaJuridica,
+			ciudad: formValues.ciudad,
+			
+			informacionRepresentante: {
+			nombre: formValues.nombreCompleto,
+			telefono: formValues.numeroTelefonico,
+			correoCorporativo: formValues.correoCoorporativo,
+			correoPersonal: formValues.correoPersonal,
+			identificacion: formValues.identificacion,
+			carrera: formValues.carrera || null,
+			semestre: formValues.semestre || null,
+			fechaGraduacion: formValues.anoGraduacion || null,
+			tieneParientesUees: formValues.tienePariente === 'SI',
+			nombrePariente: formValues.nombrePariente || null,
+			integrantesEquipo: formValues.integrantesEmprendedor
+			},
+			
+			categorias: this.categoriasSeleccionadas.map(id => ({ id })),
+			
+			descripciones: [
+			{ idDescripcion: 1, respuesta: formValues.resumenGeneral },
+			{ idDescripcion: 2, respuesta: formValues.historiaEmprendimiento },
+			{ idDescripcion: 3, respuesta: formValues.queLoHaceDiferente },
+			{ idDescripcion: 4, respuesta: formValues.publicoObjetivo },
+			{ idDescripcion: 5, respuesta: formValues.proposito }
+			],
+			
+			presenciasDigitales: [
+			formValues.instagram && { plataforma: 'instagram', descripcion: formValues.instagram },
+			formValues.whatsapp && { plataforma: 'whatsapp', descripcion: formValues.whatsapp },
+			formValues.sitioWeb && { plataforma: 'sitio_web', descripcion: formValues.sitioWeb },
+			formValues.tiktok && { plataforma: 'tiktok', descripcion: formValues.tiktok }
+			].filter(Boolean),
+			
+			metricas: [
+			{ metricaId: 1, valor: formValues.cantidadClientes },
+			{ metricaId: 2, valor: formValues.generadoVentas },
+			{ metricaId: 3, valor: formValues.participadoIncubacion }
+			],
+			
+			participacionesComunidad: this.opcionesParticipacionComunidad.map(opcion => ({
+			opcionParticipacionId: opcion.id,
+			respuesta: formValues[`participacion_${opcion.id}`] === 'SI'
+			})),
+			
+			declaracionesFinales: this.declaracionesFinales.map(declaracion => ({
+			declaracionId: declaracion.id,
+			aceptada: formValues[`declaracion_${declaracion.id}`],
+			fechaAceptacion: formValues[`declaracion_${declaracion.id}`] ? new Date().toISOString() : null,
+			nombreFirma: formValues[`declaracion_${declaracion.id}`] ? formValues.nombreCompleto : ''
+			})),
+			
+			multimedia: this.construirMultimediaParaEnvio()
+		};
 	}
 
 	onSubmit(tipoAccion: 'CREAR' | 'BORRADOR' = 'CREAR'): void {
@@ -1039,24 +1320,53 @@ export class DetailsEmprendimientoComponent implements OnInit {
 		});
 
 		const formData = new FormData();
-		formData.append('data', JSON.stringify(requestBody));
+	formData.append('data', JSON.stringify(requestBody));
 
-		if (this.logoFile) {
-			formData.append('imagenes', this.logoFile);
-		}
+	// Obtener extensión del archivo original
+	const getExtension = (filename: string): string => {
+		return filename.substring(filename.lastIndexOf('.'));
+	};
 
-		this.fotosProductos.forEach((foto) => {
-			formData.append('imagenes', foto);
+	// Logo: "LOGO.jpg"
+	if (this.logoFile) {
+		const extension = getExtension(this.logoFile.name);
+		const nuevoNombre = `LOGO${extension}`;
+		const archivoRenombrado = new File([this.logoFile], nuevoNombre, { 
+			type: this.logoFile.type 
 		});
+		formData.append('imagenes', archivoRenombrado);
+	}
 
-		if (this.videoFile) {
-			formData.append('imagenes', this.videoFile);
-		}
+	// Fotos: "FOTO_PRODUCTO_1.jpg", "FOTO_PRODUCTO_2.jpg"
+	this.fotosProductos.forEach((foto, index) => {
+		const extension = getExtension(foto.name);
+		const contador = index + 1;
+		const nuevoNombre = `FOTO_PRODUCTO_${contador}${extension}`;
+		const archivoRenombrado = new File([foto], nuevoNombre, { 
+			type: foto.type 
+		});
+		formData.append('imagenes', archivoRenombrado);
+	});
 
-		if (this.bannerFile) {
-			formData.append('imagenes', this.bannerFile);
-		}
+	// Video: "VIDEO.mp4"
+	if (this.videoFile) {
+		const extension = getExtension(this.videoFile.name);
+		const nuevoNombre = `VIDEO${extension}`;
+		const archivoRenombrado = new File([this.videoFile], nuevoNombre, { 
+			type: this.videoFile.type 
+		});
+		formData.append('imagenes', archivoRenombrado);
+	}
 
+	// Banner: "BANNER.jpg"
+	if (this.bannerFile) {
+		const extension = getExtension(this.bannerFile.name);
+		const nuevoNombre = `BANNER${extension}`;
+		const archivoRenombrado = new File([this.bannerFile], nuevoNombre, { 
+			type: this.bannerFile.type 
+		});
+		formData.append('imagenes', archivoRenombrado);
+	}
 		this.emprendimientoService.crearEmprendimiento(formData).subscribe({
 			next: (response) => {
 				console.log('Emprendimiento creado exitosamente:', response);
@@ -1067,13 +1377,23 @@ export class DetailsEmprendimientoComponent implements OnInit {
 					this.solicitudesService.enviarParaAprobacion(emprendimientoId).subscribe({
 						next: (aprobacionResponse) => {
 							console.log('Enviado para aprobación:', aprobacionResponse);
-							alert('Emprendimiento creado y enviado para aprobación correctamente!');
-							this.emprendimientoCreado.emit();
+							this.mostrarMensaje(
+								'Emprendimiento creado',
+								'Tu emprendimiento ha sido creado y enviado para aprobación correctamente',
+								'success'
+							).afterClosed().subscribe(() => {
+								this.emprendimientoCreado.emit();
+							});
 						},
 						error: (error) => {
 							console.error('Error al enviar para aprobación:', error);
-							alert('Emprendimiento creado, pero hubo un error al enviar para aprobación.');
-							this.emprendimientoCreado.emit();
+							this.mostrarMensaje(
+								'Emprendimiento creado con observaciones',
+								'El emprendimiento fue creado, pero hubo un error al enviar para aprobación.',
+								'warning'
+							).afterClosed().subscribe(() => {
+								this.emprendimientoCreado.emit();
+							});
 						}
 					});
 				} else {
@@ -1090,5 +1410,16 @@ export class DetailsEmprendimientoComponent implements OnInit {
 
 	guardarBorrador(): void {
 		this.onSubmit('BORRADOR');
+	}
+
+	private mostrarMensaje(title: string, subtitle: string, type: 'success' | 'error' | 'info' | 'warning' | 'confirm') {
+		return this.dialog.open(MensajeConfirmacionComponent, {
+			width: '400px',
+			data: {
+				title: title,
+				subtitle: subtitle,
+				type: type
+			} as ConfirmDialogData
+		});
 	}
 }

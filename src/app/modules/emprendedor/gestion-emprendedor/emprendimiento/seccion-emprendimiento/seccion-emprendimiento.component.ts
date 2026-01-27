@@ -34,9 +34,9 @@ export class SeccionEmprendimientoComponent implements OnInit {
 	mapEstado(estado: string): string {
 		switch (estado) {
 			case 'APROBADO':
+			case 'PUBLICADO':
 				return 'Aprobado';
 			case 'PENDIENTE_APROBACION':
-				return 'Pendiente de aprobación';
 			case 'EN_REVISION':
 				return 'En revisión';
 			case 'RECHAZADO':
@@ -62,9 +62,10 @@ export class SeccionEmprendimientoComponent implements OnInit {
 
 				this.cardsArray = data.map((e) => {
 					// Obtener la primera imagen
-					const imagenPrincipal = e.multimedia && e.multimedia.length > 0
-						? e.multimedia[0].urlArchivo
-						: '/assets/img/inicio/foto5.png';
+					const logo = e.multimedia?.find(m => 
+						m.nombreActivo?.toUpperCase().includes('LOGO')
+					);
+					const imagenPrincipal = logo?.urlArchivo || '/assets/img/inicio/foto5.png';
 
 					// Obtener nombres de categorías
 					const categoriasTexto = e.categorias && e.categorias.length > 0

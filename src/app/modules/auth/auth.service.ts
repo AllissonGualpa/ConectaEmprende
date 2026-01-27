@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { TipoEmprendimientoResponse } from './auth.types';
 
 // Interfaz usada en register.component.ts
 export interface RegisterData {
@@ -64,7 +65,7 @@ export class AuthService {
     return isPlatformBrowser(this.platformId);
   }
 
-    // Verifica si el token JWT ha expirado
+  // Verifica si el token JWT ha expirado
   isTokenExpired(): boolean {
     const token = this.getToken();
     if (!token) return true;
@@ -188,4 +189,12 @@ export class AuthService {
     );
   }
 
+  // Obtener tipos de emprendimiento desde el backend
+  getTiposEmprendimiento(): Observable<TipoEmprendimientoResponse[]> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    return this.http.get<TipoEmprendimientoResponse[]>(
+      `${environment.api_url}/v1/tipos-emprendimiento`,
+      { headers }
+    );
+  }
 }
