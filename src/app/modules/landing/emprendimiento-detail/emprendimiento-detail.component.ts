@@ -5,6 +5,8 @@ import { NavbarComponent } from '../../../layout/navbar/navbar.component';
 import { FooterComponent } from '../../../layout/footer/footer.component';
 import { EmprendimientoPublico } from '../../../core/types/emprendimiento.types';
 import { EmprendimientoService } from '../../../core/services/emprendimiento.service';
+import { EnvironmentService } from '../../../core/services/environment.service';
+
 @Component({
   selector: 'app-emprendimiento-detail',
   standalone: true,
@@ -28,7 +30,8 @@ export class EmprendimientoDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private emprendimientoService: EmprendimientoService
+    private emprendimientoService: EmprendimientoService,
+    private environmentService: EnvironmentService
   ) {}
 
   ngOnInit(): void {
@@ -62,8 +65,8 @@ export class EmprendimientoDetailComponent implements OnInit {
 
         // Generar QR solo para emprendimientos (no startups)
         if (!this.esStartup) {
-          const host = 'http://localhost:4000'; // Cambio aquí
-          const evaluacionUrl = `${host}/valoracion/${id}`;
+          const baseUrl = this.environmentService.getBaseUrl();
+          const evaluacionUrl = `${baseUrl}/valoracion/${id}`;
 
           this.qrCodeUrl =
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
