@@ -7,7 +7,7 @@ export class EnvironmentService {
   
   getBaseUrl(): string {
     if (typeof window === 'undefined') {
-      return 'http://localhost:4000';
+      return 'https://conectaemprendessr.onrender.com/';
     }
 
     const hostname = window.location.hostname;
@@ -15,10 +15,10 @@ export class EnvironmentService {
     const port = window.location.port;
     
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return `${protocol}//${hostname}${port ? ':' + port : ''}`;
+      return `https://conectaemprendessr.onrender.com/`;
     } else {
       // URL de producción en Render
-      return `${protocol}//${hostname}`;
+      return `https://conectaemprendessr.onrender.com/`;
     }
   }
 }

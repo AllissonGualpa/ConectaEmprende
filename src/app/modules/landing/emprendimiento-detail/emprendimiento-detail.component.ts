@@ -63,14 +63,15 @@ export class EmprendimientoDetailComponent implements OnInit {
         const tipo = data?.nombreTipoEmprendimiento?.toLowerCase() || '';
         this.esStartup = tipo.includes('startup');
 
-        // Generar QR solo para emprendimientos (no startups)
-        if (!this.esStartup) {
-          const baseUrl = this.environmentService.getBaseUrl();
-          const evaluacionUrl = `${baseUrl}/valoracion/${id}`;
+        // Generar QR siempre para poder evaluar
+        const baseUrl = this.environmentService.getBaseUrl();
+        const evaluacionUrl = `${baseUrl}/valoracion/${id}`;
 
-          this.qrCodeUrl =
-            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
-        }
+        this.qrCodeUrl =
+          `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
+
+        console.log('QR URL:', this.qrCodeUrl);
+        console.log('Evaluación URL:', evaluacionUrl);
 
         this.cargando = false;
       },
