@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, Inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil, switchMap } from 'rxjs';
@@ -22,6 +22,7 @@ export class ValoracionComponent implements OnInit, OnDestroy {
     error = '';
     enviando = false;
     enviado = false;
+    textoCarga = 'Cargando valoración...';
 
     idEmprendimiento!: number;
     tipoFormulario: 'EVALUACION_SERVICIO' | 'EVALUACION_PRODUCTO' = 'EVALUACION_SERVICIO';
@@ -38,7 +39,8 @@ export class ValoracionComponent implements OnInit, OnDestroy {
         private emprendimientoService: EmprendimientoService,
         private valoracionService: ValoracionService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) { }
 
     ngOnInit(): void {
@@ -46,7 +48,11 @@ export class ValoracionComponent implements OnInit, OnDestroy {
         const id = this.route.snapshot.paramMap.get('id');
         
         console.log('ID recibido en valoración:', id);
-        console.log('URL actual:', window.location.href);
+        
+        // Solo acceder a window en el navegador
+        if (isPlatformBrowser(this.platformId)) {
+            console.log('URL actual:', window.location.href);
+        }
 
         if (!id || isNaN(+id)) {
             this.error = 'ID de emprendimiento no válido';
@@ -203,11 +209,6 @@ export class ValoracionComponent implements OnInit, OnDestroy {
                     this.enviado = true;
                     this.enviando = false;
                     
-                    // Opcional: Redirigir después de unos segundos
-                    // setTimeout(() => {
-                    //     this.router.navigate(['/']);
-                    // }, 3000);
-
                     setTimeout(() => {
                         this.router.navigate(['/emprendimientos', this.idEmprendimiento]);
                     }, 2000);
