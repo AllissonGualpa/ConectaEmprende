@@ -39,9 +39,10 @@ export class CardsComponent {
   @Input() showLocation = true;
   @Input() ctaLabel = 'Descubrir';
   @Input() showRoadmapButton = false;  // Nuevo: controla si se muestra el botón Roadmap
+  @Input() downLoadQrCode: boolean = true;
   @Input() roadmapLabel = 'Roadmap';   // Nuevo: texto del botón Roadmap
   @Input() showStatus = false;
-  
+    @Input() baseUrlForQR: string = 'https://conectaemprendessr.onrender.com/';
   // NUEVO: Control para cards de altura fija (específico para eventos)
   @Input() fixedHeightCards: boolean = false;
 
@@ -85,5 +86,57 @@ export class CardsComponent {
     return item?.rawStatus === 'PENDIENTE_APROBACION'
       || item?.rawStatus === 'EN_REVISION'
       || item?.rawStatus === 'RECHAZADO';
+  }
+
+  async downloadQR(item: CardItem, event?: Event): Promise<void> {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    try {
+      // Generar URL del QR
+      const qrUrl = this.getQRCodeUrl(item);
+      
+      if (!qrUrl) {
+        console.error('No se pudo generar la URL del QR');
+        return;
+      }
+
+      const response = await fetch(qrUrl);
+      const blob = await response.blob();
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR_${this.fileName(item.title)}.png`;
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error al descargar el QR:', error);
+      alert('Error al descargar el código QR. Por favor, intenta nuevamente.');
+    }
+  }
+
+
+  private getQRCodeUrl(item: CardItem): string {
+    if (!this.baseUrlForQR) {
+      console.warn('baseUrlForQR no está configurado');
+      return '';
+    }
+
+    const evaluacionUrl = `${this.baseUrlForQR}/valoracion/${item.id}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(evaluacionUrl)}`;
+  }
+
+  private fileName(name: string): string {
+    return name
+      .replace(/[^a-zA-Z0-9\s]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 50);
   }
 }
